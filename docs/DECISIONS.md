@@ -61,3 +61,13 @@ misurabile qui.
 
 Il formato dipende dal diametro e dalla posizione dei fori, che si decidono in M4. Si compra
 con i materiali del case.
+
+## 2026-10-07 Ricarica veloce come opzione: TP4057 a 500 mA
+
+Il caricatore del Plus a 100 mA basta per una notte, ma non per i rabbocchi: un'ora in carica
+vale circa 2 ore di registrazione. Un modulo TP4057 collegato direttamente alla batteria la
+carica a 500 mA, cioè 0,5C come da carica standard dichiarata: 800 mAh in circa 1,6 ore di
+fase a corrente costante. L'USB del XIAO resta per programmare, e i due caricatori non vanno
+alimentati insieme. Si prova al banco; in M4 si decide se entra nel case. Scartati il TP4056
+(ingombro paragonabile al XIAO e 1 A di fabbrica, cioè 1C) e il MCP73831 (su AliExpress solo
+chip sfusi).

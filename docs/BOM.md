@@ -39,6 +39,15 @@ Vanno nello stesso ordine per superare la soglia.
 | Kit LED 3 e 5 mm | 1 | 2,33 € | [listing](https://www.aliexpress.com/item/1005004543292837.html) |
 | Pin header maschio 2,54 mm (per il Plus del banco) | 1 | 1,89 € | [listing](https://www.aliexpress.com/item/1005007486600604.html) |
 
+### Opzione ricarica veloce
+
+Da aggiungere se si vuole la ricarica veloce. Va nello stesso ordine della logistica
+AliExpress. Il motivo è in `DECISIONS.md`.
+
+| Componente | Q.tà | Prezzo | Link | Note |
+|---|---|---|---|---|
+| Caricatore mini TP4057 USB-C, variante "500MA 5pcs" | 1 | 4,59 € | [listing](https://www.aliexpress.com/item/1005011685957004.html) | 11,3 × 10,2 × 5 mm, carica a 500 mA (0,5C). Store giovane: 16 vendite. La variante a 800 mA (BQ25170) supera la carica standard della batteria. |
+
 ### Amazon
 
 | Componente | Q.tà | Prezzo | Link |
@@ -56,6 +65,7 @@ Vanno nello stesso ordine per superare la soglia.
 | Logistica AliExpress | 28,62 € |
 | Amazon | 20,06 € |
 | **Totale** | **circa 102 € più dazi** |
+| Con l'opzione ricarica veloce | circa 107 € più dazi |
 
 ## Nel carrello AliExpress, da togliere
 
@@ -69,7 +79,6 @@ Vanno nello stesso ordine per superare la soglia.
 | Componente | Quando |
 |---|---|
 | Retina acustica | M4, con il case: dipende dai fori. |
-| TP4056 | Solo se la ricarica misurata del Plus è sotto i 100 mA dichiarati. |
 
 ## Attrezzatura data per presente
 

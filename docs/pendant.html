@@ -154,6 +154,11 @@ h3 { font-size: 14px; margin: 0; font-weight: 600; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
 
 /* hero decision */
+.optbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: var(--surface); border-radius: 12px; box-shadow: 0 0 0 1px var(--ring); padding: 10px 14px; margin-bottom: 16px; }
+.optbar .opt-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.optbar .opt-name { font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.optbar .opt-name svg { width: 15px; height: 15px; color: var(--s1); }
+.optbar .opt-desc { color: var(--ink-2); font-size: 12.5px; flex: 1; min-width: 220px; }
 .hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
 .decision { display: flex; gap: 18px; align-items: center; }
 .board-svg { flex: none; width: 128px; height: 128px; }
@@ -337,10 +342,10 @@ tbody tr:hover td { background: var(--surface-2); }
       <a href="#pin"><svg><use href="#i-pins"/></svg>Pin</a>
       <a href="#dati"><svg><use href="#i-db"/></svg>Dati e SD</a>
       <div class="nav-label">Acquisti</div>
-      <a href="#ordine"><svg><use href="#i-cart"/></svg>Ordine<span class="count">~102 €</span></a>
+      <a href="#ordine"><svg><use href="#i-cart"/></svg>Ordine<span class="count" id="navCost">~102 €</span></a>
       <div class="nav-label">Governo</div>
-      <a href="#decisioni"><svg><use href="#i-flag"/></svg>Decisioni<span class="count">8</span></a>
-      <a href="#rischi"><svg><use href="#i-alert"/></svg>Rischi<span class="count">4</span></a>
+      <a href="#decisioni"><svg><use href="#i-flag"/></svg>Decisioni<span class="count" id="navDec">8</span></a>
+      <a href="#rischi"><svg><use href="#i-alert"/></svg>Rischi<span class="count" id="navRisk">4</span></a>
       <a href="#roadmap"><svg><use href="#i-map"/></svg>Roadmap</a>
     </nav>
     <div class="side-foot">
@@ -369,7 +374,17 @@ tbody tr:hover td { background: var(--surface-2); }
       <section id="panoramica">
         <div class="eyebrow">Stato al 7 ottobre 2026</div>
         <h1>Ciondolo registratore: BOM chiusa</h1>
-        <p class="lead">Clone DIY di Omi, offline-first: registra su microSD tutto il giorno e a casa scarica i file via WiFi verso la pipeline di trascrizione. Hardware scelto, ordine pronto, nessun codice ancora.</p>
+        <p class="lead" id="leadAnchor">Clone DIY di Omi, offline-first: registra su microSD tutto il giorno e a casa scarica i file via WiFi verso la pipeline di trascrizione. Hardware scelto, ordine pronto, nessun codice ancora.</p>
+
+        <div class="optbar" role="group" aria-label="Opzioni di configurazione">
+          <span class="opt-label">Opzione</span>
+          <span class="opt-name"><svg><use href="#i-bolt"/></svg>Ricarica veloce</span>
+          <div class="seg" id="fastSeg" role="group" aria-label="Ricarica veloce">
+            <button data-fast="0" aria-pressed="true">No</button>
+            <button data-fast="1" aria-pressed="false">Sì</button>
+          </div>
+          <span class="opt-desc" id="fastDesc"></span>
+        </div>
 
         <div class="hero">
           <div class="card decision">
@@ -418,13 +433,13 @@ tbody tr:hover td { background: var(--surface-2); }
         <div class="grid g4">
           <div class="card stat">
             <div class="label"><svg><use href="#i-euro"/></svg>Costo dell'ordine</div>
-            <div class="value">102<small>€</small></div>
+            <div class="value"><span id="costValue">102</span><small>€</small></div>
             <div class="note">banco e ciondolo, dazi esclusi</div>
           </div>
           <div class="card stat">
             <div class="label"><svg><use href="#i-bolt"/></svg>Ricarica di una giornata</div>
-            <div class="value">8<small>ore</small></div>
-            <div class="note"><span class="delta">metà</span> del XIAO standard e del Sense</div>
+            <div class="value"><span id="chargeValue">8</span><small>ore</small></div>
+            <div class="note" id="chargeNote"></div>
           </div>
           <div class="card stat">
             <div class="label"><svg><use href="#i-battery"/></svg>Consumo in registrazione</div>
@@ -452,7 +467,7 @@ tbody tr:hover td { background: var(--surface-2); }
             </div>
             <div class="chart" id="chCharge"></div>
             <div class="data-table"></div>
-            <div class="card-foot">La linea marca 8 ore, una notte.</div>
+            <div class="card-foot">La linea marca 8 ore, una notte. Tempo della fase a corrente costante: il completamento al 100% aggiunge circa il 20%.</div>
           </div>
           <div class="card" data-chart-card>
             <div class="card-head">
@@ -582,7 +597,7 @@ tbody tr:hover td { background: var(--surface-2); }
               <div class="cart-row"><span class="tag del">TOGLI</span><div class="what">ICS-43434 WCMCU<small>doppione, costa il doppio</small></div><b>6,81 €</b></div>
               <div class="cart-row"><span class="tag add">TIENI</span><div class="what">ICS-43434 Yeteng<small>portare a 3 pezzi</small></div><b>3,59 €</b></div>
               <div class="cart-row"><span class="tag add">TIENI</span><div class="what">LiPo 503450<small>portare a 2 pezzi</small></div><b>4,69 €</b></div>
-              <div class="cart-row"><span class="tag add">AGGIUNGI</span><div class="what">Tutto il resto della BOM<small>13 righe, sotto</small></div><b>~76 €</b></div>
+              <div class="cart-row"><span class="tag add">AGGIUNGI</span><div class="what">Tutto il resto della BOM<small id="restRows">13 righe, sotto</small></div><b id="restCost"></b></div>
             </div>
           </div>
         </div>
@@ -756,11 +771,14 @@ tbody tr:hover td { background: var(--surface-2); }
   }
 
   // data
-  const charge = [
+  let fast = false;
+  const chargeBase = [
     { k: 'XIAO S3 Plus', v: 8, extra: [{ k: 'Corrente di carica', v: '100 mA' }] },
     { k: 'XIAO S3', v: 16, emph: false, extra: [{ k: 'Corrente di carica', v: '50 mA' }] },
     { k: 'XIAO S3 Sense', v: 16, emph: false, extra: [{ k: 'Corrente di carica', v: '50 mA' }] },
   ];
+  const FAST_CHARGE = { k: 'Plus + TP4057', v: 1.6, extra: [{ k: 'Corrente di carica', v: '500 mA' }] };
+  const charge = () => fast ? [FAST_CHARGE].concat(chargeBase.map(d => Object.assign({}, d, { emph: false }))) : chargeBase;
   const sleep = [
     { k: 'XIAO S3 Plus', v: 31.6 },
     { k: 'XIAO S3', v: 27, emph: false },
@@ -773,7 +791,8 @@ tbody tr:hover td { background: var(--surface-2); }
     { k: 'ADPCM mono', mb: 461 },
     { k: 'Opus 16 kbps', mb: 115 },
   ];
-  const costs = [
+  const FAST_PACK = 4.59;
+  const costsBase = [
     { k: 'Logistica AliExpress', v: 28.62, extra: [{ k: 'Articoli', v: '10 righe' }] },
     { k: 'Store Seeed', v: 23.13, extra: [{ k: 'Articoli', v: '2 XIAO Plus' }] },
     { k: 'Amazon', v: 20.06, extra: [{ k: 'Articoli', v: '2 microSD' }] },
@@ -781,6 +800,8 @@ tbody tr:hover td { background: var(--surface-2); }
     { k: 'Batterie', v: 13.01, extra: [{ k: 'Articoli', v: '2 LiPo' }] },
     { k: 'INA219', v: 2.18, extra: [{ k: 'Articoli', v: '1 modulo' }] },
   ];
+  const costs = () => costsBase.map(c => c.k === 'Logistica AliExpress' && fast
+    ? { k: c.k, v: Math.round((c.v + FAST_PACK) * 100) / 100, extra: [{ k: 'Articoli', v: '11 righe' }] } : c);
   const pins = [
     { k: 'microSD SDIO', n: 3, pins: 'CLK, CMD, D0', c: '--s1' },
     { k: 'Microfono I2S', n: 3, pins: 'BCLK, WS, DATA', c: '--s2' },
@@ -788,7 +809,7 @@ tbody tr:hover td { background: var(--surface-2); }
     { k: 'Tasto', n: 1, pins: 'pull-up interno', c: '--s4' },
     { k: 'LED', n: 1, pins: 'stato registrazione', c: '--s5' },
   ];
-  const bom = [
+  const bomBase = [
     { k: 'XIAO ESP32-S3 Plus', g: 'Seeed', q: 2, p: 9.04, use: 'Banco e ciondolo', url: 'https://www.aliexpress.com/item/1005008329745247.html' },
     { k: 'Modulo mini ICS-43434', g: 'Store dedicati', q: 3, p: 3.59, use: 'Banco, ciondolo, scorta', url: 'https://www.aliexpress.com/item/1005012141271976.html' },
     { k: 'LiPo 503450 1000 mAh', g: 'Store dedicati', q: 2, p: 4.69, use: 'Banco e ciondolo', url: 'https://www.aliexpress.com/item/1005004375261361.html' },
@@ -805,6 +826,8 @@ tbody tr:hover td { background: var(--surface-2); }
     { k: 'Pin header maschio 2,54 mm', g: 'Logistica AliExpress', q: 1, p: 1.89, use: 'Banco', url: 'https://www.aliexpress.com/item/1005007486600604.html' },
     { k: 'microSD Netac 32 GB', g: 'Amazon', q: 2, p: 10.03, use: 'Banco e ciondolo', url: 'https://www.amazon.it/dp/B0833XXLJR' },
   ];
+  const FAST_BOM = { k: 'Caricatore TP4057 500 mA USB-C, 5 pz', g: 'Logistica AliExpress', q: 1, p: FAST_PACK, use: 'Opzione ricarica veloce', url: 'https://www.aliexpress.com/item/1005011685957004.html' };
+  const bom = () => fast ? bomBase.concat([FAST_BOM]) : bomBase;
   const decisions = [
     { t: 'XIAO ESP32-S3 Plus al banco e nel ciondolo', b: 'Ricarica a 100 mA: la giornata si ricarica in una notte. Stessa scheda sui due prototipi.', alts: ['Sense', 'XIAO standard', 'Super Mini al banco', 'XIAO C6', 'nRF52840/nRF5340'], on: true },
     { t: 'Un solo microfono ICS-43434, mono', b: 'La trascrizione non usa la separazione spaziale; lo stereo raddoppia dati e scritture. 3 pezzi, il pin LR lascia aperta la coppia stereo.', alts: ['Stereo con 2 microfoni', 'INMP441'], on: true },
@@ -813,14 +836,17 @@ tbody tr:hover td { background: var(--surface-2); }
     { t: 'Batteria 503450 1000 mAh', b: 'La più sottile a parità di capacità: in un ciondolo lo spessore conta più dell\'ingombro in pianta.', alts: ['603048', '803040'], on: true },
     { t: 'microSD su modulo clone Adafruit 4682', b: 'Modulo a 3 V senza regolatore né traslatore, con pin SDIO esposti.', alts: [], on: true },
     { t: 'Tasti sfusi da kit', b: 'La basetta con tasti 6×6 occupa più del XIAO stesso.', alts: ['Basetta 6×6'], on: true },
+    { t: 'Ricarica veloce opzionale: TP4057 a 500 mA', b: 'Modulo USB-C da 11,3 × 10,2 mm collegato direttamente alla batteria: 800 mAh in circa 1,6 ore invece di 8. Si prova al banco; in M4 si decide se entra nel case.', alts: ['TP4056 (ingombro)', 'MCP73831 (solo chip sfusi)'], on: true },
     { t: 'Super Mini al banco, XIAO nel ciondolo', b: 'Superata dalla scelta del Plus su entrambi i prototipi.', alts: [], on: false },
   ];
-  const risks = [
+  const FAST_RISK = { sev: 'warning', t: 'Due caricatori sulla stessa batteria', b: 'Con il TP4057 la batteria ha due caricatori lineari: entrambi chiudono a 4,2 V, ma non vanno alimentati insieme. L\'USB del XIAO resta per programmare.', s: 'Cablaggio M1' };
+  const risksBase = [
     { sev: 'critical', t: 'Polarità del JST sulle LiPo', b: 'Non è garantita sulle batterie AliExpress: un\'inversione danneggia la scheda. Multimetro prima di collegare.', s: 'All\'arrivo' },
     { sev: 'serious', t: 'Autonomia sotto le 16 ore', b: 'Il consumo del Plus in registrazione è una stima. Sopra i 60 mA la giornata non ci sta: leve CPU a 80 MHz, scritture più rare, batteria più grande.', s: 'Da misurare in M1' },
     { sev: 'warning', t: 'Acustica dentro il case', b: 'Microfono sotto i vestiti: posizione dei fori e retina vanno provate.', s: 'M4' },
     { sev: 'warning', t: 'Privacy di un ciondolo perso', b: 'Registrare conversazioni a cui si partecipa è lecito, diffonderle no. Valutare la cifratura su SD.', s: 'M2' },
   ];
+  const risks = () => fast ? risksBase.slice(0, 2).concat([FAST_RISK], risksBase.slice(2)) : risksBase;
   const steps = [
     { n: 'M0', t: 'Acquisti', b: 'Carrello allineato alla BOM, ordine fatto.', s: 'In corso', now: true },
     { n: 'M1', t: 'Banco', b: 'Plus, microfono e SD: WAV su SD, consumi con INA219.', s: 'Da fare' },
@@ -833,9 +859,9 @@ tbody tr:hover td { background: var(--surface-2); }
   const sevLabel = { serious: 'Serio', critical: 'Critico', warning: 'Attenzione' };
 
   function renderCharts() {
-    hbar(document.getElementById('chCharge'), charge, {
+    hbar(document.getElementById('chCharge'), charge(), {
       label: 'Ore per ricaricare 800 mAh', ticks: [0, 4, 8, 12, 16, 20], max: 20, unitTick: ' h',
-      valueFmt: v => fmt(v) + ' h', tipKey: 'Ricarica', ref: 8, refLabel: 'una notte',
+      valueFmt: v => fmt(v, v % 1 ? 1 : 0) + ' h', tipKey: 'Ricarica', ref: 8, refLabel: 'una notte',
     });
     hbar(document.getElementById('chSleep'), sleep, {
       label: 'Corrente in modem-sleep', ticks: [0, 10, 20, 30, 40, 50], max: 50, unitTick: '',
@@ -845,20 +871,57 @@ tbody tr:hover td { background: var(--surface-2); }
       label: 'MB per giornata per formato', ticks: [0, 1000, 2000, 3000, 4000], max: 4000, padL: 110,
       valueFmt: v => fmt(v) + ' MB', tipKey: 'Giornata',
     });
-    hbar(document.getElementById('chCost'), costs, {
-      label: 'Spesa per spedizione', ticks: [0, 10, 20, 30], max: 32, padL: 140, unitTick: ' €',
+    hbar(document.getElementById('chCost'), costs(), {
+      label: 'Spesa per spedizione', ticks: [0, 10, 20, 30], max: 36, padL: 140, unitTick: ' €',
       valueFmt: v => fmt(v, 2) + ' €', tipKey: 'Totale',
     });
     batteryChart(document.getElementById('chBattery'));
   }
 
+  let renderBom = () => {};
+  let renderTimelineAndRisks = () => {};
+  const shipping = 5.05 + 4.69 + 3.63;
+  function renderOption() {
+    const items = bom().reduce((a, b) => a + b.p * b.q, 0);
+    const total = items + shipping;
+    document.getElementById('costValue').textContent = fmt(total, 0);
+    document.getElementById('navCost').textContent = '~' + fmt(total, 0) + ' €';
+    document.getElementById('chargeValue').textContent = fast ? '1,6' : '8';
+    document.getElementById('chargeNote').innerHTML = fast
+      ? '<span class="delta">5 volte</span> più veloce del caricatore del Plus'
+      : '<span class="delta">metà</span> del XIAO standard e del Sense';
+    document.getElementById('fastDesc').textContent = fast
+      ? 'Modulo TP4057 a 500 mA sulla batteria: +4,59 € per 5 pezzi, 11,3 × 10,2 mm. Da provare al banco, nel case si decide in M4.'
+      : 'Solo il caricatore integrato del Plus, 100 mA: la giornata si ricarica in una notte.';
+    const kept = bomBase.filter(b => b.k.startsWith('Modulo mini ICS') || b.k.startsWith('LiPo'));
+    const rest = bom().filter(b => !kept.includes(b));
+    document.getElementById('restRows').textContent = rest.length + ' righe, sotto';
+    document.getElementById('restCost').textContent = fmt(rest.reduce((a, b) => a + b.p * b.q, 0), 2) + ' €';
+    const tbl = (id, head, rows) => { document.getElementById(id).parentElement.querySelector('.data-table').innerHTML = tableHTML(head, rows); };
+    tbl('chCharge', ['Scheda', 'Ore', 'Corrente'], charge().map(d => [d.k, fmt(d.v, d.v % 1 ? 1 : 0), d.extra[0].v]));
+    tbl('chCost', ['Spedizione', 'Euro'], costs().map(c => [c.k, fmt(c.v, 2)]));
+    document.querySelectorAll('#fastSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.fast === '1') === fast)));
+    renderBom();
+    renderTimelineAndRisks();
+    document.getElementById('navDec').textContent = document.querySelectorAll('#timeline .dec').length;
+    document.getElementById('navRisk').textContent = risks().length;
+    renderCharts();
+  }
+  document.getElementById('fastSeg').addEventListener('click', e => {
+    const b = e.target.closest('button[data-fast]');
+    if (!b) return;
+    fast = b.dataset.fast === '1';
+    try { localStorage.setItem('pendant-fast-charge', fast ? '1' : '0'); } catch (err) { /* storage unavailable: option stays per-session */ }
+    renderOption();
+  });
+
   function renderStatic() {
     // chart table twins
     const tbl = (id, head, rows) => { document.getElementById(id).parentElement.querySelector('.data-table').innerHTML = tableHTML(head, rows); };
-    tbl('chCharge', ['Scheda', 'Ore', 'Corrente'], charge.map(d => [d.k, fmt(d.v), d.extra[0].v]));
+
     tbl('chSleep', ['Scheda', 'mA'], sleep.map(d => [d.k, fmt(d.v, d.v % 1 ? 1 : 0)]));
     tbl('chFormat', ['Formato', 'MB al giorno', 'Giorni su 32 GB'], formats.map(f => [f.k, fmt(f.mb), fmt(32000 / f.mb)]));
-    tbl('chCost', ['Spedizione', 'Euro'], costs.map(c => [c.k, fmt(c.v, 2)]));
+
     document.getElementById('daysBody').innerHTML = formats.map(f =>
       '<tr><td>' + f.k + '</td><td class="num">' + fmt(32000 / f.mb) + '</td></tr>').join('');
 
@@ -871,16 +934,15 @@ tbody tr:hover td { background: var(--surface-2); }
       '<div class="pin-row"><i style="background:var(' + p.c + ')"></i><div>' + p.k + ' <span class="pins">' + p.pins + '</span></div><b>' + p.n + '</b></div>').join('') +
       '<div class="pin-row"><i style="box-shadow:inset 0 0 0 1.5px var(--axis)"></i><div>Libero <span class="pins">sui lati</span></div><b>1</b></div>';
 
-    // decisions
-    document.getElementById('timeline').innerHTML = decisions.map(d =>
+    renderTimelineAndRisks = () => {
+    document.getElementById('timeline').innerHTML = decisions.filter(d => fast || !d.t.startsWith('Ricarica veloce')).map(d =>
       '<div class="dec' + (d.on ? '' : ' superseded') + '"><div class="ic' + (d.on ? ' on' : '') + '"><svg><use href="#' + (d.on ? 'i-check' : 'i-x') + '"/></svg></div><div><h3>' + d.t +
       (d.on ? '' : ' <span class="badge">Superata</span>') + '</h3><p>' + d.b + '</p>' +
       (d.alts.length ? '<div class="alts">' + d.alts.map(a => '<span>scartata: <s>' + a + '</s></span>').join('') + '</div>' : '') + '</div></div>').join('');
-
-    // risks
-    document.getElementById('risks').innerHTML = risks.map(r =>
+    document.getElementById('risks').innerHTML = risks().map(r =>
       '<div class="risk"><div class="sev ' + r.sev + '" title="' + sevLabel[r.sev] + '"><svg><use href="#' + sevIcon[r.sev] + '"/></svg></div><div><h3>' + r.t +
       ' <span class="badge">' + sevLabel[r.sev] + '</span> <span class="badge">' + r.s + '</span></h3><p>' + r.b + '</p></div></div>').join('');
+    };
 
     // roadmap
     document.getElementById('steps').innerHTML = steps.map(s =>
@@ -888,18 +950,18 @@ tbody tr:hover td { background: var(--surface-2); }
       '<span class="status ' + (s.now ? 'st-warning' : 'st-todo') + '"><i></i>' + s.s + '</span></div>').join('');
 
     // BOM with filters
-    const groups = ['Tutti'].concat([...new Set(bom.map(b => b.g))]);
+    const groups = ['Tutti'].concat([...new Set(bomBase.map(b => b.g))]);
     const fEl = document.getElementById('bomFilters');
     let current = 'Tutti';
     try { current = localStorage.getItem('pendant-bom-filter') || 'Tutti'; } catch (e) { current = 'Tutti'; }
     if (!groups.includes(current)) current = 'Tutti';
-    function renderBom() {
+    renderBom = function () {
       fEl.innerHTML = groups.map(g => '<button class="chip" aria-pressed="' + (g === current) + '" data-g="' + g + '">' + g + '</button>').join('');
-      const rows = bom.filter(b => current === 'Tutti' || b.g === current);
+      const rows = bom().filter(b => current === 'Tutti' || b.g === current);
       document.getElementById('bomBody').innerHTML = rows.map(b =>
         '<tr><td><a href="' + b.url + '" target="_blank" rel="noopener">' + b.k + '</a></td><td>' + b.g + '</td><td class="num">' + b.q + '</td><td class="num">' + fmt(b.p, 2) + ' €</td><td class="num">' + fmt(b.p * b.q, 2) + ' €</td><td>' + b.use + '</td></tr>').join('');
       document.getElementById('bomTotal').textContent = fmt(rows.reduce((a, b) => a + b.p * b.q, 0), 2) + ' €';
-    }
+    };
     fEl.addEventListener('click', e => {
       const b = e.target.closest('button[data-g]');
       if (!b) return;
@@ -949,7 +1011,9 @@ tbody tr:hover td { background: var(--surface-2); }
   document.getElementById('menuBtn').addEventListener('click', () => sb.classList.toggle('open'));
   links.forEach(a => a.addEventListener('click', () => sb.classList.remove('open')));
 
+  try { fast = localStorage.getItem('pendant-fast-charge') === '1'; } catch (e) { fast = false; }
   renderStatic();
+  renderOption();
   let saved = 'auto';
   try { saved = localStorage.getItem('pendant-theme') || 'auto'; } catch (e) { saved = 'auto'; }
   applyTheme(saved);
