@@ -1,0 +1,11 @@
+.DS_Store
+.env*
+!.env.example
+.pio/
+build/
+sdkconfig.old
+__pycache__/
+.venv/
+*.wav
+*.opus
+recordings/
