@@ -61,6 +61,12 @@ l'SDIO a 1 bit regge qualche MB/s. Il problema reale della SD sono i picchi di l
 scrittura (centinaia di ms), che si assorbono con il buffer in PSRAM, non con più linee dati.
 L'INA219 serve solo al banco per misurare i consumi: sul ciondolo non è necessario.
 
+Con il XIAO Sense il conto cambia: lo slot SD della scheda aggiuntiva è in SPI su D8-D10
+(GPIO7, 8, 9) più GPIO21, e il microfono PDM usa GPIO41 e 42, non esposti. Dei pin laterali
+la SD ne occupa 3 e il microfono nessuno
+([wiki Seeed](https://wiki.seeedstudio.com/xiao_esp32s3_sense_mic/)). Il XIAO Plus ha gli
+stessi pin laterali più piazzole sotto la scheda.
+
 ## Numeri di riferimento
 
 - **Dati**: PCM mono 16 kHz 16 bit = 32 KB/s, circa 115 MB/ora, circa 1,8 GB per 16 ore.
@@ -76,7 +82,8 @@ L'INA219 serve solo al banco per misurare i consumi: sul ciondolo non è necessa
 - **Ricarica**: lenta sul XIAO, forse assente sulla Super Mini.
 - **Polarità JST**: sulle LiPo AliExpress non è garantita. Verificare col multimetro prima di
   collegare.
-- **Microfoni**: modello esatto del modulo "mini" da confermare (probabile INMP441).
+- **Microfoni**: il modulo "mini" monta un ICS-43434 (confermato dal listing). Con il Sense
+  il microfono è il PDM integrato MSM261D3526H1CPM, mono: qualità da confrontare al banco.
 - **Acustica**: microfoni dentro un case, sotto i vestiti. Retina acustica e posizione dei fori
   vanno provate.
 - **Privacy e legge**: registrare conversazioni a cui si partecipa è lecito in Italia, diffonderle

@@ -7,8 +7,8 @@ componenti mancanti da fare. Nessun codice.
 
 ## Prossime milestone
 
-- [ ] M0 Acquisti: BOM chiusa, verifiche aperte risolte (ricarica Super Mini, modello
-  microfoni, XIAO standard o Plus), ordine fatto.
+- [ ] M0 Acquisti: scelta del ciondolo (Sense o Plus + moduli), carrello allineato a
+  `BOM.md`, ordine fatto.
 - [ ] M1 Banco: Super Mini + 1 microfono + SD, registrazione WAV su SD, consumi misurati
   con INA219.
 - [ ] M2 Firmware: 2 microfoni, tasto start/stop, LED di stato, buffer in PSRAM, rotazione
@@ -18,6 +18,8 @@ componenti mancanti da fare. Nessun codice.
 
 ## Domande aperte
 
+- Ciondolo: XIAO Sense (tutto integrato, mono) o XIAO Plus + 2 ICS-43434 + slot SD.
+  Confronto prezzi in `BOM.md`.
 - Framework firmware: ESP-IDF o Arduino (PlatformIO).
 - Formato audio su SD: PCM, ADPCM o Opus. Mono o stereo.
 - Trascrizione: Whisper locale o API. Destinazione: Nexus o archivio dedicato.
