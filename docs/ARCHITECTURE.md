@@ -56,13 +56,28 @@ anche per il ciondolo. Il perché della scelta è in `DECISIONS.md`.
 | Tasto | 1 | 1 |
 | LED | 1 | 1 |
 | INA219 (I2C), solo banco | 2 | 2 |
-| **Totale** | **13, solo con le piazzole sotto la scheda** | **10, ci sta sui lati** |
+| **Totale** | **13, solo con i pin castellati** | **10, ci sta sui lati** |
 
 La banda non giustifica l'SDIO a 4 bit: un canale a 16 kHz e 16 bit fa 32 KB/s, mentre
 l'SDIO a 1 bit regge qualche MB/s. Il problema reale della SD sono i picchi di latenza in
 scrittura (centinaia di ms), che si assorbono con gli 8 MB di PSRAM (oltre 4 minuti di audio
-mono), non con più linee dati. Il Plus ha altri GPIO su piazzole sotto la scheda, usabili se
-il budget sui lati non basta.
+mono), non con più linee dati. Il Plus ha altri 9 GPIO su pin castellati a passo 1,27 mm,
+da saldare, usabili se il budget sui lati non basta.
+
+### Assegnazione proposta, da confermare al banco
+
+| Pin | GPIO | Uso |
+|---|---|---|
+| D0 | 1 | Tasto verso GND, pull-up interno |
+| D1, D2, D3 | 2, 3, 4 | Microfono I2S: BCLK, WS, DATA |
+| D4, D5 | 5, 6 | I2C per l'INA219, solo banco |
+| D6 | 43 | Libero |
+| D7 | 44 | LED con resistenza da 1 kΩ |
+| D8, D9, D10 | 7, 8, 9 | SD: CLK, DAT0, CMD |
+
+Il LED sta su D7 e non su D6 perché D6 è il TX della UART0, dove il bootloader scrive
+all'avvio. Il caricatore opzionale va sulla batteria prima dell'interruttore, così carica anche
+a ciondolo spento. Schema e disegni in `docs/pendant.html`.
 
 ## Numeri di riferimento
 

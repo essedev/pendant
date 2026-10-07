@@ -275,6 +275,13 @@ tbody tr:hover td { background: var(--surface-2); }
 .cart-row .what small { color: var(--muted); display: block; }
 .cart-row b { font-variant-numeric: tabular-nums; }
 
+.prod-svg { display: block; width: 100%; height: auto; }
+.prod-svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.real-scale .prod-svg[data-mm] { width: var(--mm-w); max-width: none; }
+.scale-wrap { overflow-x: auto; }
+.pinmap td:nth-child(1), .pinmap td:nth-child(2) { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pinmap .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 8px; vertical-align: -1px; }
+.note-est { font-size: 12px; color: var(--muted); }
 .src { font-size: 12px; color: var(--muted); margin-top: 28px; }
 .src a { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--axis); }
 
@@ -324,6 +331,7 @@ tbody tr:hover td { background: var(--surface-2); }
     <symbol id="i-battery" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 10v4M10 10v4"/></symbol>
     <symbol id="i-euro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6.5A7 7 0 1 0 18 17.5M4 10h9M4 14h9"/></symbol>
     <symbol id="i-sd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M10 7v3M13 7v3"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="5"/><circle cx="12" cy="9" r="2"/><path d="M9 15h6"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   </defs>
 </svg>
@@ -337,6 +345,7 @@ tbody tr:hover td { background: var(--surface-2); }
     <nav class="nav" id="nav">
       <div class="nav-label">Progetto</div>
       <a href="#panoramica"><svg><use href="#i-home"/></svg>Panoramica</a>
+      <a href="#prodotto"><svg><use href="#i-box"/></svg>Prodotto</a>
       <a href="#scheda"><svg><use href="#i-chip"/></svg>Scheda</a>
       <a href="#energia"><svg><use href="#i-bolt"/></svg>Energia</a>
       <a href="#pin"><svg><use href="#i-pins"/></svg>Pin</a>
@@ -454,6 +463,54 @@ tbody tr:hover td { background: var(--surface-2); }
         </div>
       </section>
 
+      <!-- Prodotto -->
+      <section id="prodotto">
+        <div class="sec-head">
+          <div><h2>Il prodotto, disegnato</h2><p>Componenti in scala, disposizione dentro il case, collegamenti e ciondolo finito. Le misure del case sono una proposta da rifinire in M4.</p></div>
+          <div class="seg" id="scaleSeg" role="group" aria-label="Scala dei disegni">
+            <button data-scale="fit" aria-pressed="true">Adatta</button>
+            <button data-scale="real" aria-pressed="false">Grandezza reale</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head">
+            <div><h3>Il ciondolo finito</h3><p>Tre direzioni di design sulle stesse misure: clicca una variante per vederne fianco e lato inferiore</p></div>
+            <div class="seg" id="varSeg" role="group" aria-label="Variante di design">
+              <button data-variant="A" aria-pressed="true">A</button>
+              <button data-variant="B" aria-pressed="false">B</button>
+              <button data-variant="C" aria-pressed="false">C</button>
+            </div>
+          </div>
+          <div class="scale-wrap"><div id="pRender"></div></div>
+          <div class="card-foot" id="pRenderFoot"></div>
+        </div>
+        <div class="grid g2" style="margin-bottom:16px">
+          <div class="card">
+            <div class="card-head"><div><h3>Disposizione interna</h3><p>Vista dall'alto e sezione: l'elettronica sta sopra la batteria</p></div></div>
+            <div class="scale-wrap"><div id="pLayout"></div></div>
+            <div class="scale-wrap"><div id="pSide" style="margin-top:12px"></div></div>
+            <div class="card-foot">Il modulo SD originale è il componente più grande dopo la batteria. Uno slot microSD nudo in M4 libera circa un terzo dello spazio.</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>Componenti in scala</h3><p>Accanto a una moneta da 2 €, Ø 25,75 mm</p></div></div>
+            <div class="scale-wrap"><div id="pSize"></div></div>
+            <div class="card-foot">Misure da datasheet e listing; il modulo microfono è stimato dalle foto (passo dei pin 2,54 mm). In "Grandezza reale" la scala dipende dallo schermo: è approssimata.</div>
+          </div>
+        </div>
+        <div class="grid g3">
+          <div class="card span2">
+            <div class="card-head"><div><h3>Schema dei collegamenti</h3><p>Proposta di assegnazione dei pin, da confermare al banco</p></div></div>
+            <div id="pWiring"></div>
+            <div class="card-foot">I nomi di rete 3V3 e GND sostituiscono i fili di alimentazione per leggibilità. Il L/R del microfono a GND lo mette sul canale sinistro. <span id="wiringFast"></span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>Mappa dei pin</h3><p>XIAO ESP32-S3 Plus, pin sui lati</p></div></div>
+            <div class="tbl-wrap"><table class="pinmap"><thead><tr><th>Pin</th><th>GPIO</th><th>Uso</th></tr></thead><tbody id="pinmapBody"></tbody></table></div>
+            <div class="card-foot">Il LED va su D7 e non su D6: D6 è il TX della UART0, dove il bootloader scrive all'avvio e farebbe lampeggiare il LED.</div>
+          </div>
+        </div>
+      </section>
+
       <!-- Scheda -->
       <section id="scheda">
         <div class="sec-head">
@@ -490,7 +547,7 @@ tbody tr:hover td { background: var(--surface-2); }
                 <tr><td>Modem-sleep</td><td class="pick">31,6 mA</td><td>27 mA</td><td>44 mA</td><td>30 mA</td><td>n.d.</td></tr>
                 <tr><td>PSRAM</td><td class="pick yes">8 MB</td><td>8 MB</td><td>8 MB</td><td class="no">nessuna</td><td class="no">nessuna</td></tr>
                 <tr><td>WiFi</td><td class="pick yes">sì</td><td>sì</td><td>sì</td><td>sì</td><td class="no"><svg class="ico"><use href="#i-x"/></svg>solo BLE</td></tr>
-                <tr><td>GPIO</td><td class="pick">11 sui lati + piazzole</td><td>11</td><td>11 (SD ne usa 3)</td><td>11</td><td>n.d.</td></tr>
+                <tr><td>GPIO</td><td class="pick">11 sui lati + 9 castellati</td><td>11</td><td>11 (SD ne usa 3)</td><td>11</td><td>n.d.</td></tr>
                 <tr><td>Esito</td><td class="pick"><span class="status st-good"><i></i>Scelta</span></td><td><span class="status st-critical"><i></i>Ricarica lenta</span></td><td><span class="status st-critical"><i></i>16 h non stanno</span></td><td><span class="status st-serious"><i></i>Nessun vantaggio</span></td><td><span class="status st-critical"><i></i>Niente WiFi</span></td></tr>
               </tbody>
             </table>
@@ -518,7 +575,7 @@ tbody tr:hover td { background: var(--surface-2); }
       <!-- Pin -->
       <section id="pin">
         <div class="sec-head">
-          <div><h2>Budget dei pin</h2><p>11 GPIO sui lati del Plus. Con la SD in SDIO a 1 bit ne restano liberi uno; servono 3 pin in più solo per il 4 bit, disponibili sulle piazzole sotto la scheda.</p></div>
+          <div><h2>Budget dei pin</h2><p>11 GPIO sui lati del Plus. Con la SD in SDIO a 1 bit ne restano liberi uno; servono 3 pin in più solo per il 4 bit, disponibili sui 9 pin castellati a passo 1,27 mm.</p></div>
         </div>
         <div class="grid g2">
           <div class="card">
@@ -881,6 +938,334 @@ tbody tr:hover td { background: var(--surface-2); }
   let renderBom = () => {};
   let renderTimelineAndRisks = () => {};
   const shipping = 5.05 + 4.69 + 3.63;
+  // product drawings, all in millimetres
+  let realScale = false;
+  const PIN_MAP = [
+    { pin: 'D0', gpio: 1, use: 'Tasto, verso GND, pull-up interno', c: '--s4' },
+    { pin: 'D1', gpio: 2, use: 'I2S BCLK, al SCK del microfono', c: '--s2' },
+    { pin: 'D2', gpio: 3, use: 'I2S WS', c: '--s2' },
+    { pin: 'D3', gpio: 4, use: 'I2S DATA, dal SD del microfono', c: '--s2' },
+    { pin: 'D4', gpio: 5, use: 'I2C SDA, INA219 (solo banco)', c: '--s3' },
+    { pin: 'D5', gpio: 6, use: 'I2C SCL, INA219 (solo banco)', c: '--s3' },
+    { pin: 'D6', gpio: 43, use: 'Libero (UART0 TX)', c: null },
+    { pin: 'D7', gpio: 44, use: 'LED con resistenza da 1 kΩ', c: '--s5' },
+    { pin: 'D8', gpio: 7, use: 'SD CLK', c: '--s1' },
+    { pin: 'D9', gpio: 8, use: 'SD DAT0 (DO del modulo)', c: '--s1' },
+    { pin: 'D10', gpio: 9, use: 'SD CMD (DI del modulo)', c: '--s1' },
+  ];
+  function svgBox(id, w, h, inner, label) {
+    const host = document.getElementById(id);
+    host.innerHTML = '<svg class="prod-svg" data-mm="' + w + '" style="--mm-w:' + w + 'mm" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + label + '">' + inner + '</svg>';
+  }
+  const T = (x, y, txt, o = {}) => '<text x="' + x + '" y="' + y + '" font-size="' + (o.size || 2.4) + '" fill="' + (o.fill || 'var(--ink-2)') + '"' +
+    (o.anchor ? ' text-anchor="' + o.anchor + '"' : '') + (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + txt + '</text>';
+  const dimH = (x1, x2, y, label) => '<g stroke="var(--muted)" stroke-width="0.25"><line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '"/><line x1="' + x1 + '" y1="' + (y - 1.2) + '" x2="' + x1 + '" y2="' + (y + 1.2) + '"/><line x1="' + x2 + '" y1="' + (y - 1.2) + '" x2="' + x2 + '" y2="' + (y + 1.2) + '"/></g>' +
+    T((x1 + x2) / 2, y - 1, label, { anchor: 'middle', size: 2.2, fill: 'var(--muted)' });
+  const dimV = (y1, y2, x, label) => '<g stroke="var(--muted)" stroke-width="0.25"><line x1="' + x + '" y1="' + y1 + '" x2="' + x + '" y2="' + y2 + '"/><line x1="' + (x - 1.2) + '" y1="' + y1 + '" x2="' + (x + 1.2) + '" y2="' + y1 + '"/><line x1="' + (x - 1.2) + '" y1="' + y2 + '" x2="' + (x + 1.2) + '" y2="' + y2 + '"/></g>' +
+    '<text x="' + (x + 1.6) + '" y="' + ((y1 + y2) / 2 + 0.8) + '" font-size="2.2" fill="var(--muted)">' + label + '</text>';
+
+  // component art, origin at top-left, in mm
+  const art = {
+    battery: (x, y, w = 50, h = 34, bare = false) => bare
+      ? '<g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="1.5" fill="#b9c3cf" stroke="#8d99a8" stroke-width="0.3"/></g>'
+      : '<g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="1.5" fill="#b9c3cf" stroke="#8d99a8" stroke-width="0.3"/>' +
+      '<rect x="' + (x + 2) + '" y="' + (y + 2) + '" width="' + (w - 4) + '" height="' + (h - 4) + '" rx="1" fill="#c9d2dc"/>' +
+      T(x + w / 2, y + h / 2 - 1, 'LiPo 503450', { anchor: 'middle', size: 2.6, fill: '#3b4654', weight: 600 }) + T(x + w / 2, y + h / 2 + 2.6, '1000 mAh', { anchor: 'middle', size: 2.2, fill: '#56616f' }) +
+      '<rect x="' + (x - 3) + '" y="' + (y + h / 2 - 3) + '" width="3" height="6" fill="#d9c27a"/></g>',
+    xiao: (x, y) => {
+      let g = '<g><rect x="' + x + '" y="' + y + '" width="21" height="17.8" rx="1.2" fill="#1d2228" stroke="#000" stroke-width="0.2"/>';
+      for (let i = 0; i < 7; i++) {
+        g += '<circle cx="' + (x + 2.6 + i * 2.54) + '" cy="' + (y + 1.2) + '" r="0.65" fill="#d8b04c"/><circle cx="' + (x + 2.6 + i * 2.54) + '" cy="' + (y + 16.6) + '" r="0.65" fill="#d8b04c"/>';
+      }
+      g += '<rect x="' + (x - 1.2) + '" y="' + (y + 5.5) + '" width="7.5" height="6.8" rx="1" fill="#aeb4bb" stroke="#80868d" stroke-width="0.2"/>' +
+        '<rect x="' + (x + 8.5) + '" y="' + (y + 4.6) + '" width="9" height="8.6" rx="0.6" fill="#c7ccd2"/>' +
+        T(x + 13, y + 9.6, 'ESP32-S3', { anchor: 'middle', size: 1.5, fill: '#2b3138', weight: 700 }) +
+        T(x + 13, y + 11.6, 'PLUS', { anchor: 'middle', size: 1.2, fill: '#2b3138' }) + '</g>';
+      return g;
+    },
+    sd: (x, y) => '<g><rect x="' + x + '" y="' + y + '" width="25.4" height="22.8" rx="1.5" fill="#1f3c63" stroke="#14294a" stroke-width="0.2"/>' +
+      '<rect x="' + (x + 6) + '" y="' + (y + 3) + '" width="15" height="14.5" rx="0.8" fill="#b7bcc2"/><rect x="' + (x + 7.5) + '" y="' + (y + 4.5) + '" width="12" height="11" rx="0.6" fill="#2a2f35"/>' +
+      Array.from({ length: 8 }, (_, i) => '<circle cx="' + (x + 2.2) + '" cy="' + (y + 2.6 + i * 2.54) + '" r="0.6" fill="#d8b04c"/>').join('') +
+      T(x + 13.5, y + 20.8, 'microSD', { anchor: 'middle', size: 1.8, fill: '#dfe7f2' }) + '</g>',
+    mic: (x, y) => '<g><rect x="' + x + '" y="' + y + '" width="10" height="10" rx="1.4" fill="#16191d" stroke="#000" stroke-width="0.2"/>' +
+      [0, 1, 2].map(i => '<circle cx="' + (x + 2) + '" cy="' + (y + 2.4 + i * 2.54) + '" r="0.6" fill="#d8b04c"/><circle cx="' + (x + 8) + '" cy="' + (y + 2.4 + i * 2.54) + '" r="0.6" fill="#d8b04c"/>').join('') +
+      '<rect x="' + (x + 3.6) + '" y="' + (y + 3.6) + '" width="2.8" height="3.6" rx="0.4" fill="#c7ccd2"/><circle cx="' + (x + 5) + '" cy="' + (y + 5.4) + '" r="0.5" fill="#16191d"/></g>',
+    tp: (x, y) => '<g><rect x="' + x + '" y="' + y + '" width="11.3" height="10.2" rx="1" fill="#2462a8" stroke="#164278" stroke-width="0.2"/>' +
+      '<rect x="' + (x + 2.4) + '" y="' + (y + 6.6) + '" width="6.5" height="3.6" rx="0.8" fill="#aeb4bb"/><rect x="' + (x + 4) + '" y="' + (y + 2) + '" width="3.2" height="2.6" fill="#1b1e22"/>' +
+      '<circle cx="' + (x + 9.4) + '" cy="' + (y + 2) + '" r="0.6" fill="#e34948"/></g>',
+    sw: (x, y) => '<g><rect x="' + x + '" y="' + y + '" width="8.6" height="3.6" rx="0.4" fill="#2b2f34"/><rect x="' + (x + 3.3) + '" y="' + (y + 3.6) + '" width="2" height="3" fill="#6b7178"/></g>',
+    btn: (x, y) => '<g><rect x="' + x + '" y="' + y + '" width="3.5" height="6" rx="0.4" fill="#cfd3d8" stroke="#9aa0a6" stroke-width="0.2"/><rect x="' + (x - 1) + '" y="' + (y + 2) + '" width="1" height="2" rx="0.3" fill="#2b2f34"/></g>',
+    led: (x, y) => '<g><circle cx="' + x + '" cy="' + y + '" r="1.5" fill="#e34948" opacity="0.9"/><circle cx="' + (x - 0.4) + '" cy="' + (y - 0.4) + '" r="0.5" fill="#fff" opacity="0.6"/></g>',
+  };
+
+  const VARIANTS = {
+    A: { name: 'Minimale', desc: 'ciottolo chiaro, laccio passante', hi: '#f8f7f3', body: '#e7e5df', low: '#d6d3cb', edge: '#c4c0b6', ink: '#5d5a53', rx: 15 },
+    B: { name: 'Medaglione', desc: 'grafite, griglia in tessuto', hi: '#3b3e44', body: '#2a2c30', low: '#1f2124', edge: '#50545b', ink: '#9aa0a8', panel: '#34373c', rx: 10 },
+    C: { name: 'Tecnico', desc: 'guscio fumé, elettronica a vista', hi: 'rgba(255,255,255,0.22)', body: 'rgba(28,32,38,0.55)', low: 'rgba(20,23,28,0.7)', edge: '#6a727d', ink: '#c9d0d8', rx: 7 },
+  };
+  let variant = 'A';
+  try { variant = localStorage.getItem('pendant-variant') || 'A'; } catch (e) { variant = 'A'; }
+  if (!VARIANTS[variant]) variant = 'A';
+  function setVariant(k) {
+    variant = k;
+    try { localStorage.setItem('pendant-variant', k); } catch (e) { /* storage unavailable: choice stays per-session */ }
+    document.querySelectorAll('#varSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.variant === k)));
+    renderProduct();
+  }
+  document.getElementById('varSeg').addEventListener('click', e => {
+    const b = e.target.closest('button[data-variant]');
+    if (b) setVariant(b.dataset.variant);
+  });
+
+  function renderProduct() {
+    document.querySelectorAll('#varSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.variant === variant)));
+    // case geometry
+    const CW = 55, CH = 39, CT = fast ? 13.5 : 13.5;
+
+    // 1. finished pendant: three design variants, then side and bottom of the chosen one
+    {
+      const W = 292, H = 90, top = 24;
+      const V = VARIANTS;
+      let g = '<defs><filter id="psh" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="1.4" stdDeviation="1.6" flood-color="#000" flood-opacity="0.30"/></filter>';
+      Object.keys(V).forEach(k => {
+        g += '<linearGradient id="pg' + k + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + V[k].hi + '"/><stop offset="0.55" stop-color="' + V[k].body + '"/><stop offset="1" stop-color="' + V[k].low + '"/></linearGradient>';
+      });
+      g += '<clipPath id="clipC"><rect x="0" y="0" width="' + CW + '" height="' + CH + '" rx="' + V.C.rx + '"/></clipPath></defs>';
+      const micX = 12.5, micY = 28, ledX = 21.5, ledY = 31.5;
+      const cord = (cx, y0) => '<path d="M' + (cx - 2.2) + ' ' + y0 + ' C' + (cx - 4) + ' ' + (y0 - 8) + ' ' + (cx - 12) + ' ' + (y0 - 12) + ' ' + (cx - 20) + ' ' + (y0 - 16) + '" fill="none" stroke="#8d9198" stroke-width="0.9" stroke-linecap="round"/>' +
+        '<path d="M' + (cx + 2.2) + ' ' + y0 + ' C' + (cx + 4) + ' ' + (y0 - 8) + ' ' + (cx + 12) + ' ' + (y0 - 12) + ' ' + (cx + 20) + ' ' + (y0 - 16) + '" fill="none" stroke="#8d9198" stroke-width="0.9" stroke-linecap="round"/>';
+      const front = (k, ox, oy) => {
+        const v = V[k], cx = ox + CW / 2;
+        let f = '<g data-variant="' + k + '" style="cursor:pointer">';
+        f += '<rect x="' + (ox - 4) + '" y="' + (oy - 18) + '" width="' + (CW + 8) + '" height="' + (CH + 30) + '" fill="transparent"/>';
+        if (k === variant) f += '<rect x="' + (ox - 3) + '" y="' + (oy - 3) + '" width="' + (CW + 6) + '" height="' + (CH + 6) + '" rx="' + (v.rx + 3) + '" fill="none" stroke="var(--s1)" stroke-width="0.5"/>';
+        if (k === 'B') {
+          // metal bail on top
+          f += cord(cx, oy - 7.4).replace(/M([\d.]+) /g, (m, a) => m);
+          f += '<circle cx="' + cx + '" cy="' + (oy - 4.6) + '" r="2.6" fill="none" stroke="#a7acb2" stroke-width="1.1"/>';
+          f += '<rect x="' + (cx - 2.4) + '" y="' + (oy - 2.2) + '" width="4.8" height="3" rx="0.8" fill="#a7acb2"/>';
+        }
+        f += '<rect x="' + ox + '" y="' + oy + '" width="' + CW + '" height="' + CH + '" rx="' + v.rx + '" fill="url(#pg' + k + ')" stroke="' + v.edge + '" stroke-width="0.4" filter="url(#psh)"/>';
+        if (k === 'A') {
+          // through-hole for the cord, mic port, pinhole LED
+          f += '<rect x="' + (cx - 4.5) + '" y="' + (oy + 2.6) + '" width="9" height="2.6" rx="1.3" fill="var(--surface)" stroke="' + v.edge + '" stroke-width="0.3"/>';
+          f += cord(cx, oy + 3.9);
+          f += '<circle cx="' + (ox + micX) + '" cy="' + (oy + micY) + '" r="2.2" fill="none" stroke="' + v.edge + '" stroke-width="0.35"/>';
+          [[0, 0], [1, 0], [-1, 0], [0.5, 0.87], [-0.5, 0.87], [0.5, -0.87], [-0.5, -0.87]].forEach(([dx, dy]) => {
+            f += '<circle cx="' + (ox + micX + dx * 1.1) + '" cy="' + (oy + micY + dy * 1.1) + '" r="0.32" fill="' + v.ink + '"/>';
+          });
+          f += '<circle cx="' + (ox + ledX) + '" cy="' + (oy + ledY) + '" r="1.6" fill="#e34948" opacity="0.18"/><circle cx="' + (ox + ledX) + '" cy="' + (oy + ledY) + '" r="0.55" fill="#e34948"/>';
+        } else if (k === 'B') {
+          // acoustic fabric panel over the lower half, light bar at the top
+          const px = ox + 4.5, py = oy + 16.5, pw = CW - 9, ph = CH - 21;
+          f += '<rect x="' + px + '" y="' + py + '" width="' + pw + '" height="' + ph + '" rx="6" fill="' + v.panel + '"/>';
+          for (let yy = py + 1.4; yy < py + ph - 0.8; yy += 1.25) for (let xx = px + 1.6 + ((yy - py) % 2.5 > 1 ? 0.6 : 0); xx < px + pw - 1; xx += 1.25) {
+            f += '<circle cx="' + xx.toFixed(2) + '" cy="' + yy.toFixed(2) + '" r="0.22" fill="' + v.ink + '" opacity="0.55"/>';
+          }
+          f += '<rect x="' + (ox + CW - 16) + '" y="' + (oy + 7.2) + '" width="8" height="1" rx="0.5" fill="#e34948"/>';
+          f += '<rect x="' + (ox + CW - 17) + '" y="' + (oy + 6.4) + '" width="10" height="2.6" rx="1.3" fill="#e34948" opacity="0.15"/>';
+        } else {
+          // smoked translucent shell showing the electronics
+          f += '<g transform="translate(' + ox + ',' + oy + ')" clip-path="url(#clipC)" opacity="0.5">' +
+            art.xiao(2.7, 2.3) + art.sd(27.7, 2.3) + art.mic(7.5, 23) + '</g>';
+          f += '<rect x="' + ox + '" y="' + oy + '" width="' + CW + '" height="' + CH + '" rx="' + v.rx + '" fill="' + v.body + '"/>';
+          [[4, 4], [CW - 4, 4], [4, CH - 4], [CW - 4, CH - 4]].forEach(([dx, dy]) => {
+            f += '<circle cx="' + (ox + dx) + '" cy="' + (oy + dy) + '" r="1" fill="none" stroke="' + v.edge + '" stroke-width="0.4"/><line x1="' + (ox + dx - 0.6) + '" y1="' + (oy + dy) + '" x2="' + (ox + dx + 0.6) + '" y2="' + (oy + dy) + '" stroke="' + v.edge + '" stroke-width="0.3"/>';
+          });
+          f += '<rect x="' + (cx - 4.5) + '" y="' + (oy + 2.4) + '" width="9" height="2.6" rx="1.3" fill="var(--surface)" stroke="' + v.edge + '" stroke-width="0.3"/>';
+          f += cord(cx, oy + 3.7);
+          f += '<circle cx="' + (ox + ledX) + '" cy="' + (oy + ledY) + '" r="1.6" fill="#e34948" opacity="0.25"/><circle cx="' + (ox + ledX) + '" cy="' + (oy + ledY) + '" r="0.6" fill="#e34948"/>';
+          f += '<rect x="' + (ox + 0.8) + '" y="' + (oy + 0.8) + '" width="' + (CW - 1.6) + '" height="' + (CH * 0.4) + '" rx="' + (v.rx - 0.8) + '" fill="' + v.hi + '" opacity="0.5"/>';
+        }
+        f += T(cx, oy + CH + 8, k + ' · ' + v.name, { anchor: 'middle', size: 3, weight: 700, fill: k === variant ? 'var(--s1)' : 'var(--ink)' });
+        f += T(cx, oy + CH + 11.8, v.desc, { anchor: 'middle', size: 2.2, fill: 'var(--muted)' });
+        return f + '</g>';
+      };
+      g += front('A', 6, top) + front('B', 75, top) + front('C', 144, top);
+      // side and bottom of the selected variant
+      const v = V[variant];
+      const sx = 214, sy = top;
+      g += '<rect x="' + sx + '" y="' + sy + '" width="' + CT + '" height="' + CH + '" rx="' + Math.min(5, v.rx / 2) + '" fill="url(#pg' + variant + ')" stroke="' + v.edge + '" stroke-width="0.4" filter="url(#psh)"/>';
+      g += '<rect x="' + (sx + CT / 2 - 1.1) + '" y="' + (sy + 15) + '" width="2.2" height="5" rx="1.1" fill="' + v.ink + '"/>';
+      g += T(sx + CT / 2, sy - 2.5, 'tasto', { anchor: 'middle', size: 2.2, fill: 'var(--muted)' });
+      g += dimH(sx, sx + CT, sy + CH + 4, fmt(CT, 1) + ' mm');
+      g += T(sx + CT / 2, sy + CH + 10, 'Fianco', { anchor: 'middle', size: 2.8, weight: 600, fill: 'var(--ink)' });
+      const bw = CW * 0.74, bx = 238, by = sy + CH / 2 - CT / 2;
+      g += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + CT + '" rx="' + Math.min(5, v.rx / 2) + '" fill="url(#pg' + variant + ')" stroke="' + v.edge + '" stroke-width="0.4" filter="url(#psh)"/>';
+      g += '<rect x="' + (bx + 4) + '" y="' + (by + CT / 2 - 1.6) + '" width="7" height="3.2" rx="1.6" fill="#15171a"/>' + T(bx + 7.5, by - 2, 'USB-C', { anchor: 'middle', size: 2.2, fill: 'var(--muted)' });
+      g += '<rect x="' + (bx + bw - 12) + '" y="' + (by + CT / 2 - 1.2) + '" width="6" height="2.4" rx="0.5" fill="#15171a"/><rect x="' + (bx + bw - 10.6) + '" y="' + (by + CT / 2 - 0.9) + '" width="1.8" height="1.8" fill="#c9ccd0"/>' +
+        T(bx + bw - 9, by - 2, 'on/off', { anchor: 'middle', size: 2.2, fill: 'var(--muted)' });
+      if (fast) g += '<rect x="' + (bx + bw / 2 - 2.5) + '" y="' + (by + CT / 2 - 1.6) + '" width="7" height="3.2" rx="1.6" fill="#15171a" stroke="var(--s1)" stroke-width="0.4"/>' + T(bx + bw / 2 + 1, by + CT + 3.6, 'carica', { anchor: 'middle', size: 2.2, fill: 'var(--s1)' });
+      g += dimH(bx, bx + bw, sy + CH + 4, CW + ' mm');
+      g += T(bx + bw / 2, sy + CH + 10, 'Sotto', { anchor: 'middle', size: 2.8, weight: 600, fill: 'var(--ink)' });
+      g += dimV(top, top + CH, 6 + CW + 2.5, CH + ' mm');
+      svgBox('pRender', W, H, g, 'Ciondolo finito: tre varianti di design, fianco e lato inferiore');
+      document.querySelectorAll('#pRender [data-variant]').forEach(el => el.addEventListener('click', () => setVariant(el.dataset.variant)));
+      document.getElementById('pRenderFoot').textContent = 'Case di circa ' + CW + ' × ' + CH + ' × ' + fmt(CT, 1) + ' mm in tutte e tre le varianti, pareti da 1,5 mm, peso stimato circa 35 g. Microfono e LED stanno dove li mette la disposizione interna; ' +
+        (fast ? 'con la ricarica veloce la porta di carica è separata da quella del XIAO, che resta per programmare.' : 'si carica e si programma dalla stessa USB-C del XIAO.');
+    }
+
+    // 2. layout top view
+    {
+      const W = 78, H = 56, ox = 10, oy = 8, wall = 1.5;
+      const ix = ox + wall, iy = oy + wall;
+      let g = '<rect x="' + ox + '" y="' + oy + '" width="' + CW + '" height="' + CH + '" rx="9" fill="none" stroke="var(--ink-2)" stroke-width="0.5"/>';
+      g += '<g opacity="0.45">' + art.battery(ix + 0.5, iy + 0.5, 50, 34, true) + '</g>';
+      g += art.xiao(ix + 1.2, iy + 0.8);
+      g += art.sd(ix + 26.2, iy + 0.8);
+      g += art.mic(ix + 6, iy + 21.5);
+      g += art.btn(ix + 0.6, iy + 22.5);
+      g += art.led(ix + 20, iy + 30);
+      if (fast) g += art.tp(ix + 27, iy + 24.6);
+      g += art.sw(ix + 41.5, iy + 31.4);
+      // labels
+      const L = (x, y, t, a) => '<text x="' + x + '" y="' + y + '" font-size="2" font-weight="600" fill="var(--ink)"' + (a ? ' text-anchor="' + a + '"' : '') +
+        ' style="paint-order:stroke;stroke:var(--surface);stroke-width:0.8px;stroke-linejoin:round">' + t + '</text>';
+      g += L(ix + 1.2, iy + 21, 'XIAO') + L(ix + 6, iy + 35.2, 'mic') + L(ix + 45.8, iy + 30.4, 'on/off', 'middle');
+      if (fast) g += L(ix + 32.6, iy + 31, 'TP4057', 'middle');
+      g += dimH(ox, ox + CW, oy + CH + 5, CW + ' mm');
+      g += dimV(oy, oy + CH, ox + CW + 3, CH + ' mm');
+      g += T(ox, oy - 2.5, 'Vista dall\'alto, batteria in trasparenza sotto', { size: 2.2, fill: 'var(--muted)' });
+      svgBox('pLayout', W, H, g, 'Disposizione interna vista dall\'alto');
+    }
+
+    // 3. side section with layer stack
+    {
+      const W = 78, H = 20, ox = 16, oy = 3;
+      const layers = [
+        { t: 1.5, k: 'parete', c: 'var(--axis)' },
+        { t: 0.5, k: 'gioco', c: 'transparent' },
+        { t: 5, k: 'elettronica, 5 mm', c: '#1d2228' },
+        { t: 0.1, k: 'Kapton', c: '#d8a24a' },
+        { t: 5, k: 'batteria 5 mm', c: '#b9c3cf' },
+        { t: 1.5, k: 'parete', c: 'var(--axis)' },
+      ];
+      let g = '', y = oy;
+      layers.forEach(l => {
+        if (l.c !== 'transparent') g += '<rect x="' + ox + '" y="' + y + '" width="' + CW + '" height="' + Math.max(l.t, 0.3) + '" rx="' + (l.k === 'parete' ? 0.6 : 0.3) + '" fill="' + l.c + '"/>';
+        if (l.k !== 'parete' && l.k !== 'gioco') g += T(ox + CW + 2, y + l.t / 2 + 0.8, l.k, { size: 2, fill: 'var(--ink-2)' });
+        y += l.t;
+      });
+      g += dimV(oy, y, ox - 3, '');
+      g += T(ox - 4.5, (oy + y) / 2 + 0.8, fmt(y - oy, 1) + ' mm', { anchor: 'end', size: 2.2, fill: 'var(--muted)' });
+      svgBox('pSide', W + 24, H, g, 'Sezione con gli strati');
+    }
+
+    // 4. components to scale with a 2 euro coin
+    {
+      const W = 190, H = 50, base = 40;
+      let g = '', x = 4;
+      const put = (w, h, draw, label, dims) => {
+        const slot = Math.max(w, 15);
+        x += (slot - w) / 2;
+        g += draw(x, base - h);
+        g += T(x + w / 2, base + 4.5, label, { anchor: 'middle', size: 2.4, fill: 'var(--ink)', weight: 600 });
+        g += T(x + w / 2, base + 7.6, dims, { anchor: 'middle', size: 2.1, fill: 'var(--muted)' });
+        x += w + (slot - w) / 2 + 5;
+      };
+      put(50, 34, (a, b) => art.battery(a, b), 'Batteria', '50 × 34 × 5');
+      put(25.4, 22.8, art.sd, 'Slot SD', '25,4 × 22,8 × 3,5');
+      put(21, 17.8, art.xiao, 'XIAO Plus', '21 × 17,8 × 5');
+      if (fast) put(11.3, 10.2, art.tp, 'TP4057', '11,3 × 10,2 × 5');
+      put(10, 10, art.mic, 'Microfono', 'circa 10 × 10');
+      put(8.6, 6.6, (a, b) => art.sw(a, b), 'Interruttore', '8,6 × 3,6');
+      put(3.5, 6, (a, b) => art.btn(a + 1, b), 'Tasto', '6 × 3,5');
+      const r = 25.75 / 2;
+      g += '<circle cx="' + (x + r) + '" cy="' + (base - r) + '" r="' + r + '" fill="#d9c27a" stroke="#b39a4e" stroke-width="0.4"/><circle cx="' + (x + r) + '" cy="' + (base - r) + '" r="' + (r - 4.5) + '" fill="#c8ccd1" stroke="#9aa0a6" stroke-width="0.3"/>' +
+        T(x + r, base - r + 1.2, '2 €', { anchor: 'middle', size: 4, fill: '#5b4a1c', weight: 700 }) +
+        T(x + r, base + 4.5, 'Moneta', { anchor: 'middle', size: 2.4, fill: 'var(--ink)', weight: 600 }) + T(x + r, base + 7.6, 'Ø 25,75', { anchor: 'middle', size: 2.1, fill: 'var(--muted)' });
+      x += 2 * r + 4;
+      g = '<line x1="0" y1="' + base + '" x2="' + x + '" y2="' + base + '" stroke="var(--grid)" stroke-width="0.3"/>' + g;
+      svgBox('pSize', Math.ceil(x), H, g, 'Componenti in scala con una moneta da 2 euro');
+    }
+
+    // 5. wiring
+    {
+      const W = 200, H = fast ? 130 : 116;
+      const col = v => 'var(' + v + ')';
+      const xL = 86, xR = 114, y0 = 22, step = 9;
+      let g = '<rect x="' + xL + '" y="' + (y0 - 7) + '" width="' + (xR - xL) + '" height="' + (step * 6 + 14) + '" rx="3" fill="#1d2228"/>' +
+        T((xL + xR) / 2, y0 + 25, 'XIAO', { anchor: 'middle', size: 3.4, fill: '#e8ecf0', weight: 700 }) + T((xL + xR) / 2, y0 + 30, 'S3 Plus', { anchor: 'middle', size: 2.6, fill: '#aab2bb' });
+      const left = ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6'];
+      const right = ['5V', 'GND', '3V3', 'D10', 'D9', 'D8', 'D7'];
+      left.forEach((p, i) => { g += '<circle cx="' + xL + '" cy="' + (y0 + i * step) + '" r="1" fill="#d8b04c"/>' + T(xL + 2.2, y0 + i * step + 0.9, p, { size: 2.3, fill: '#e8ecf0' }); });
+      right.forEach((p, i) => { g += '<circle cx="' + xR + '" cy="' + (y0 + i * step) + '" r="1" fill="#d8b04c"/>' + T(xR - 2.2, y0 + i * step + 0.9, p, { size: 2.3, fill: '#e8ecf0', anchor: 'end' }); });
+      const wire = (pts, c, w = 0.7) => '<polyline points="' + pts.map(p => p.join(',')).join(' ') + '" fill="none" stroke="' + c + '" stroke-width="' + w + '" stroke-linejoin="round" stroke-linecap="round"/>';
+      const block = (x, y, w, h, title, sub) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="2.5" fill="var(--surface-2)" stroke="var(--axis)" stroke-width="0.35"/>' +
+        T(x + 3, y + 5, title, { size: 2.8, fill: 'var(--ink)', weight: 700 }) + (sub ? T(x + 3, y + 8.6, sub, { size: 2.1, fill: 'var(--muted)' }) : '');
+      const pinLbl = (x, y, t, anchor) => T(x, y + 0.8, t, { size: 2.1, fill: 'var(--ink-2)', anchor: anchor || 'start' });
+      const net = (x, y, t) => '<rect x="' + (x - 0.2) + '" y="' + (y - 2.1) + '" width="' + (t.length * 1.45 + 2) + '" height="3.4" rx="1" fill="var(--surface)" stroke="var(--axis)" stroke-width="0.3"/>' + T(x + 0.8, y + 0.6, t, { size: 2, fill: 'var(--ink-2)', weight: 600 });
+      const yL = i => y0 + i * step, yR = i => y0 + i * step;
+
+      // button on D0
+      g += block(8, 6, 30, 12, 'Tasto', 'verso GND');
+      g += wire([[38, 12], [60, 12], [60, yL(0)], [xL, yL(0)]], col('--s4'));
+      g += net(40, 16.5, 'GND');
+      // microphone on D1..D3
+      g += block(8, 26, 30, 30, 'ICS-43434', 'microfono I2S');
+      [['SCK', 1], ['WS', 2], ['SD', 3]].forEach(([n, i], k) => {
+        const yy = 38 + k * 5;
+        g += pinLbl(36, yy, n, 'end');
+        g += wire([[38, yy], [64 + k * 3, yy], [64 + k * 3, yL(i)], [xL, yL(i)]], col('--s2'));
+      });
+      g += net(10, 54, 'L/R → GND') ;
+      g += net(40, 30, '3V3');
+      g += net(48, 30, 'GND');
+      // INA219 on D4/D5
+      g += block(8, 62, 30, 16, 'INA219', 'solo banco');
+      [['SDA', 4], ['SCL', 5]].forEach(([n, i], k) => {
+        const yy = 70 + k * 5;
+        g += pinLbl(36, yy, n, 'end');
+        g += wire([[38, yy], [56 + k * 3, yy], [56 + k * 3, yL(i)], [xL, yL(i)]], col('--s3'));
+      });
+      // SD on D8..D10
+      g += block(162, 26, 32, 28, 'Slot SD', 'SDIO 1 bit');
+      [['DI·CMD', 3], ['DO·DAT0', 4], ['CLK', 5]].forEach(([n, i], k) => {
+        const yy = 40 + k * 5;
+        g += pinLbl(164, yy, n);
+        g += wire([[162, yy], [134 + k * 4, yy], [134 + k * 4, yR(i)], [xR, yR(i)]], col('--s1'));
+      });
+      g += net(164, 58.5, '3V3');
+      g += net(173, 58.5, 'GND');
+      // LED on D7
+      g += block(162, 66, 32, 12, 'LED', '1 kΩ in serie, verso GND');
+      g += wire([[162, 72], [128, 72], [128, yR(6)], [xR, yR(6)]], col('--s5'));
+      // power path at the bottom
+      const py = 104;
+      g += block(8, 96, 26, 16, 'LiPo', '3,7 V 1000 mAh');
+      g += '<line x1="34" y1="' + (py - 1) + '" x2="' + (fast ? 46 : 60) + '" y2="' + (py - 1) + '" stroke="#d03b3b" stroke-width="0.9"/>';
+      g += '<line x1="34" y1="' + (py + 5) + '" x2="150" y2="' + (py + 5) + '" stroke="var(--ink-2)" stroke-width="0.9"/>';
+      g += T(36, py - 2.6, '+', { size: 2.6, fill: '#d03b3b', weight: 700 }) + T(36, py + 3.6, '−', { size: 2.6, fill: 'var(--ink-2)', weight: 700 });
+      let px = fast ? 46 : 60;
+      if (fast) {
+        g += block(46, 114, 26, 12, 'TP4057', 'USB-C, 500 mA');
+        g += wire([[52, py - 1], [52, 114]], '#d03b3b', 0.9) + wire([[66, py + 5], [66, 114]], 'var(--ink-2)', 0.9);
+        g += '<line x1="46" y1="' + (py - 1) + '" x2="78" y2="' + (py - 1) + '" stroke="#d03b3b" stroke-width="0.9"/>';
+        px = 78;
+      }
+      g += block(px, 92, 24, 10, 'INA219', 'in serie, banco');
+      g += '<line x1="' + (px + 24) + '" y1="' + (py - 1) + '" x2="' + (px + 34) + '" y2="' + (py - 1) + '" stroke="#d03b3b" stroke-width="0.9"/>';
+      g += block(px + 34, 92, 22, 10, 'On/off', 'SS12D00');
+      g += wire([[px + 56, py - 1], [150, py - 1], [150, 92], [126, 92], [126, 86]], '#d03b3b', 0.9);
+      g += wire([[150, py + 5], [156, py + 5], [156, 88], [130, 88], [130, 86]], 'var(--ink-2)', 0.9);
+      g += '<rect x="122" y="80" width="12" height="6" rx="1" fill="#1d2228"/>' + T(128, 84.2, 'BAT', { anchor: 'middle', size: 2, fill: '#e8ecf0', weight: 700 });
+      g += T(137, 84, 'piazzole sul retro', { size: 2, fill: 'var(--muted)' });
+      svgBox('pWiring', W, H, g, 'Schema dei collegamenti');
+    }
+
+    document.getElementById('wiringFast').textContent = fast ? 'Il TP4057 va sulla batteria prima dell\'interruttore: carica anche a ciondolo spento.' : '';
+    // pin map table
+    document.getElementById('pinmapBody').innerHTML = PIN_MAP.map(r =>
+      '<tr><td>' + (r.c ? '<span class="sw" style="background:var(' + r.c + ')"></span>' : '<span class="sw" style="box-shadow:inset 0 0 0 1.5px var(--axis)"></span>') + r.pin + '</td><td>' + r.gpio + '</td><td>' + r.use + '</td></tr>').join('');
+  }
+  document.getElementById('scaleSeg').addEventListener('click', e => {
+    const b = e.target.closest('button[data-scale]');
+    if (!b) return;
+    realScale = b.dataset.scale === 'real';
+    document.querySelectorAll('#scaleSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    document.getElementById('prodotto').classList.toggle('real-scale', realScale);
+  });
+
   function renderOption() {
     const items = bom().reduce((a, b) => a + b.p * b.q, 0);
     const total = items + shipping;
@@ -903,6 +1288,7 @@ tbody tr:hover td { background: var(--surface-2); }
     document.querySelectorAll('#fastSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.fast === '1') === fast)));
     renderBom();
     renderTimelineAndRisks();
+    renderProduct();
     document.getElementById('navDec').textContent = document.querySelectorAll('#timeline .dec').length;
     document.getElementById('navRisk').textContent = risks().length;
     renderCharts();
