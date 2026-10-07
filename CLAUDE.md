@@ -25,3 +25,7 @@ qui comandi e Makefile.
   riportato con fonte (link) e data di rilevazione.
 - La ricerca prezzi su AliExpress richiede la sessione loggata di Simone (spedizione, dazi,
   pagina "My picks"): non fidarsi dei prezzi visti da sessione anonima.
+- Le decisioni d'acquisto partono dal canale in cui si compra (listing, prezzo, spedizione
+  reali); documentazione e datasheet servono solo a verificare quello che il listing dichiara.
+- La sessione loggata si usa dal browser Playwright: login fatto da Simone, l'agent legge e
+  non modifica carrello né ordini. Gli snapshot in `.playwright-mcp/` sono ignorati da git.

@@ -9,3 +9,4 @@ __pycache__/
 *.wav
 *.opus
 recordings/
+.playwright-mcp/
