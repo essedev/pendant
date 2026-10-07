@@ -1,51 +1,76 @@
 # Distinta componenti (BOM)
 
-Stato degli acquisti per banco e ciondolo. Prezzi letti dalla sessione AliExpress loggata
-(spedizione verso Varese, IVA inclusa, dazi calcolati al checkout). "Sped." è la tariffa
-standard del singolo store: articoli dello stesso store possono condividerla, il totale vero
-lo dà il checkout.
+Ordine per banco e ciondolo, prezzi rilevati il 2026-10-07 dalla sessione AliExpress loggata
+(spedizione verso Varese, IVA inclusa, dazi calcolati al checkout). Le scelte sono motivate in
+`DECISIONS.md`. "Sped." è la tariffa standard del singolo store: il totale vero lo dà il
+checkout. Per i componenti minori il prezzo viene dai risultati di ricerca: la variante giusta
+(misura, quantità) può costare qualche decina di centesimi in più.
 
-## Ciondolo: due configurazioni a confronto
+## Da ordinare
 
-Rilevati il 2026-10-07. La scelta è aperta (vedi `ROADMAP.md`).
+### Store Seeed ufficiale (sped. 5,05 €)
 
-| Configurazione | Componenti | Totale per 1 pezzo |
-|---|---|---|
-| **Plus + moduli** | XIAO ESP32-S3 Plus 9,04 € + 5,05 € sped. ([Seeed](https://www.aliexpress.com/item/1005008329745247.html)); 2 microfoni ICS-43434 7,18 € + 4,69 € sped.; slot SD 3,40 € | circa 29,40 € più la spedizione della SD |
-| **Sense** | XIAO ESP32-S3 Sense con fotocamera OV3660, 15,60 € + 6,70 € sped. ([Seeed](https://www.aliexpress.com/item/1005006988111963.html)). Alternativa: 17,09 € + 5,06 € ([Your Cee](https://www.aliexpress.com/item/1005005386944262.html), variante "ESP32S3 Sense Module") | circa 22,30 € |
+| Componente | Q.tà | Prezzo | Link |
+|---|---|---|---|
+| Seeed XIAO ESP32-S3 Plus, variante "ESP32S3 Plus" | 2 | 9,04 €/pz | [Seeedstudio AI Hardware Store](https://www.aliexpress.com/item/1005008329745247.html) |
 
-Il XIAO standard costa 8,55 € + 5,05 € sped. ([Seeed](https://www.aliexpress.com/item/1005007341749305.html)):
-il Plus costa solo 0,49 € in più, quindi il XIAO standard non ha più motivo di essere scelto.
+### Altri store con spedizione propria
 
-## Componenti verificati
-
-| Componente | Scelta | Prezzo (2026-10-07) | Stato | Note |
+| Componente | Q.tà | Prezzo | Link | Note |
 |---|---|---|---|---|
-| Microfoni | [Modulo mini ICS-43434](https://www.aliexpress.com/item/1005012141271976.html), Yeteng Global Technology Store | 3,59 €/pz + 4,69 € sped. | nel carrello (1 pz) | Chip ICS-43434 confermato dalle foto, pin LR per la coppia stereo. Store con 21 vendite e 2 recensioni. Nel carrello c'è anche un [ICS-43434 WCMCU](https://www.aliexpress.com/item/1005008740947486.html) a 6,81 €, doppione da togliere. |
-| Slot microSD | [Clone Adafruit 4682](https://www.aliexpress.com/item/1005010386227173.html), "3V only", pin SDIO esposti | 3,40 € | da aggiungere | Spedito con la logistica AliExpress, spedizione gratuita da 10 €. Non è più nel carrello. Serve solo con la configurazione Plus. |
-| Batteria | [LiPo 503450 1000 mAh](https://www.aliexpress.com/item/1005004375261361.html), YouTu Four Battery Store | 4,69 € + 3,63 € sped. | nel carrello | Il listing dichiara PCM con protezione da sovraccarica, scarica e corto. Connettore JST PH 2,0 mm. Polarità da misurare all'arrivo. |
-| MCU banco | [ESP32-S3 Super Mini](https://www.aliexpress.com/item/1005005757810089.html), variante "ESP32 S3 Supermini" | 4,79 € | da decidere | Logistica AliExpress, spedizione gratuita da 10 €. La foto ha le piazzole B+/B- e la serigrafia BAT, ma il chip del caricatore non è verificabile. Al banco non conta: si alimenta da USB. |
-| XIAO nel carrello | [Jessinie](https://www.aliexpress.com/item/1005005556287360.html) 9,69 € + 4,44 € sped. | | da togliere | Lo store Seeed costa meno ed è ufficiale. La versione da 24,50 € citata in passato non è più nel carrello. |
-| Breadboard | 400 o 830 punti | circa 2 € | da aggiungere | La SYB-170 è troppo piccola. |
+| Modulo mini ICS-43434 I2S | 3 | 3,59 €/pz + 4,69 € sped. | [Yeteng Global Technology Store](https://www.aliexpress.com/item/1005012141271976.html) | Chip confermato dalle foto, pin LR. Store giovane: 21 vendite, 2 recensioni. |
+| LiPo 503450 1000 mAh, 5 × 34 × 50 mm | 2 | 4,69 €/pz + 3,63 € sped. | [YouTu Four Battery Store](https://www.aliexpress.com/item/1005004375261361.html) | Variante "2 pcs Battery". PCM dichiarato, JST PH 2,0. Una per il banco, una per il ciondolo. |
+| Modulo INA219 (MCU-219) | 1 | 2,18 €, spedizione gratuita | [listing](https://www.aliexpress.com/item/1005010446373233.html) | 764 vendite, 4,9. |
 
-## Mancanti
+### Logistica AliExpress, spedizione gratuita da 10 €
 
-| Componente | Note |
+Vanno nello stesso ordine per superare la soglia.
+
+| Componente | Q.tà | Prezzo | Link |
+|---|---|---|---|
+| Slot microSD clone Adafruit 4682, "3V only", SDIO | 2 | 3,40 €/pz | [listing](https://www.aliexpress.com/item/1005010386227173.html) |
+| Interruttore a slitta SS12D00, 20 pz | 1 | 1,75 € | [listing](https://www.aliexpress.com/item/1005005633418066.html) |
+| Tasti laterali 3×6×3,5 SMD (ciondolo), 50 pz | 1 | 1,75 € | [listing](https://www.aliexpress.com/item/1005005413896692.html) |
+| Tasti 6×6×5 DIP (breadboard), 100 pz | 1 | 2,37 € | [listing](https://www.aliexpress.com/item/1005003668382075.html) |
+| Filo silicone 30 AWG rosso + nero | 1 | 2,34 € | [listing](https://www.aliexpress.com/item/1005008291260907.html) |
+| Nastro Kapton | 1 | 2,05 € | [listing](https://www.aliexpress.com/item/1005007855067893.html) |
+| Breadboard 830 + 65 jumper, variante "MB102-65pcs" | 1 | 4,72 € | [listing](https://www.aliexpress.com/item/1005009184135797.html) |
+| Kit resistenze 1/4 W, 30 valori | 1 | 2,62 € | [listing](https://www.aliexpress.com/item/1005006174061842.html) |
+| Kit LED 3 e 5 mm | 1 | 2,33 € | [listing](https://www.aliexpress.com/item/1005004543292837.html) |
+| Pin header maschio 2,54 mm (per il Plus del banco) | 1 | 1,89 € | [listing](https://www.aliexpress.com/item/1005007486600604.html) |
+
+### Amazon
+
+| Componente | Q.tà | Prezzo | Link |
+|---|---|---|---|
+| microSD Netac 32 GB A1 U1 V10 | 2 | 10,03 €/pz | [Netac Official Store](https://www.amazon.it/dp/B0833XXLJR) |
+
+### Totale stimato
+
+| Gruppo | Totale |
 |---|---|
-| Kit tasti tattili assortiti | "tactile switch assortment kit", 1-2 €. 6×6 per il banco, 3×6 o 4×4 per il case. Pull-up interno, niente resistenze. |
-| Kit resistenze | |
-| LED | |
-| Interruttore a slitta | Spegnimento fisico della batteria. |
-| Modulo INA219 | Solo banco, misura consumi. |
-| Filo sottile | Per i collegamenti nel ciondolo. |
-| Nastro Kapton | Isolamento batteria e saldature. |
-| Retina acustica | Davanti ai fori dei microfoni. |
-| microSD High Endurance | Da Amazon, non AliExpress (falsi frequenti). Con il Sense, Seeed dichiara un massimo di 32 GB FAT32. |
+| Seeed (2 Plus + sped.) | 23,13 € |
+| Microfoni (3 + sped.) | 15,46 € |
+| Batterie (2 + sped.) | circa 13,00 € |
+| INA219 | 2,18 € |
+| Logistica AliExpress | 28,62 € |
+| Amazon | 20,06 € |
+| **Totale** | **circa 102 € più dazi** |
 
-## Scartati o condizionati
+## Nel carrello AliExpress, da togliere
 
-| Componente | Perché |
+| Articolo | Perché |
 |---|---|
-| XIAO ESP32-S3 standard | Il Plus costa 0,49 € in più e toglie il vincolo sui pin. |
-| TP4056 | Solo se la ricarica del XIAO misurata risulta sotto i 100 mA. |
-| Basetta con tasti 6×6 | Troppo ingombrante per il ciondolo e inutile sulla breadboard. |
+| [XIAO ESP32-S3 Jessinie](https://www.aliexpress.com/item/1005005556287360.html), 9,69 € + 4,44 € | Sostituito dal Plus Seeed. |
+| [ICS-43434 WCMCU](https://www.aliexpress.com/item/1005008740947486.html), 6,81 € | Doppione del modulo Yeteng, costa il doppio. |
+
+## Rimandati
+
+| Componente | Quando |
+|---|---|
+| Retina acustica | M4, con il case: dipende dai fori. |
+| TP4056 | Solo se la ricarica misurata del Plus è sotto i 100 mA dichiarati. |
+
+## Attrezzatura data per presente
+
+Saldatore a punta fine, stagno, multimetro (polarità JST, verifica dei consumi).
