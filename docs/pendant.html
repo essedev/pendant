@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pendant - stato del progetto</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b0b'/%3E%3Crect x='12' y='6' width='8' height='14' rx='4' fill='white'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f3f2ee;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+  --s1-wash: rgba(42,120,214,0.10);
+  --dim: #d6d5cf;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --good-ink: #006300;
+  --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 4px 16px rgba(11,11,11,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #222220;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+    --s1-wash: rgba(57,135,229,0.16); --dim: #3a3a37; --good-ink: #0ca30c;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #222220;
+  --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+  --s1-wash: rgba(57,135,229,0.16); --dim: #3a3a37; --good-ink: #0ca30c;
+  --shadow: none;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--s1); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* layout */
+.app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+.sidebar {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  background: var(--surface); border-right: 1px solid var(--ring);
+  display: flex; flex-direction: column; padding: 20px 14px;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 20px; }
+.brand-mark {
+  width: 32px; height: 32px; border-radius: 10px; background: var(--ink); color: var(--surface);
+  display: grid; place-items: center;
+}
+.brand-name { font-weight: 650; font-size: 15px; letter-spacing: -0.01em; }
+.brand-sub { font-size: 12px; color: var(--muted); }
+.nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 14px 10px 6px; }
+.nav a {
+  display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px;
+  color: var(--ink-2); font-weight: 500;
+}
+.nav a:hover { background: var(--surface-2); text-decoration: none; color: var(--ink); }
+.nav a.active { background: var(--s1-wash); color: var(--ink); }
+.nav a.active svg { color: var(--s1); }
+.nav svg { width: 16px; height: 16px; flex: none; color: var(--muted); }
+.nav .count { margin-left: auto; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.side-foot { margin-top: auto; padding-top: 16px; display: grid; gap: 10px; }
+.milestone-mini { background: var(--surface-2); border-radius: 10px; padding: 12px; }
+.milestone-mini .t { font-size: 12px; color: var(--muted); }
+.milestone-mini .v { font-weight: 600; margin: 2px 0 8px; }
+.track { height: 6px; background: var(--grid); border-radius: 3px; overflow: hidden; }
+.track > i { display: block; height: 100%; background: var(--s1); border-radius: 3px; }
+.theme-toggle {
+  display: flex; background: var(--surface-2); border-radius: 8px; padding: 3px; gap: 2px;
+}
+.theme-toggle button {
+  flex: 1; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 12px;
+  padding: 5px 0; border-radius: 6px; cursor: pointer;
+}
+.theme-toggle button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+
+main { padding: 28px 36px 80px; max-width: 1240px; width: 100%; }
+.topbar { display: none; }
+section { padding-top: 12px; margin-bottom: 44px; }
+.eyebrow { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+h1 { font-size: 26px; letter-spacing: -0.02em; margin: 4px 0 6px; font-weight: 680; }
+h2 { font-size: 18px; letter-spacing: -0.01em; margin: 0 0 4px; font-weight: 650; }
+h3 { font-size: 14px; margin: 0; font-weight: 600; }
+.lead { color: var(--ink-2); margin: 0 0 20px; max-width: 720px; }
+.sec-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.sec-head p { color: var(--ink-2); margin: 0; max-width: 680px; }
+
+.grid { display: grid; gap: 16px; }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.span2 { grid-column: span 2; }
+
+.card {
+  background: var(--surface); border-radius: 14px; box-shadow: 0 0 0 1px var(--ring), var(--shadow);
+  padding: 18px 18px 16px; min-width: 0;
+}
+.card-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.card-head p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.card-foot { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+/* stat tiles */
+.stat .label { font-size: 12.5px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.stat .label svg { width: 15px; height: 15px; color: var(--muted); }
+.stat .value { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; margin: 6px 0 2px; }
+.stat .value small { font-size: 15px; font-weight: 500; color: var(--ink-2); margin-left: 3px; }
+.stat .note { font-size: 12px; color: var(--muted); }
+.stat .delta { font-size: 12px; color: var(--good-ink); font-weight: 600; }
+
+/* chips, badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap;
+}
+.badge.blue { background: var(--s1-wash); color: var(--s1); }
+.badge svg { width: 12px; height: 12px; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.status i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.st-good i { background: var(--good); } .st-warning i { background: var(--warning); }
+.st-serious i { background: var(--serious); } .st-critical i { background: var(--critical); }
+.st-todo i { background: var(--axis); }
+
+.seg { display: inline-flex; background: var(--surface-2); border-radius: 8px; padding: 3px; gap: 2px; flex: none; }
+.seg button {
+  border: 0; background: transparent; font: inherit; font-size: 12px; color: var(--ink-2);
+  padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chip {
+  border: 1px solid var(--ring); background: var(--surface); color: var(--ink-2); font: inherit; font-size: 12.5px;
+  padding: 5px 12px; border-radius: 999px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+/* hero decision */
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
+.decision { display: flex; gap: 18px; align-items: center; }
+.board-svg { flex: none; width: 128px; height: 128px; }
+.decision h2 { font-size: 20px; }
+.decision ul { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.decision li { display: flex; gap: 8px; color: var(--ink-2); }
+.decision li svg { width: 16px; height: 16px; flex: none; margin-top: 2px; color: var(--good); }
+
+/* charts */
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: inherit; }
+.tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.lbl { fill: var(--ink-2); font-size: 12px; }
+.lbl-strong { fill: var(--ink); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.refline { stroke: var(--ink-2); stroke-width: 1.5; }
+.hit { fill: transparent; cursor: default; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--ink-2); margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.legend i.line { height: 2px; border-radius: 1px; width: 14px; }
+.tip {
+  position: fixed; pointer-events: none; z-index: 50; background: var(--surface); color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ring), 0 8px 24px rgba(0,0,0,0.12); border-radius: 10px;
+  padding: 8px 10px; font-size: 12px; min-width: 120px; opacity: 0; transform: translateY(4px);
+  transition: opacity .12s, transform .12s;
+}
+.tip.on { opacity: 1; transform: none; }
+.tip .tt { color: var(--muted); margin-bottom: 4px; }
+.tip .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .row span { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tip .row b { font-variant-numeric: tabular-nums; }
+.tip i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody tr:hover td { background: var(--surface-2); }
+.tfoot td { font-weight: 650; border-top: 1px solid var(--axis); }
+.dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 6px; vertical-align: 1px; }
+.data-table { display: none; }
+.show-table .data-table { display: block; }
+.show-table .chart, .show-table .legend { display: none; }
+
+.cmp td:first-child { color: var(--ink-2); white-space: nowrap; }
+.cmp th.pick, .cmp td.pick { background: var(--s1-wash); }
+.yes { color: var(--good-ink); font-weight: 600; }
+.no { color: var(--critical); font-weight: 600; }
+.ico { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
+
+/* pin bar */
+.pinbar { display: flex; gap: 2px; height: 40px; margin: 6px 0 4px; }
+.pinbar div { border-radius: 4px; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #fff; min-width: 0; cursor: default; }
+.pinbar .free { background: transparent; box-shadow: inset 0 0 0 1.5px var(--axis); color: var(--muted); }
+.pin-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pin-list { display: grid; gap: 8px; margin-top: 14px; }
+.pin-row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 13px; }
+.pin-row i { width: 10px; height: 10px; border-radius: 3px; }
+.pin-row .pins { color: var(--muted); font-size: 12px; }
+.pin-row b { font-variant-numeric: tabular-nums; }
+
+/* decisions timeline */
+.timeline { position: relative; display: grid; gap: 12px; }
+.dec { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; }
+.dec .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; color: var(--ink-2); }
+.dec .ic svg { width: 18px; height: 18px; }
+.dec .ic.on { background: var(--s1-wash); color: var(--s1); }
+.dec h3 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dec p { margin: 4px 0 0; color: var(--ink-2); }
+.dec .alts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.dec .alts span { font-size: 12px; color: var(--muted); background: var(--surface-2); border-radius: 6px; padding: 2px 8px; }
+.dec .alts span s { color: var(--ink-2); }
+.superseded { opacity: 0.6; }
+
+/* risks */
+.risk { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--grid); }
+.risk:last-child { border-bottom: 0; }
+.risk p { margin: 2px 0 0; color: var(--ink-2); }
+.risk .sev { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; }
+.risk .sev svg { width: 16px; height: 16px; }
+.sev.serious { background: color-mix(in srgb, var(--serious) 18%, transparent); color: var(--serious); }
+.sev.warning { background: color-mix(in srgb, var(--warning) 20%, transparent); color: #b07a00; }
+.sev.critical { background: color-mix(in srgb, var(--critical) 15%, transparent); color: var(--critical); }
+:root[data-theme="dark"] .sev.warning { color: var(--warning); }
+
+/* roadmap */
+.steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; position: relative; }
+.step { position: relative; padding: 0 12px 0 0; }
+.step .node { display: flex; align-items: center; gap: 0; margin-bottom: 12px; }
+.step .circle {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: var(--surface); box-shadow: inset 0 0 0 2px var(--axis); font-size: 12px; font-weight: 650; color: var(--muted);
+}
+.step.now .circle { box-shadow: inset 0 0 0 2px var(--s1); color: var(--s1); background: var(--s1-wash); }
+.step .bar { flex: 1; height: 2px; background: var(--grid); margin-left: 8px; }
+.step:last-child .bar { display: none; }
+.step h3 { margin-bottom: 4px; }
+.step p { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+.step .badge { margin-top: 8px; }
+
+/* cart */
+.cart-actions { display: grid; gap: 8px; }
+.cart-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; background: var(--surface-2); font-size: 13px; }
+.cart-row .tag { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; flex: none; }
+.tag.add { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good-ink); }
+.tag.del { background: color-mix(in srgb, var(--critical) 14%, transparent); color: var(--critical); }
+.cart-row .what { min-width: 0; flex: 1; }
+.cart-row .what small { color: var(--muted); display: block; }
+.cart-row b { font-variant-numeric: tabular-nums; }
+
+.src { font-size: 12px; color: var(--muted); margin-top: 28px; }
+.src a { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--axis); }
+
+@media (max-width: 1100px) {
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 40; transform: translateX(-102%);
+    transition: transform .2s; box-shadow: 0 0 40px rgba(0,0,0,0.2);
+  }
+  .sidebar.open { transform: none; }
+  .topbar {
+    display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 30;
+    background: var(--surface); border-bottom: 1px solid var(--ring); padding: 10px 16px;
+  }
+  .topbar button { border: 0; background: var(--surface-2); color: var(--ink); border-radius: 8px; width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer; }
+  main { padding: 20px 16px 60px; }
+  .g3, .g2 { grid-template-columns: minmax(0, 1fr); }
+  .span2 { grid-column: auto; }
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .step .bar { display: none; }
+  .decision { flex-direction: column; align-items: start; }
+  .sec-head { flex-direction: column; align-items: start; }
+}
+@media (max-width: 520px) { .g4 { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/></symbol>
+    <symbol id="i-pins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="2"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5v.01"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-battery" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 10v4M10 10v4"/></symbol>
+    <symbol id="i-euro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6.5A7 7 0 1 0 18 17.5M4 10h9M4 14h9"/></symbol>
+    <symbol id="i-sd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M10 7v3M13 7v3"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="18" height="18"><use href="#i-mic"/></svg></div>
+      <div><div class="brand-name">pendant</div><div class="brand-sub">registratore ESP32-S3</div></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Progetto</div>
+      <a href="#panoramica"><svg><use href="#i-home"/></svg>Panoramica</a>
+      <a href="#scheda"><svg><use href="#i-chip"/></svg>Scheda</a>
+      <a href="#energia"><svg><use href="#i-bolt"/></svg>Energia</a>
+      <a href="#pin"><svg><use href="#i-pins"/></svg>Pin</a>
+      <a href="#dati"><svg><use href="#i-db"/></svg>Dati e SD</a>
+      <div class="nav-label">Acquisti</div>
+      <a href="#ordine"><svg><use href="#i-cart"/></svg>Ordine<span class="count">~102 €</span></a>
+      <div class="nav-label">Governo</div>
+      <a href="#decisioni"><svg><use href="#i-flag"/></svg>Decisioni<span class="count">8</span></a>
+      <a href="#rischi"><svg><use href="#i-alert"/></svg>Rischi<span class="count">4</span></a>
+      <a href="#roadmap"><svg><use href="#i-map"/></svg>Roadmap</a>
+    </nav>
+    <div class="side-foot">
+      <div class="milestone-mini">
+        <div class="t">Milestone corrente</div>
+        <div class="v">M0 Acquisti</div>
+        <div class="track" aria-label="BOM chiusa, ordine da fare"><i style="width:60%"></i></div>
+        <div class="t" style="margin-top:6px">BOM chiusa, ordine da fare</div>
+      </div>
+      <div class="theme-toggle" role="group" aria-label="Tema">
+        <button data-theme-set="auto">Auto</button>
+        <button data-theme-set="light">Chiaro</button>
+        <button data-theme-set="dark">Scuro</button>
+      </div>
+    </div>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <button id="menuBtn" aria-label="Apri menu"><svg width="18" height="18"><use href="#i-menu"/></svg></button>
+      <b>pendant</b>
+    </div>
+    <main>
+
+      <!-- Panoramica -->
+      <section id="panoramica">
+        <div class="eyebrow">Stato al 7 ottobre 2026</div>
+        <h1>Ciondolo registratore: BOM chiusa</h1>
+        <p class="lead">Clone DIY di Omi, offline-first: registra su microSD tutto il giorno e a casa scarica i file via WiFi verso la pipeline di trascrizione. Hardware scelto, ordine pronto, nessun codice ancora.</p>
+
+        <div class="hero">
+          <div class="card decision">
+            <svg class="board-svg" viewBox="0 0 128 128" aria-hidden="true">
+              <rect x="20" y="10" width="88" height="108" rx="10" fill="var(--surface-2)" stroke="var(--axis)"/>
+              <rect x="48" y="2" width="32" height="16" rx="4" fill="var(--axis)"/>
+              <rect x="38" y="44" width="52" height="40" rx="4" fill="var(--ink)"/>
+              <text x="64" y="68" text-anchor="middle" fill="var(--surface)" font-size="10" font-weight="700">S3</text>
+              <g fill="var(--s4)">
+                <circle cx="28" cy="30" r="3.5"/><circle cx="28" cy="44" r="3.5"/><circle cx="28" cy="58" r="3.5"/><circle cx="28" cy="72" r="3.5"/><circle cx="28" cy="86" r="3.5"/><circle cx="28" cy="100" r="3.5"/><circle cx="28" cy="112" r="3.5"/>
+                <circle cx="100" cy="30" r="3.5"/><circle cx="100" cy="44" r="3.5"/><circle cx="100" cy="58" r="3.5"/><circle cx="100" cy="72" r="3.5"/><circle cx="100" cy="86" r="3.5"/><circle cx="100" cy="100" r="3.5"/><circle cx="100" cy="112" r="3.5"/>
+              </g>
+              <rect x="44" y="94" width="40" height="14" rx="3" fill="var(--s1)"/>
+              <text x="64" y="104" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">PLUS</text>
+            </svg>
+            <div>
+              <span class="badge blue"><svg><use href="#i-check"/></svg>Decisione presa</span>
+              <h2 style="margin-top:8px">Seeed XIAO ESP32-S3 Plus, al banco e nel ciondolo</h2>
+              <ul>
+                <li><svg><use href="#i-check"/></svg>Ricarica a 100 mA: una giornata si ricarica in circa 8 ore, in una notte.</li>
+                <li><svg><use href="#i-check"/></svg>8 MB di PSRAM: oltre 4 minuti di audio in buffer contro i picchi di latenza della SD.</li>
+                <li><svg><use href="#i-check"/></svg>Stessa scheda sui due prototipi: firmware e misure del banco valgono anche per il ciondolo.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>Catena del dato</h3><p>Il dispositivo registra e trasferisce file, non trascrive.</p></div></div>
+            <svg viewBox="0 0 360 150" style="width:100%;height:auto" role="img" aria-label="Microfono, ESP32-S3, PSRAM, microSD, WiFi, pipeline">
+              <g font-size="11" text-anchor="middle">
+                <g><rect x="2" y="20" width="76" height="44" rx="10" fill="var(--surface-2)"/><text x="40" y="39" fill="var(--ink)" font-weight="600">ICS-43434</text><text x="40" y="54" fill="var(--muted)">I2S, mono</text></g>
+                <g><rect x="142" y="20" width="76" height="44" rx="10" fill="var(--s1-wash)"/><text x="180" y="39" fill="var(--ink)" font-weight="600">ESP32-S3</text><text x="180" y="54" fill="var(--muted)">PSRAM 8 MB</text></g>
+                <g><rect x="282" y="20" width="76" height="44" rx="10" fill="var(--surface-2)"/><text x="320" y="39" fill="var(--ink)" font-weight="600">microSD</text><text x="320" y="54" fill="var(--muted)">SDIO 1 bit</text></g>
+                <g><rect x="282" y="96" width="76" height="44" rx="10" fill="var(--surface-2)"/><text x="320" y="115" fill="var(--ink)" font-weight="600">WiFi a casa</text><text x="320" y="130" fill="var(--muted)">upload file</text></g>
+                <g><rect x="142" y="96" width="76" height="44" rx="10" fill="var(--surface-2)"/><text x="180" y="115" fill="var(--ink)" font-weight="600">Pipeline</text><text x="180" y="130" fill="var(--muted)">trascrizione</text></g>
+                <g><rect x="2" y="96" width="76" height="44" rx="10" fill="var(--surface-2)"/><text x="40" y="115" fill="var(--ink)" font-weight="600">Archivio</text><text x="40" y="130" fill="var(--muted)">Nexus?</text></g>
+              </g>
+              <g stroke="var(--axis)" stroke-width="1.5" fill="none" marker-end="url(#arr)">
+                <path d="M80 42h58"/><path d="M220 42h58"/><path d="M320 66v26"/><path d="M280 118h-58"/><path d="M140 118H82"/>
+              </g>
+              <defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0l8 4-8 4z" fill="var(--axis)"/></marker></defs>
+              <text x="110" y="35" text-anchor="middle" font-size="10" fill="var(--muted)">32 KB/s</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="grid g4">
+          <div class="card stat">
+            <div class="label"><svg><use href="#i-euro"/></svg>Costo dell'ordine</div>
+            <div class="value">102<small>€</small></div>
+            <div class="note">banco e ciondolo, dazi esclusi</div>
+          </div>
+          <div class="card stat">
+            <div class="label"><svg><use href="#i-bolt"/></svg>Ricarica di una giornata</div>
+            <div class="value">8<small>ore</small></div>
+            <div class="note"><span class="delta">metà</span> del XIAO standard e del Sense</div>
+          </div>
+          <div class="card stat">
+            <div class="label"><svg><use href="#i-battery"/></svg>Consumo in registrazione</div>
+            <div class="value">45-55<small>mA</small></div>
+            <div class="note">stima, da misurare con l'INA219</div>
+          </div>
+          <div class="card stat">
+            <div class="label"><svg><use href="#i-sd"/></svg>Dati al giorno</div>
+            <div class="value">1,8<small>GB</small></div>
+            <div class="note">PCM mono 16 kHz, 16 ore</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scheda -->
+      <section id="scheda">
+        <div class="sec-head">
+          <div><h2>Scheda: perché il Plus</h2><p>Il criterio decisivo è il ciclo giornaliero: circa 800 mAh consumati in 16 ore da ricaricare in una notte. Dati dal wiki Seeed, misurati a 3,8 V.</p></div>
+        </div>
+        <div class="grid g2" style="margin-bottom:16px">
+          <div class="card" data-chart-card>
+            <div class="card-head">
+              <div><h3>Ore per ricaricare una giornata</h3><p>800 mAh alla corrente di carica dichiarata</p></div>
+              <div class="seg" role="group"><button aria-pressed="true" data-view="chart">Grafico</button><button aria-pressed="false" data-view="table">Tabella</button></div>
+            </div>
+            <div class="chart" id="chCharge"></div>
+            <div class="data-table"></div>
+            <div class="card-foot">La linea marca 8 ore, una notte.</div>
+          </div>
+          <div class="card" data-chart-card>
+            <div class="card-head">
+              <div><h3>Corrente in modem-sleep</h3><p>CPU attiva, radio spenta: la base della registrazione</p></div>
+              <div class="seg" role="group"><button aria-pressed="true" data-view="chart">Grafico</button><button aria-pressed="false" data-view="table">Tabella</button></div>
+            </div>
+            <div class="chart" id="chSleep"></div>
+            <div class="data-table"></div>
+            <div class="card-foot">Il Plus consuma 4,6 mA più del XIAO standard, ma carica al doppio della velocità.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h3>Confronto delle candidate</h3><p>Prezzi AliExpress dello store Seeed, spedizione esclusa</p></div></div>
+          <div class="tbl-wrap">
+            <table class="cmp">
+              <thead><tr><th></th><th class="pick">XIAO S3 Plus</th><th>XIAO S3</th><th>XIAO S3 Sense</th><th>XIAO C6</th><th>nRF52840</th></tr></thead>
+              <tbody>
+                <tr><td>Prezzo</td><td class="pick">9,04 €</td><td>8,55 €</td><td>15,60 €</td><td>circa 5 €</td><td>n.d.</td></tr>
+                <tr><td>Ricarica</td><td class="pick yes"><svg class="ico"><use href="#i-check"/></svg>100 mA</td><td class="no"><svg class="ico"><use href="#i-x"/></svg>50 mA</td><td class="no"><svg class="ico"><use href="#i-x"/></svg>50 mA</td><td>non dichiarata</td><td>n.d.</td></tr>
+                <tr><td>Modem-sleep</td><td class="pick">31,6 mA</td><td>27 mA</td><td>44 mA</td><td>30 mA</td><td>n.d.</td></tr>
+                <tr><td>PSRAM</td><td class="pick yes">8 MB</td><td>8 MB</td><td>8 MB</td><td class="no">nessuna</td><td class="no">nessuna</td></tr>
+                <tr><td>WiFi</td><td class="pick yes">sì</td><td>sì</td><td>sì</td><td>sì</td><td class="no"><svg class="ico"><use href="#i-x"/></svg>solo BLE</td></tr>
+                <tr><td>GPIO</td><td class="pick">11 sui lati + piazzole</td><td>11</td><td>11 (SD ne usa 3)</td><td>11</td><td>n.d.</td></tr>
+                <tr><td>Esito</td><td class="pick"><span class="status st-good"><i></i>Scelta</span></td><td><span class="status st-critical"><i></i>Ricarica lenta</span></td><td><span class="status st-critical"><i></i>16 h non stanno</span></td><td><span class="status st-serious"><i></i>Nessun vantaggio</span></td><td><span class="status st-critical"><i></i>Niente WiFi</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Energia -->
+      <section id="energia">
+        <div class="sec-head">
+          <div><h2>Energia: la giornata sta nella batteria?</h2><p>Scarica lineare di una LiPo da 1000 mAh nominali. 45 e 55 mA sono la stima per il Plus, 64,5 mA è la misura di Seeed sul Sense con microfono e SD.</p></div>
+        </div>
+        <div class="card" data-chart-card>
+          <div class="card-head">
+            <div><h3>Capacità residua nel corso della giornata</h3><p>mAh rimasti, passa il cursore per leggere i valori</p></div>
+            <div class="seg" role="group"><button aria-pressed="true" data-view="chart">Grafico</button><button aria-pressed="false" data-view="table">Tabella</button></div>
+          </div>
+          <div class="chart" id="chBattery"></div>
+          <div class="legend" id="lgBattery"></div>
+          <div class="data-table"></div>
+          <div class="card-foot">Con il Sense la batteria si esaurisce a 15,5 ore, prima della fine della giornata. Se al banco il Plus supera i 60 mA, le leve sono la CPU a 80 MHz, scritture più rare e una batteria più grande.</div>
+        </div>
+      </section>
+
+      <!-- Pin -->
+      <section id="pin">
+        <div class="sec-head">
+          <div><h2>Budget dei pin</h2><p>11 GPIO sui lati del Plus. Con la SD in SDIO a 1 bit ne restano liberi uno; servono 3 pin in più solo per il 4 bit, disponibili sulle piazzole sotto la scheda.</p></div>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div><h3>Occupazione al banco</h3><p>10 di 11 pin, INA219 compreso</p></div></div>
+            <div class="pinbar" id="pinbar"></div>
+            <div class="pin-scale"><span>0</span><span>11 pin</span></div>
+            <div class="pin-list" id="pinlist"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>SD a 1 bit o a 4 bit</h3><p>La banda non giustifica il 4 bit</p></div></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Funzione</th><th class="num">1 bit</th><th class="num">4 bit</th></tr></thead>
+                <tbody>
+                  <tr><td>microSD SDIO</td><td class="num">3</td><td class="num">6</td></tr>
+                  <tr><td>Microfono I2S</td><td class="num">3</td><td class="num">3</td></tr>
+                  <tr><td>Tasto</td><td class="num">1</td><td class="num">1</td></tr>
+                  <tr><td>LED</td><td class="num">1</td><td class="num">1</td></tr>
+                  <tr><td>INA219, solo banco</td><td class="num">2</td><td class="num">2</td></tr>
+                  <tr class="tfoot"><td>Totale</td><td class="num">10</td><td class="num">13</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-foot">Un canale a 16 kHz e 16 bit fa 32 KB/s; l'SDIO a 1 bit regge qualche MB/s. I picchi di latenza della SD li assorbe la PSRAM.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dati -->
+      <section id="dati">
+        <div class="sec-head">
+          <div><h2>Dati e microSD</h2><p>Quanto occupa una giornata di 16 ore e quanti giorni stanno su una scheda da 32 GB. Il formato su SD è ancora una domanda aperta.</p></div>
+        </div>
+        <div class="grid g3">
+          <div class="card span2" data-chart-card>
+            <div class="card-head">
+              <div><h3>MB per giornata, per formato</h3><p>16 ore di registrazione</p></div>
+              <div class="seg" role="group"><button aria-pressed="true" data-view="chart">Grafico</button><button aria-pressed="false" data-view="table">Tabella</button></div>
+            </div>
+            <div class="chart" id="chFormat"></div>
+            <div class="data-table"></div>
+            <div class="card-foot">ADPCM a 4 bit, Opus a 16 kbps. La compressione sposta lavoro sulla CPU: va misurata anche sul consumo.</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>Giorni su 32 GB</h3><p>Prima di dover scaricare</p></div></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Formato</th><th class="num">Giorni</th></tr></thead>
+                <tbody id="daysBody"></tbody>
+              </table>
+            </div>
+            <div class="card-foot">Con 1,8 GB al giorno una 32 GB fa circa 21 cicli di scrittura all'anno: basta una scheda di marca, non serve una High Endurance.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ordine -->
+      <section id="ordine">
+        <div class="sec-head">
+          <div><h2>Ordine</h2><p>Prezzi rilevati il 7 ottobre 2026 dalla sessione AliExpress loggata, spedizione verso Varese, IVA inclusa. Il totale esatto lo dà il checkout.</p></div>
+        </div>
+        <div class="grid g3" style="margin-bottom:16px">
+          <div class="card span2" data-chart-card>
+            <div class="card-head">
+              <div><h3>Spesa per spedizione</h3><p>Euro, spedizione inclusa</p></div>
+              <div class="seg" role="group"><button aria-pressed="true" data-view="chart">Grafico</button><button aria-pressed="false" data-view="table">Tabella</button></div>
+            </div>
+            <div class="chart" id="chCost"></div>
+            <div class="data-table"></div>
+            <div class="card-foot">La logistica AliExpress raggruppa 10 articoli minori in un'unica spedizione gratuita sopra i 10 €.</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>Carrello da allineare</h3><p>Nessuna modifica fatta finora</p></div></div>
+            <div class="cart-actions">
+              <div class="cart-row"><span class="tag del">TOGLI</span><div class="what">XIAO ESP32-S3 Jessinie<small>sostituito dal Plus Seeed</small></div><b>9,69 €</b></div>
+              <div class="cart-row"><span class="tag del">TOGLI</span><div class="what">ICS-43434 WCMCU<small>doppione, costa il doppio</small></div><b>6,81 €</b></div>
+              <div class="cart-row"><span class="tag add">TIENI</span><div class="what">ICS-43434 Yeteng<small>portare a 3 pezzi</small></div><b>3,59 €</b></div>
+              <div class="cart-row"><span class="tag add">TIENI</span><div class="what">LiPo 503450<small>portare a 2 pezzi</small></div><b>4,69 €</b></div>
+              <div class="cart-row"><span class="tag add">AGGIUNGI</span><div class="what">Tutto il resto della BOM<small>13 righe, sotto</small></div><b>~76 €</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="filters" id="bomFilters" role="group" aria-label="Filtra per spedizione"></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Componente</th><th>Spedizione</th><th class="num">Q.tà</th><th class="num">Prezzo</th><th class="num">Subtotale</th><th>Uso</th></tr></thead>
+              <tbody id="bomBody"></tbody>
+              <tfoot><tr class="tfoot"><td colspan="4">Totale articoli visibili, spedizioni escluse</td><td class="num" id="bomTotal"></td><td></td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Decisioni -->
+      <section id="decisioni">
+        <div class="sec-head"><div><h2>Decisioni</h2><p>Dal registro in <code>docs/DECISIONS.md</code>, tutte del 7 ottobre 2026.</p></div></div>
+        <div class="card"><div class="timeline" id="timeline"></div></div>
+      </section>
+
+      <!-- Rischi -->
+      <section id="rischi">
+        <div class="sec-head"><div><h2>Rischi aperti</h2><p>Ordinati per conseguenza.</p></div></div>
+        <div class="card" id="risks"></div>
+      </section>
+
+      <!-- Roadmap -->
+      <section id="roadmap">
+        <div class="sec-head"><div><h2>Roadmap</h2><p>Milestone correnti e domande ancora aperte.</p></div></div>
+        <div class="card" style="margin-bottom:16px"><div class="steps" id="steps"></div></div>
+        <div class="card">
+          <div class="card-head"><div><h3>Domande aperte</h3></div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Tema</th><th>Opzioni</th><th>Quando serve</th></tr></thead>
+              <tbody>
+                <tr><td>Framework firmware</td><td>ESP-IDF o Arduino con PlatformIO</td><td>Prima di M1</td></tr>
+                <tr><td>Formato audio su SD</td><td>PCM, ADPCM o Opus</td><td>M2, dopo le misure di consumo</td></tr>
+                <tr><td>Trascrizione e destinazione</td><td>Whisper locale o API; Nexus o archivio dedicato</td><td>M3, si può iniziare subito su WAV del telefono</td></tr>
+                <tr><td>Cifratura su SD</td><td>Da valutare: un ciondolo perso espone le registrazioni</td><td>M2</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="src">Fonti: <a href="https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/">wiki Seeed XIAO ESP32-S3</a> (consumi, ricarica, dimensioni), <a href="https://wiki.seeedstudio.com/xiao_esp32c6_getting_started/">wiki Seeed XIAO ESP32-C6</a>, <a href="https://wiki.seeedstudio.com/xiao_esp32s3_sense_mic/">wiki Seeed microfono Sense</a>, <a href="https://invensense.tdk.com/products/ics-43434">TDK ICS-43434</a>. Dettaglio e link dei listing in <code>docs/BOM.md</code>.</p>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fmt = (v, d = 0) => v.toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const el = (tag, attrs = {}, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+
+  // tooltip
+  const tip = document.getElementById('tip');
+  function showTip(evt, title, rows) {
+    tip.innerHTML = '<div class="tt">' + title + '</div>' + rows.map(r =>
+      '<div class="row"><span>' + (r.color ? '<i style="background:' + r.color + '"></i>' : '') + r.k + '</span><b>' + r.v + '</b></div>').join('');
+    const x = evt.clientX + 14, y = evt.clientY + 14;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.min(x, innerWidth - w - 8) + 'px';
+    tip.style.top = Math.min(y, innerHeight - h - 8) + 'px';
+    tip.classList.add('on');
+  }
+  const hideTip = () => tip.classList.remove('on');
+
+  function tableHTML(head, rows) {
+    return '<div class="tbl-wrap"><table><thead><tr>' + head.map((h, i) => '<th' + (i ? ' class="num"' : '') + '>' + h + '</th>').join('') +
+      '</tr></thead><tbody>' + rows.map(r => '<tr>' + r.map((c, i) => '<td' + (i ? ' class="num"' : '') + '>' + c + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+  }
+
+  // horizontal bar chart: one series, optional emphasis and reference line
+  function hbar(container, data, opt) {
+    const W = Math.max(320, container.clientWidth || 560), rowH = 34, padL = opt.padL || 120, padR = 72, padT = opt.ref != null ? 22 : 6, axisH = 22;
+    const H = padT + data.length * rowH + axisH;
+    const max = opt.max || Math.max(...data.map(d => d.v)) * 1.08;
+    const x = v => padL + (W - padL - padR) * v / max;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opt.label });
+    const ticks = opt.ticks;
+    ticks.forEach(t => {
+      el('line', { x1: x(t), x2: x(t), y1: padT, y2: H - axisH, class: 'gridline' }, svg);
+      el('text', { x: x(t), y: H - 6, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = fmt(t) + (opt.unitTick || '');
+    });
+    el('line', { x1: padL, x2: padL, y1: padT, y2: H - axisH, class: 'baseline' }, svg);
+    data.forEach((d, i) => {
+      const y = padT + i * rowH + 7, bh = rowH - 14;
+      const color = d.emph === false ? css('--dim') : css('--s1');
+      const w = Math.max(2, x(d.v) - padL);
+      const g = el('g', {}, svg);
+      el('text', { x: padL - 10, y: y + bh / 2 + 4, 'text-anchor': 'end', class: 'lbl' }, g).textContent = d.k;
+      // bar with 4px rounded data-end anchored to the baseline
+      el('path', { d: `M${padL} ${y}h${w - 4}a4 4 0 0 1 4 4v${bh - 8}a4 4 0 0 1 -4 4h-${w - 4}z`, fill: color }, g);
+      el('text', { x: padL + w + 8, y: y + bh / 2 + 4, class: 'lbl-strong' }, g).textContent = opt.valueFmt(d.v);
+      const hit = el('rect', { x: 0, y: y - 6, width: W, height: rowH, class: 'hit' }, g);
+      hit.addEventListener('mousemove', e => showTip(e, d.k, [{ k: opt.tipKey, v: opt.valueFmt(d.v), color }].concat(d.extra || [])));
+      hit.addEventListener('mouseleave', hideTip);
+    });
+    if (opt.ref != null) {
+      el('line', { x1: x(opt.ref), x2: x(opt.ref), y1: padT - 2, y2: H - axisH, class: 'refline' }, svg);
+      el('text', { x: x(opt.ref), y: 11, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = opt.refLabel;
+    }
+    container.innerHTML = '';
+    container.appendChild(svg);
+  }
+
+  // battery line chart with crosshair
+  function batteryChart(container) {
+    const series = [
+      { k: 'Plus, stima bassa', mA: 45, c: '--s1' },
+      { k: 'Plus, stima alta', mA: 55, c: '--s2' },
+      { k: 'Sense, misurato', mA: 64.5, c: '--s3' },
+    ];
+    const W = Math.max(320, container.clientWidth || 760), H = 300, padL = 52, padR = 64, padT = 24, padB = 30, cap = 1000, hours = 24;
+    const x = h => padL + (W - padL - padR) * h / hours;
+    const y = v => padT + (H - padT - padB) * (1 - v / cap);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Capacità residua della batteria per ora' });
+    [0, 250, 500, 750, 1000].forEach(v => {
+      el('line', { x1: padL, x2: W - padR, y1: y(v), y2: y(v), class: v ? 'gridline' : 'baseline' }, svg);
+      el('text', { x: padL - 8, y: y(v) + 4, 'text-anchor': 'end', class: 'tick' }, svg).textContent = fmt(v);
+    });
+    [0, 4, 8, 12, 16, 20, 24].forEach(h => el('text', { x: x(h), y: H - 10, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = h + ' h');
+    el('text', { x: padL - 8, y: 10, 'text-anchor': 'end', class: 'tick' }, svg).textContent = 'mAh';
+    // 16h day marker
+    el('rect', { x: x(0), y: padT, width: x(16) - x(0), height: H - padT - padB, fill: css('--s1-wash'), opacity: 0.45 }, svg);
+    el('line', { x1: x(16), x2: x(16), y1: padT, y2: H - padB, class: 'refline' }, svg);
+    el('text', { x: x(16), y: 10, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = 'fine giornata, 16 h';
+    series.forEach(s => {
+      const end = cap / s.mA;
+      const color = css(s.c);
+      el('path', { d: `M${x(0)} ${y(cap)}L${x(end)} ${y(0)}`, stroke: color, 'stroke-width': 2, fill: 'none', 'stroke-linecap': 'round' }, svg);
+      el('circle', { cx: x(end), cy: y(0), r: 4.5, fill: color, stroke: css('--surface'), 'stroke-width': 2 }, svg);
+      s.end = end;
+    });
+    // direct labels right of each empty point, where no line passes
+    series.forEach(s => {
+      el('text', { x: x(s.end) + 8, y: y(0) - 8, class: 'lbl-strong' }, svg).textContent = fmt(s.end, 1) + ' h';
+    });
+    const cross = el('line', { y1: padT, y2: H - padB, stroke: css('--axis'), 'stroke-width': 1, opacity: 0 }, svg);
+    const dots = series.map(s => el('circle', { r: 4, fill: css(s.c), stroke: css('--surface'), 'stroke-width': 2, opacity: 0 }, svg));
+    const hit = el('rect', { x: padL, y: padT, width: W - padL - padR, height: H - padT - padB, class: 'hit' }, svg);
+    hit.addEventListener('mousemove', e => {
+      const r = svg.getBoundingClientRect();
+      const px = (e.clientX - r.left) * W / r.width;
+      const h = Math.max(0, Math.min(hours, Math.round((px - padL) / (W - padL - padR) * hours * 2) / 2));
+      cross.setAttribute('x1', x(h)); cross.setAttribute('x2', x(h)); cross.setAttribute('opacity', 1);
+      const rows = series.map((s, i) => {
+        const v = Math.max(0, cap - s.mA * h);
+        dots[i].setAttribute('cx', x(h)); dots[i].setAttribute('cy', y(v)); dots[i].setAttribute('opacity', 1);
+        return { k: s.k + ' (' + fmt(s.mA, s.mA % 1 ? 1 : 0) + ' mA)', v: v ? fmt(v) + ' mAh' : 'scarica', color: css(s.c) };
+      });
+      showTip(e, 'Dopo ' + fmt(h, h % 1 ? 1 : 0) + ' ore', rows);
+    });
+    hit.addEventListener('mouseleave', () => { hideTip(); cross.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
+    container.innerHTML = '';
+    container.appendChild(svg);
+    document.getElementById('lgBattery').innerHTML = series.map(s =>
+      '<span><i class="line" style="background:' + css(s.c) + '"></i>' + s.k + ', ' + fmt(s.mA, s.mA % 1 ? 1 : 0) + ' mA</span>').join('');
+    const rows = [0, 4, 8, 12, 16, 20].map(h => [h + ' h'].concat(series.map(s => { const v = cap - s.mA * h; return v > 0 ? fmt(v) : 'scarica'; })));
+    container.parentElement.querySelector('.data-table').innerHTML = tableHTML(['Ora'].concat(series.map(s => s.k)), rows);
+  }
+
+  // data
+  const charge = [
+    { k: 'XIAO S3 Plus', v: 8, extra: [{ k: 'Corrente di carica', v: '100 mA' }] },
+    { k: 'XIAO S3', v: 16, emph: false, extra: [{ k: 'Corrente di carica', v: '50 mA' }] },
+    { k: 'XIAO S3 Sense', v: 16, emph: false, extra: [{ k: 'Corrente di carica', v: '50 mA' }] },
+  ];
+  const sleep = [
+    { k: 'XIAO S3 Plus', v: 31.6 },
+    { k: 'XIAO S3', v: 27, emph: false },
+    { k: 'XIAO C6', v: 30, emph: false },
+    { k: 'XIAO S3 Sense', v: 44, emph: false },
+  ];
+  const formats = [
+    { k: 'PCM stereo', mb: 3686 },
+    { k: 'PCM mono', mb: 1843 },
+    { k: 'ADPCM mono', mb: 461 },
+    { k: 'Opus 16 kbps', mb: 115 },
+  ];
+  const costs = [
+    { k: 'Logistica AliExpress', v: 28.62, extra: [{ k: 'Articoli', v: '10 righe' }] },
+    { k: 'Store Seeed', v: 23.13, extra: [{ k: 'Articoli', v: '2 XIAO Plus' }] },
+    { k: 'Amazon', v: 20.06, extra: [{ k: 'Articoli', v: '2 microSD' }] },
+    { k: 'Microfoni', v: 15.46, extra: [{ k: 'Articoli', v: '3 ICS-43434' }] },
+    { k: 'Batterie', v: 13.01, extra: [{ k: 'Articoli', v: '2 LiPo' }] },
+    { k: 'INA219', v: 2.18, extra: [{ k: 'Articoli', v: '1 modulo' }] },
+  ];
+  const pins = [
+    { k: 'microSD SDIO', n: 3, pins: 'CLK, CMD, D0', c: '--s1' },
+    { k: 'Microfono I2S', n: 3, pins: 'BCLK, WS, DATA', c: '--s2' },
+    { k: 'INA219', n: 2, pins: 'SDA, SCL, solo banco', c: '--s3' },
+    { k: 'Tasto', n: 1, pins: 'pull-up interno', c: '--s4' },
+    { k: 'LED', n: 1, pins: 'stato registrazione', c: '--s5' },
+  ];
+  const bom = [
+    { k: 'XIAO ESP32-S3 Plus', g: 'Seeed', q: 2, p: 9.04, use: 'Banco e ciondolo', url: 'https://www.aliexpress.com/item/1005008329745247.html' },
+    { k: 'Modulo mini ICS-43434', g: 'Store dedicati', q: 3, p: 3.59, use: 'Banco, ciondolo, scorta', url: 'https://www.aliexpress.com/item/1005012141271976.html' },
+    { k: 'LiPo 503450 1000 mAh', g: 'Store dedicati', q: 2, p: 4.69, use: 'Banco e ciondolo', url: 'https://www.aliexpress.com/item/1005004375261361.html' },
+    { k: 'Modulo INA219', g: 'Store dedicati', q: 1, p: 2.18, use: 'Banco', url: 'https://www.aliexpress.com/item/1005010446373233.html' },
+    { k: 'Slot microSD Adafruit 4682 clone', g: 'Logistica AliExpress', q: 2, p: 3.40, use: 'Banco e ciondolo', url: 'https://www.aliexpress.com/item/1005010386227173.html' },
+    { k: 'Interruttore a slitta SS12D00, 20 pz', g: 'Logistica AliExpress', q: 1, p: 1.75, use: 'Ciondolo', url: 'https://www.aliexpress.com/item/1005005633418066.html' },
+    { k: 'Tasti laterali 3×6 SMD, 50 pz', g: 'Logistica AliExpress', q: 1, p: 1.75, use: 'Ciondolo', url: 'https://www.aliexpress.com/item/1005005413896692.html' },
+    { k: 'Tasti 6×6×5 DIP, 100 pz', g: 'Logistica AliExpress', q: 1, p: 2.37, use: 'Banco', url: 'https://www.aliexpress.com/item/1005003668382075.html' },
+    { k: 'Filo silicone 30 AWG rosso e nero', g: 'Logistica AliExpress', q: 1, p: 2.34, use: 'Ciondolo', url: 'https://www.aliexpress.com/item/1005008291260907.html' },
+    { k: 'Nastro Kapton', g: 'Logistica AliExpress', q: 1, p: 2.05, use: 'Ciondolo', url: 'https://www.aliexpress.com/item/1005007855067893.html' },
+    { k: 'Breadboard 830 + 65 jumper', g: 'Logistica AliExpress', q: 1, p: 4.72, use: 'Banco', url: 'https://www.aliexpress.com/item/1005009184135797.html' },
+    { k: 'Kit resistenze 1/4 W', g: 'Logistica AliExpress', q: 1, p: 2.62, use: 'Banco', url: 'https://www.aliexpress.com/item/1005006174061842.html' },
+    { k: 'Kit LED 3 e 5 mm', g: 'Logistica AliExpress', q: 1, p: 2.33, use: 'Banco e ciondolo', url: 'https://www.aliexpress.com/item/1005004543292837.html' },
+    { k: 'Pin header maschio 2,54 mm', g: 'Logistica AliExpress', q: 1, p: 1.89, use: 'Banco', url: 'https://www.aliexpress.com/item/1005007486600604.html' },
+    { k: 'microSD Netac 32 GB', g: 'Amazon', q: 2, p: 10.03, use: 'Banco e ciondolo', url: 'https://www.amazon.it/dp/B0833XXLJR' },
+  ];
+  const decisions = [
+    { t: 'XIAO ESP32-S3 Plus al banco e nel ciondolo', b: 'Ricarica a 100 mA: la giornata si ricarica in una notte. Stessa scheda sui due prototipi.', alts: ['Sense', 'XIAO standard', 'Super Mini al banco', 'XIAO C6', 'nRF52840/nRF5340'], on: true },
+    { t: 'Un solo microfono ICS-43434, mono', b: 'La trascrizione non usa la separazione spaziale; lo stereo raddoppia dati e scritture. 3 pezzi, il pin LR lascia aperta la coppia stereo.', alts: ['Stereo con 2 microfoni', 'INMP441'], on: true },
+    { t: 'microSD di marca standard', b: 'Circa 21 cicli di scrittura all\'anno su 32 GB: le High Endurance costano il doppio senza beneficio misurabile.', alts: ['SanDisk High Endurance'], on: true },
+    { t: 'Retina acustica rimandata al case', b: 'Il formato dipende da diametro e posizione dei fori, decisi in M4.', alts: [], on: true },
+    { t: 'Batteria 503450 1000 mAh', b: 'La più sottile a parità di capacità: in un ciondolo lo spessore conta più dell\'ingombro in pianta.', alts: ['603048', '803040'], on: true },
+    { t: 'microSD su modulo clone Adafruit 4682', b: 'Modulo a 3 V senza regolatore né traslatore, con pin SDIO esposti.', alts: [], on: true },
+    { t: 'Tasti sfusi da kit', b: 'La basetta con tasti 6×6 occupa più del XIAO stesso.', alts: ['Basetta 6×6'], on: true },
+    { t: 'Super Mini al banco, XIAO nel ciondolo', b: 'Superata dalla scelta del Plus su entrambi i prototipi.', alts: [], on: false },
+  ];
+  const risks = [
+    { sev: 'critical', t: 'Polarità del JST sulle LiPo', b: 'Non è garantita sulle batterie AliExpress: un\'inversione danneggia la scheda. Multimetro prima di collegare.', s: 'All\'arrivo' },
+    { sev: 'serious', t: 'Autonomia sotto le 16 ore', b: 'Il consumo del Plus in registrazione è una stima. Sopra i 60 mA la giornata non ci sta: leve CPU a 80 MHz, scritture più rare, batteria più grande.', s: 'Da misurare in M1' },
+    { sev: 'warning', t: 'Acustica dentro il case', b: 'Microfono sotto i vestiti: posizione dei fori e retina vanno provate.', s: 'M4' },
+    { sev: 'warning', t: 'Privacy di un ciondolo perso', b: 'Registrare conversazioni a cui si partecipa è lecito, diffonderle no. Valutare la cifratura su SD.', s: 'M2' },
+  ];
+  const steps = [
+    { n: 'M0', t: 'Acquisti', b: 'Carrello allineato alla BOM, ordine fatto.', s: 'In corso', now: true },
+    { n: 'M1', t: 'Banco', b: 'Plus, microfono e SD: WAV su SD, consumi con INA219.', s: 'Da fare' },
+    { n: 'M2', t: 'Firmware', b: 'Tasto, LED, buffer in PSRAM, rotazione file, risparmio energetico.', s: 'Da fare' },
+    { n: 'M3', t: 'Sync e pipeline', b: 'Upload WiFi, trascrizione, destinazione dei dati.', s: 'Da fare' },
+    { n: 'M4', t: 'Ciondolo', b: 'Saldature, batteria, case e acustica.', s: 'Da fare' },
+  ];
+
+  const sevIcon = { serious: 'i-alert', critical: 'i-alert', warning: 'i-alert' };
+  const sevLabel = { serious: 'Serio', critical: 'Critico', warning: 'Attenzione' };
+
+  function renderCharts() {
+    hbar(document.getElementById('chCharge'), charge, {
+      label: 'Ore per ricaricare 800 mAh', ticks: [0, 4, 8, 12, 16, 20], max: 20, unitTick: ' h',
+      valueFmt: v => fmt(v) + ' h', tipKey: 'Ricarica', ref: 8, refLabel: 'una notte',
+    });
+    hbar(document.getElementById('chSleep'), sleep, {
+      label: 'Corrente in modem-sleep', ticks: [0, 10, 20, 30, 40, 50], max: 50, unitTick: '',
+      valueFmt: v => fmt(v, v % 1 ? 1 : 0) + ' mA', tipKey: 'Modem-sleep',
+    });
+    hbar(document.getElementById('chFormat'), formats.map((f, i) => ({ k: f.k, v: f.mb, emph: f.k === 'PCM mono' ? true : false, extra: [{ k: 'Giorni su 32 GB', v: fmt(32000 / f.mb, 0) }] })), {
+      label: 'MB per giornata per formato', ticks: [0, 1000, 2000, 3000, 4000], max: 4000, padL: 110,
+      valueFmt: v => fmt(v) + ' MB', tipKey: 'Giornata',
+    });
+    hbar(document.getElementById('chCost'), costs, {
+      label: 'Spesa per spedizione', ticks: [0, 10, 20, 30], max: 32, padL: 140, unitTick: ' €',
+      valueFmt: v => fmt(v, 2) + ' €', tipKey: 'Totale',
+    });
+    batteryChart(document.getElementById('chBattery'));
+  }
+
+  function renderStatic() {
+    // chart table twins
+    const tbl = (id, head, rows) => { document.getElementById(id).parentElement.querySelector('.data-table').innerHTML = tableHTML(head, rows); };
+    tbl('chCharge', ['Scheda', 'Ore', 'Corrente'], charge.map(d => [d.k, fmt(d.v), d.extra[0].v]));
+    tbl('chSleep', ['Scheda', 'mA'], sleep.map(d => [d.k, fmt(d.v, d.v % 1 ? 1 : 0)]));
+    tbl('chFormat', ['Formato', 'MB al giorno', 'Giorni su 32 GB'], formats.map(f => [f.k, fmt(f.mb), fmt(32000 / f.mb)]));
+    tbl('chCost', ['Spedizione', 'Euro'], costs.map(c => [c.k, fmt(c.v, 2)]));
+    document.getElementById('daysBody').innerHTML = formats.map(f =>
+      '<tr><td>' + f.k + '</td><td class="num">' + fmt(32000 / f.mb) + '</td></tr>').join('');
+
+    // pins
+    const total = 11;
+    document.getElementById('pinbar').innerHTML = pins.map(p =>
+      '<div title="' + p.k + ': ' + p.n + ' pin" style="flex:' + p.n + ';background:var(' + p.c + ')">' + p.n + '</div>').join('') +
+      '<div class="free" style="flex:' + (total - pins.reduce((a, p) => a + p.n, 0)) + '">1</div>';
+    document.getElementById('pinlist').innerHTML = pins.map(p =>
+      '<div class="pin-row"><i style="background:var(' + p.c + ')"></i><div>' + p.k + ' <span class="pins">' + p.pins + '</span></div><b>' + p.n + '</b></div>').join('') +
+      '<div class="pin-row"><i style="box-shadow:inset 0 0 0 1.5px var(--axis)"></i><div>Libero <span class="pins">sui lati</span></div><b>1</b></div>';
+
+    // decisions
+    document.getElementById('timeline').innerHTML = decisions.map(d =>
+      '<div class="dec' + (d.on ? '' : ' superseded') + '"><div class="ic' + (d.on ? ' on' : '') + '"><svg><use href="#' + (d.on ? 'i-check' : 'i-x') + '"/></svg></div><div><h3>' + d.t +
+      (d.on ? '' : ' <span class="badge">Superata</span>') + '</h3><p>' + d.b + '</p>' +
+      (d.alts.length ? '<div class="alts">' + d.alts.map(a => '<span>scartata: <s>' + a + '</s></span>').join('') + '</div>' : '') + '</div></div>').join('');
+
+    // risks
+    document.getElementById('risks').innerHTML = risks.map(r =>
+      '<div class="risk"><div class="sev ' + r.sev + '" title="' + sevLabel[r.sev] + '"><svg><use href="#' + sevIcon[r.sev] + '"/></svg></div><div><h3>' + r.t +
+      ' <span class="badge">' + sevLabel[r.sev] + '</span> <span class="badge">' + r.s + '</span></h3><p>' + r.b + '</p></div></div>').join('');
+
+    // roadmap
+    document.getElementById('steps').innerHTML = steps.map(s =>
+      '<div class="step' + (s.now ? ' now' : '') + '"><div class="node"><div class="circle">' + s.n.slice(1) + '</div><div class="bar"></div></div><h3>' + s.n + ' ' + s.t + '</h3><p>' + s.b + '</p>' +
+      '<span class="status ' + (s.now ? 'st-warning' : 'st-todo') + '"><i></i>' + s.s + '</span></div>').join('');
+
+    // BOM with filters
+    const groups = ['Tutti'].concat([...new Set(bom.map(b => b.g))]);
+    const fEl = document.getElementById('bomFilters');
+    let current = 'Tutti';
+    try { current = localStorage.getItem('pendant-bom-filter') || 'Tutti'; } catch (e) { current = 'Tutti'; }
+    if (!groups.includes(current)) current = 'Tutti';
+    function renderBom() {
+      fEl.innerHTML = groups.map(g => '<button class="chip" aria-pressed="' + (g === current) + '" data-g="' + g + '">' + g + '</button>').join('');
+      const rows = bom.filter(b => current === 'Tutti' || b.g === current);
+      document.getElementById('bomBody').innerHTML = rows.map(b =>
+        '<tr><td><a href="' + b.url + '" target="_blank" rel="noopener">' + b.k + '</a></td><td>' + b.g + '</td><td class="num">' + b.q + '</td><td class="num">' + fmt(b.p, 2) + ' €</td><td class="num">' + fmt(b.p * b.q, 2) + ' €</td><td>' + b.use + '</td></tr>').join('');
+      document.getElementById('bomTotal').textContent = fmt(rows.reduce((a, b) => a + b.p * b.q, 0), 2) + ' €';
+    }
+    fEl.addEventListener('click', e => {
+      const b = e.target.closest('button[data-g]');
+      if (!b) return;
+      current = b.dataset.g;
+      try { localStorage.setItem('pendant-bom-filter', current); } catch (err) { /* storage unavailable: filter stays per-session */ }
+      renderBom();
+    });
+    renderBom();
+  }
+
+  // chart/table toggles
+  document.querySelectorAll('[data-chart-card]').forEach(card => {
+    card.querySelectorAll('.seg button').forEach(btn => btn.addEventListener('click', () => {
+      card.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+      card.classList.toggle('show-table', btn.dataset.view === 'table');
+      if (btn.dataset.view === 'chart') renderCharts();
+    }));
+  });
+
+  // theme
+  const themeBtns = document.querySelectorAll('[data-theme-set]');
+  function applyTheme(t) {
+    if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', t);
+    themeBtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.themeSet === t));
+    renderCharts();
+  }
+  themeBtns.forEach(b => b.addEventListener('click', () => {
+    try { localStorage.setItem('pendant-theme', b.dataset.themeSet); } catch (e) { /* storage unavailable: theme stays per-session */ }
+    applyTheme(b.dataset.themeSet);
+  }));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderCharts());
+  let rt;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderCharts, 120); });
+
+  // active nav on scroll
+  const links = [...document.querySelectorAll('#nav a')];
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('main section').forEach(s => obs.observe(s));
+
+  // mobile sidebar
+  const sb = document.getElementById('sidebar');
+  document.getElementById('menuBtn').addEventListener('click', () => sb.classList.toggle('open'));
+  links.forEach(a => a.addEventListener('click', () => sb.classList.remove('open')));
+
+  renderStatic();
+  let saved = 'auto';
+  try { saved = localStorage.getItem('pendant-theme') || 'auto'; } catch (e) { saved = 'auto'; }
+  applyTheme(saved);
+})();
+</script>
+</body>
+</html>
