@@ -143,7 +143,8 @@ a ciondolo spento. Schema e disegni in `docs/pendant.html`.
 
 Sandwich di due lastre fumé da 2 mm (acrilico, o policarbonato se si temono cadute) con una
 cornice laterale in TPU stampata in 3D, tenuto da 4 viti M2 su distanziali negli angoli,
-fuori dalla batteria. Misure circa 60 × 44 × 15,5 mm, peso stimato 40-45 g. Dentro: 1 mm di
+fuori dalla batteria. Misure circa 62 × 46 × 15,5 mm con angoli da 5 mm di raggio: con 60 × 44
+e angoli più tondi i distanziali Ø 3,5 mm toccherebbero la cella. Peso stimato 40-45 g. Dentro: 1 mm di
 gioco e uno strato di schiuma per il rigonfiamento della LiPo, spazio per il connettore della
 batteria. Porta acustica di circa 1,5 mm con guarnizione senza fughe, in un incavo della
 faccia e lontana dal laccio; LED con foro o light pipe; sgancio di sicurezza sul laccio. Le
