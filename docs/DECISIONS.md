@@ -71,3 +71,40 @@ fase a corrente costante. L'USB del XIAO resta per programmare, e i due caricato
 alimentati insieme. Si prova al banco; in M4 si decide se entra nel case. Scartati il TP4056
 (ingombro paragonabile al XIAO e 1 A di fabbrica, cioè 1C) e il MCP73831 (su AliExpress solo
 chip sfusi).
+
+## 2026-10-08 Revisione con quattro revisori: correzioni alla BOM
+
+INA226 al posto dell'INA219: 16 bit invece di 12, misura meglio la media e la carica integrata
+su 16 ore. Aggiunti condensatori di bypass, connettori JST di ricambio e guaina, che
+mancavano. Il livello batteria non richiede componenti: il Plus lo espone su GPIO10. Scartata
+la preoccupazione sul microfono a 16 kHz: la modalità low power perde 1 dB di SNR e dimezza il
+consumo.
+
+## 2026-10-08 RTC DS3231 sul bus I2C
+
+Per un registratore della giornata l'ora dei file è essenziale, e senza RTC si perde a ogni
+spegnimento. Il DS3231 mini (13,4 mm per lato, batteria tampone a bordo, 5,59 €) usa i pin I2C
+già previsti, liberi nel ciondolo. Scartati il RV-3028 (su AliExpress solo moduli da 14-28 €)
+e la sola ricostruzione lato server (buchi tra uno spegnimento e il sync).
+
+## 2026-10-08 Firmware: ESP-IDF, file da 5 minuti, buffer in RAM interna
+
+ESP-IDF per avere controllo su risparmio energetico, SD, NVS cifrata, flash encryption e OTA;
+Arduino è costruito sopra e toglie controllo. File da 5 minuti chiusi a ogni rotazione per
+reggere gli spegnimenti; buffer di 1-2 s in RAM interna. Corregge l'idea precedente di un
+buffer di minuti in PSRAM: non serve per la latenza della SD e si perde se la batteria cede.
+
+## 2026-10-08 Configurazione da rete WiFi propria e pagina web
+
+Il ciondolo accende una sua rete solo su richiesta (pressione lunga, o primo avvio) e la spegne
+dopo qualche minuto: tenerla accesa ogni volta che non c'è connessione consumerebbe più della
+registrazione. Rete protetta con password per pezzo, captive portal, stessa pagina su
+`pendant.local` a casa. Scartate la configurazione via Bluetooth di Espressif (serve la loro
+app) e Web Bluetooth (non va su iPhone).
+
+## 2026-10-08 WiFi e SD, non streaming BLE verso il telefono
+
+Confermata l'architettura: lo streaming BLE alla Omi darebbe un oggetto molto più piccolo
+(un XIAO nRF52840 Sense con 300 mAh, circa 45-55 € a pezzo) e il riuso del loro software, ma
+richiede il telefono vicino tutto il giorno e rinuncia all'audio grezzo, che sono le ragioni
+del progetto.
