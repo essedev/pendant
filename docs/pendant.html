@@ -652,7 +652,7 @@ tbody tr:hover td { background: var(--surface-2); }
       <!-- Ordine -->
       <section id="ordine">
         <div class="sec-head">
-          <div><h2>Ordine</h2><p>Prezzi rilevati il 7 ottobre 2026 dalla sessione AliExpress loggata, spedizione verso Varese, IVA inclusa. Il totale esatto lo dà il checkout.</p></div>
+          <div><h2>Ordine</h2><p>Prezzi rilevati il 7 e l'8 ottobre 2026 dalla sessione AliExpress loggata, spedizione verso Varese, IVA inclusa. Il totale esatto lo dà il checkout.</p></div>
         </div>
         <div class="grid g3" style="margin-bottom:16px">
           <div class="card span2" data-chart-card>
@@ -759,10 +759,17 @@ tbody tr:hover td { background: var(--surface-2); }
   function hbar(container, data, opt) {
     const W = Math.max(320, container.clientWidth || 560), rowH = 34, padL = opt.padL || 120, padR = 72, padT = opt.ref != null ? 22 : 6, axisH = 22;
     const H = padT + data.length * rowH + axisH;
-    const max = opt.max || Math.max(...data.map(d => d.v)) * 1.08;
+    const dataMax = Math.max(...data.map(d => d.v));
+    let max = opt.max || dataMax * 1.08;
+    let ticks = opt.ticks;
+    if (dataMax > max * 0.92) {
+      const step = ticks.length > 1 ? ticks[1] - ticks[0] : 10;
+      max = Math.ceil(dataMax * 1.12 / step) * step;
+      ticks = [];
+      for (let t = 0; t <= max; t += step) ticks.push(t);
+    }
     const x = v => padL + (W - padL - padR) * v / max;
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opt.label });
-    const ticks = opt.ticks;
     ticks.forEach(t => {
       el('line', { x1: x(t), x2: x(t), y1: padT, y2: H - axisH, class: 'gridline' }, svg);
       el('text', { x: x(t), y: H - 6, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = fmt(t) + (opt.unitTick || '');
