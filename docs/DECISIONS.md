@@ -5,6 +5,7 @@
 Omi costa 129 $ ed è open source, ma di default passa dal telefono e dal cloud e conserva
 soprattutto trascrizioni. Lo costruiamo per spendere meno e avere un dispositivo custom:
 registrazione offline su microSD, audio grezzo conservato, pipeline di trascrizione nostra.
+Superata dalla decisione del 2026-10-28 di comprare Omi.
 
 ## 2026-10-07 Due schede: Super Mini al banco, XIAO nel ciondolo
 
@@ -22,7 +23,7 @@ In un ciondolo lo spessore conta più dell'ingombro in pianta.
 
 Modulo a 3 V senza regolatore né traslatore di livello, con pin SDIO esposti: è quello che
 serve per un ESP32-S3 a 3,3 V. Per il budget dei pin si userà probabilmente l'SDIO a 1 bit
-(vedi `ARCHITECTURE.md #Budget dei pin`).
+(vedi `archive/ARCHITECTURE-diy.md #Budget dei pin`).
 
 ## 2026-10-07 Tasti sfusi da kit assortito
 
@@ -108,3 +109,53 @@ Confermata l'architettura: lo streaming BLE alla Omi darebbe un oggetto molto pi
 (un XIAO nRF52840 Sense con 300 mAh, circa 45-55 € a pezzo) e il riuso del loro software, ma
 richiede il telefono vicino tutto il giorno e rinuncia all'audio grezzo, che sono le ragioni
 del progetto.
+
+## 2026-10-28 Comprare Omi invece di costruire
+
+Omi fa già quello che serviva al ciondolo: registra tutto il giorno, ha 512 MB di memoria per
+l'offline e un'app con firmware open source. Il controllo dei dati, motivo del fai-da-te, si
+ottiene lo stesso dirottando l'audio verso Nexus (decisione successiva). Il ciondolo su
+ESP32-S3 resta in `docs/archive/`. Supera la decisione del 2026-10-07.
+
+## 2026-10-28 Audio verso Nexus con lo STT personalizzato live dell'app Omi
+
+L'app manda l'audio in tempo reale a un WebSocket nostro, senza scrivere un'app e senza
+passare dal cloud Omi (verificato col prototipo, `ARCHITECTURE.md #Esito del prototipo`).
+Scartati: il webhook "Realtime audio bytes" (lo spedisce il backend Omi, quindi l'audio passa
+da loro), un'app iOS propria via Bluetooth (giorni di lavoro e manutenzione, si rivaluta se
+l'app Omi diventa inaffidabile), un ponte fisso Mac o Raspberry (niente live in mobilità), il
+backend Omi in proprio (più costoso dell'app propria e non porta a Nexus).
+
+## 2026-10-28 La pausa apre e chiude la conversazione
+
+Il doppio tocco mette in pausa; in pausa l'app chiude la connessione con `CloseStream`, e
+quella chiusura è il confine della conversazione in Nexus. Scartati: il timeout di silenzio
+(in ufficio qualcuno parla sempre, quindi non scatta mai), la segmentazione con un LLM e il
+filtro sulla mia voce (rimandati: servono solo se le pause dimenticate diventano frequenti).
+
+## 2026-10-28 Trascrizione batch a conversazione chiusa, niente live
+
+Un solo passaggio batch con diarizzazione sull'audio intero della conversazione, nella
+capability `transcription` di Nexus. Scartati: il live (circa il doppio del costo e
+diarizzazione peggiore) e il batch a blocchi da 8 s (ogni blocco diarizza da solo, le
+etichette dei parlanti non tornano). Il provider lo decide un confronto su registrazioni vere.
+
+## 2026-10-28 Impostazioni Omi per non passare dal cloud
+
+Audio grezzo a Omi, archivio audio nel cloud e sincronizzazione automatica spenti, e niente
+sincronizzazione manuale: sono le quattro strade da cui l'audio raggiungerebbe i server Omi
+(`ARCHITECTURE.md #Trasporto: STT personalizzato live`).
+
+## 2026-10-28 Audio offline: recupero manuale
+
+L'audio registrato senza telefono vicino resta nel buffer dell'app, che lo sa sincronizzare
+solo verso Omi. Per ora si recupera a mano con "Condividi registrazione". Scartata per ora una
+PR a Omi che faccia usare alla sincronizzazione offline l'endpoint personalizzato: giorni di
+lavoro su codice loro, da rivalutare se l'offline risulta frequente nell'uso reale.
+
+## 2026-10-28 Vibrazione al doppio tocco: PR a Omi, senza interruttore
+
+Il ciondolo non dà riscontro alla pausa. Si propone a Omi di farlo vibrare dopo la pausa
+(100 ms) e dopo la ripresa (300 ms), usando la vibrazione già comandabile via Bluetooth.
+Niente interruttore nelle impostazioni: il tocco singolo vibra già senza opzione, e un
+interruttore vorrebbe traduzioni in tutte le lingue dell'app e la verifica dell'interfaccia.

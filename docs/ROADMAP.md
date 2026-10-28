@@ -2,21 +2,24 @@
 
 ## Stato corrente
 
-Architettura e BOM chiuse, ordine da fare. Nessun codice.
+Omi in uso. Il trasporto dell'audio verso un endpoint nostro è verificato col prototipo
+(28/10/2026). In preparazione la PR della vibrazione su Omi; l'ingest in Nexus non è iniziato.
 
 ## Prossime milestone
 
-- [ ] M0 Acquisti: carrello allineato a `BOM.md #Da ordinare`, ordine fatto.
-- [ ] M1 Banco: XIAO Plus + 1 microfono + SD + RTC, registrazione su SD a file da 5 minuti,
-  consumi misurati con INA226, throughput WiFi, caduta sull'interruttore, pull-up della SD.
-- [ ] M2 Firmware: tasto, LED di stato, ora da RTC, livello batteria, spegnimento controllato,
-  risparmio energetico, compressione sì/no, pagina di configurazione.
-- [ ] M3 Sync e pipeline: upload via WiFi a casa, trascrizione, destinazione dei dati.
-- [ ] M4 Ciondolo: XIAO Plus, saldature, batteria, case e acustica.
+- [x] M0 Prototipo del trasporto: 7 verifiche, esito in `ARCHITECTURE.md #Esito del prototipo`.
+- [ ] M1 PR vibrazione su `BasedHardware/omi` dal fork `essedev/omi`: modifica, test,
+  `make preflight`, testo approvato da Simone prima della pubblicazione.
+- [ ] M2 Confronto provider: 2-3 registrazioni vere su Mistral, Speechmatics Melia 1 ed
+  Enhanced. Spesa stimata sotto 1 $, da approvare prima del lancio.
+- [ ] M3 Ingest in Nexus: capability con token dedicato, sessione per connessione, audio
+  scritto a pezzi e recuperato dopo un riavvio, conversione in Opus, creazione della
+  `transcription`, `wss://` dietro Caddy in produzione. Stima 1-2 giorni.
+- [ ] M4 Uso reale: misurare quanto spesso capitano audio offline e pause dimenticate.
 
 ## Domande aperte
 
-- Formato audio su SD: PCM, ADPCM o Opus.
-- Trascrizione: Whisper locale o API. Destinazione: Nexus o archivio dedicato.
-- Cifratura dei file su SD e flash encryption: da decidere prima di M1 (non reversibile).
-- Trigger del sync e alimentazione durante l'upload: da misurare al banco.
+- Recupero dell'audio offline: basta la condivisione manuale del WAV (anche verso il bot
+  Telegram di Nexus, se accetta audio) o serve una PR a Omi sulla sincronizzazione?
+- Autenticazione in produzione: token nella query o header dal JSON avanzato dell'app.
+- Segmentazione con LLM e filtro sulla mia voce: solo se M4 mostra pause dimenticate frequenti.
