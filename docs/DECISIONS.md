@@ -155,7 +155,10 @@ lavoro su codice loro, da rivalutare se l'offline risulta frequente nell'uso rea
 
 ## 2026-10-28 Vibrazione al doppio tocco: PR a Omi, senza interruttore
 
-Il ciondolo non dà riscontro alla pausa. Si propone a Omi di farlo vibrare dopo la pausa
-(100 ms) e dopo la ripresa (300 ms), usando la vibrazione già comandabile via Bluetooth.
+Il ciondolo non dà riscontro alle azioni del doppio tocco. Si propone a Omi (PR #23912) di
+confermarle tutte con la vibrazione già comandabile via Bluetooth: lunga (300 ms) quando
+l'azione accende qualcosa (ripresa, preferito), breve (100 ms) quando spegne o completa (pausa,
+preferito tolto, termina ed elabora). Scartata la versione limitata alla pausa: la regola
+"la vibrazione conferma l'azione" vale per ogni azione assegnata al tasto.
 Niente interruttore nelle impostazioni: il tocco singolo vibra già senza opzione, e un
 interruttore vorrebbe traduzioni in tutte le lingue dell'app e la verifica dell'interfaccia.

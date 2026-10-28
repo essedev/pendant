@@ -3,13 +3,15 @@
 ## Stato corrente
 
 Omi in uso. Il trasporto dell'audio verso un endpoint nostro è verificato col prototipo
-(28/10/2026). In preparazione la PR della vibrazione su Omi; l'ingest in Nexus non è iniziato.
+(28/10/2026) e la PR della vibrazione è aperta. Prossimo: analisi e piano dell'ingest in Nexus,
+documentazione prima del codice.
 
 ## Prossime milestone
 
 - [x] M0 Prototipo del trasporto: 7 verifiche, esito in `ARCHITECTURE.md #Esito del prototipo`.
-- [ ] M1 PR vibrazione su `BasedHardware/omi` dal fork `essedev/omi`: modifica, test,
-  `make preflight`, testo approvato da Simone prima della pubblicazione.
+- [x] M1 PR vibrazione: [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912)
+  (28/10/2026), conferma ogni azione del doppio tocco. In attesa di revisione; si sovrappone
+  alla #18765 (tasti personalizzabili, approvata) e va riallineata se quella entra prima.
 - [ ] M2 Confronto provider: 2-3 registrazioni vere su Mistral, Speechmatics Melia 1 ed
   Enhanced. Spesa stimata sotto 1 $, da approvare prima del lancio.
 - [ ] M3 Ingest in Nexus: capability con token dedicato, sessione per connessione, audio
