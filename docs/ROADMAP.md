@@ -14,9 +14,10 @@ Omi in uso. Il trasporto dell'audio verso un endpoint nostro è verificato col p
   alla #18765 (tasti personalizzabili, approvata) e va riallineata se quella entra prima.
 - [ ] M2 Confronto provider: 2-3 registrazioni vere su Mistral, Speechmatics Melia 1 ed
   Enhanced. Spesa stimata sotto 1 $, da approvare prima del lancio.
-- [ ] M3 Ingest in Nexus, progettato il 28/10 (`nexus/docs/features/audio-stream.md`): extension con token dedicato, sessione per connessione, audio
-  scritto a pezzi e recuperato dopo un riavvio, conversione in Opus, creazione della
-  `transcription`, `wss://` dietro Caddy in produzione. Stima 1-2 giorni.
+- [ ] M3 Ingest in Nexus, progettato il 28/10 (`nexus/docs/features/audio-stream.md`):
+  extension con token dedicato, sessione per connessione, audio scritto a pezzi e recuperato
+  dopo un riavvio, AAC alla chiusura, creazione della `transcription`, `wss://` dietro
+  Cloudflare e Caddy in produzione. Stima 1-2 giorni.
 - [ ] M4 Uso reale: misurare quanto spesso capitano audio offline e pause dimenticate.
 
 ## Domande aperte
