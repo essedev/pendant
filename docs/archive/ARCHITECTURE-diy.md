@@ -85,7 +85,7 @@ all'avvio. La SD sull'S3 accetta qualsiasi GPIO tramite la matrice
 ([ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/sdmmc_host.html)),
 ma vuole pull-up da 10 kΩ su CMD e DAT0-3: il modulo Adafruit li dichiara, sul clone vanno
 misurati. Il caricatore opzionale va sulla batteria prima dell'interruttore, così carica anche
-a ciondolo spento. Schema e disegni in `docs/pendant.html`.
+a ciondolo spento. Schema e disegni in `docs/archive/pendant.html`.
 
 ## Numeri di riferimento
 
