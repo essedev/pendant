@@ -22,7 +22,12 @@ Omi in uso. Il trasporto dell'audio verso un endpoint nostro è verificato col p
 
 ## Domande aperte
 
-- Recupero dell'audio offline: basta la condivisione manuale del WAV (anche verso il bot
-  Telegram di Nexus, se accetta audio) o serve una PR a Omi sulla sincronizzazione?
+- Audio offline verso Nexus: per ora condivisione manuale del WAV. Chiesto a Omi di
+  includerlo nella issue [#20174](https://github.com/BasedHardware/omi/issues/20174)
+  (29/10/2026: una connessione per registrazione, ora di registrazione nell'URL); un
+  contributore si è offerto di scrivere la PR.
+- Pausa che vale anche da scollegato: chiesta come opzione sulla PR firmware
+  [#23735](https://github.com/BasedHardware/omi/pull/23735) (29/10/2026). Finché manca,
+  per non registrare si spegne il ciondolo.
 - Autenticazione in produzione: token nella query o header dal JSON avanzato dell'app.
 - Segmentazione con LLM e filtro sulla mia voce: solo se M4 mostra pause dimenticate frequenti.

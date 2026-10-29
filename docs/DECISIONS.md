@@ -162,3 +162,15 @@ preferito tolto, termina ed elabora). Scartata la versione limitata alla pausa: 
 "la vibrazione conferma l'azione" vale per ogni azione assegnata al tasto.
 Niente interruttore nelle impostazioni: il tocco singolo vibra già senza opzione, e un
 interruttore vorrebbe traduzioni in tutte le lingue dell'app e la verifica dell'interfaccia.
+
+## 2026-10-29 Omi così com'è, con due limiti accettati
+
+Niente fork dell'app né del firmware, niente app propria. Si accettano due limiti: da
+scollegato la pausa non vale (il ciondolo registra nella sua memoria) e l'audio offline non
+arriva da solo a Nexus. Si compensano spegnendo il ciondolo quando non si deve registrare e
+condividendo a mano le registrazioni offline che servono. Scartati: un'app iOS propria
+(Bluetooth in background, protocollo, manutenzione, account sviluppatore da 99 $ l'anno, e
+non risolve la pausa, che decide il firmware); il fork dell'app (enorme, legata al backend
+Omi, cambia di circa 75 PR al giorno); il fork del firmware (fattibile, la chiave di firma è
+nel repo, ma un firmware che rompe il Bluetooth blocca il ciondolo). Le correzioni vere si
+chiedono a Omi: issue #20174 e PR #23735.
