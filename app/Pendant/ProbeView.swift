@@ -1,14 +1,27 @@
 import PendantKit
 import SwiftUI
 
-/// The M5 verification screen: what the pendant exposes, live counts, test actions and the log.
+/// The main screen: recording state, what the pendant exposes, live counts, tests and the log.
 struct ProbeView: View {
   let link: DeviceLink
+  let capture: CaptureCoordinator
   let log: ProbeLog
 
   var body: some View {
     NavigationStack {
       List {
+        Section("Registrazione") {
+          row("Stato", recordingState)
+          row("Nexus", capture.uplink.phase.rawValue)
+          row("Inviati", String(format: "%.0f s", capture.uplink.sentSeconds))
+          row("In coda", String(format: "%.1f s", Double(capture.uplink.spooled) / 50))
+          if capture.uplink.spoolDropped > 0 || capture.droppedFrames > 0 {
+            row("Persi", "coda \(capture.uplink.spoolDropped), frame \(capture.droppedFrames)")
+          }
+          Button(capture.controller.paused ? "Riprendi" : "Metti in pausa") {
+            capture.setPaused(!capture.controller.paused)
+          }
+        }
         Section("Ciondolo") {
           row("Stato", link.phase.rawValue)
           row(
@@ -82,6 +95,11 @@ struct ProbeView: View {
       }
       .navigationTitle("Pendant")
     }
+  }
+
+  private var recordingState: String {
+    if capture.controller.paused { return "in pausa" }
+    return capture.controller.deviceConnected ? "registra" : "ciondolo scollegato"
   }
 
   private func row(_ label: String, _ value: String?) -> some View {

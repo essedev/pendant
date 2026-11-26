@@ -7,10 +7,10 @@ ciondolo via Bluetooth e lo inoltra a Nexus, e Nexus lo conserva e lo trascrive.
 resta installata solo per aggiornare il firmware: nessun audio, stato o testo passa dal cloud
 Omi.
 
-Oggi, finché l'app nostra non c'è, il trasporto lo fa l'app Omi con lo "STT personalizzato"
-(sezione [Trasporto attuale](#trasporto-attuale-app-omi-e-stt-personalizzato)). La decisione
-di scrivere l'app nostra è del 26/11/2026 (DECISIONS), e l'app serve anche a decidere se
-tenere Omi o passare al reSpeaker Clip dopo due settimane d'uso.
+Fino al 26/11/2026 il trasporto lo faceva l'app Omi con lo "STT personalizzato" (sezione
+[Trasporto precedente](#trasporto-precedente-app-omi-e-stt-personalizzato)). L'app nostra lo
+sostituisce da quel giorno (DECISIONS), e serve anche a decidere se tenere Omi o passare al
+reSpeaker Clip dopo due settimane d'uso.
 
 Il ciondolo fai-da-te su ESP32-S3 progettato prima è superato: architettura, BOM e disegni
 restano in `docs/archive/`.
@@ -91,8 +91,10 @@ dice codec 20 e frame da 960 campioni, il codice dice 21 e 320.
 | Batteria `0x180F` | `0x2A19` read/notify | Percentuale |
 | Device Information `0x180A` | `0x2A26` | Versione firmware, modello `Omi CV 1` |
 
-- **Una sola connessione** (`CONFIG_BT_MAX_CONN=1`): l'app nostra e l'app Omi non possono
-  stare collegate al ciondolo insieme.
+- **Una sola connessione, ma per telefono** (`CONFIG_BT_MAX_CONN=1`): iOS condivide il
+  collegamento fra le app. Con l'app Omi attiva, anche lei riceve audio e pulsante e reagisce
+  agli stessi gesti (verificato il 26/11/2026: un doppio tocco ha messo in pausa noi e tolto la
+  pausa a lei). L'app Omi va quindi scollegata dal ciondolo.
 - **Nessun pairing richiesto**: gli attributi non chiedono cifratura (`transport.c`).
 - **MTU**: il firmware chiede lo scambio fino a 498. Sotto 100 i frame audio vengono scartati.
 
@@ -278,12 +280,17 @@ Da aggiungere in Nexus, in proposta, uno alla volta quando la milestone li richi
 - **Limiti**: niente notifiche push (bastano le locali e Telegram per quelle da Nexus), al
   massimo 3 app firmate così. Il Bluetooth in background va verificato col primo build.
 - **Se l'app passa la prova**: account sviluppatore a 99 $ l'anno, il certificato dura un anno.
-- **App Omi**: resta installata per gli aggiornamenti del firmware. Prima di aprirla si
-  disconnette l'app nostra, perché il ciondolo accetta una sola connessione.
+- **App Omi**: resta installata, col ciondolo dimenticato e le azioni al tocco spente. Per un
+  aggiornamento del firmware si ricollega, mettendo in pausa l'app nostra, e la si scollega
+  di nuovo alla fine.
+- **Credenziali**: `make credentials TOKEN_FILE=<file>` copia URL e token nei Documenti
+  dell'app, che al primo avvio li sposta nel portachiavi e cancella il file. Il token viaggia
+  verso Nexus nell'header `Authorization`, non nell'URL.
 
-## Trasporto attuale: app Omi e STT personalizzato
+## Trasporto precedente: app Omi e STT personalizzato
 
-In uso finché l'app nostra non la sostituisce. Verificato col prototipo
+In uso fino al 26/11/2026, resta il riferimento per il contratto di `audio_stream`. Verificato
+col prototipo
 `prototype/omi_stt_probe.py` il 28/10/2026, app Omi 1.0.577.
 
 - L'app accetta solo `wss://`, aggiunge `?language=<lingua>` e autentica col token in query.
@@ -323,12 +330,15 @@ scarica con `make logs`.
 | Pulsante | Tocco: `singleTap` più `release`. Doppio tocco: `doubleTap` più `release`. Pressione di 1-2 s, provata due volte: nessun evento. Il premi e parla è escluso |
 | Vibrazione | Le tre durate funzionano |
 | Memoria | Info letta: 53 pacchetti in attesa, capacità 1.115.064 pacchetti da 444 B (circa 30 h di parlato, stima a 100 ms per pacchetto) |
-| Batteria | Da 100% a 92% nei primi 2 minuti: forse il primo valore era vecchio, da seguire |
+| Batteria | Da 100% a 84% in 12 minuti: forse il primo valore era vecchio, da seguire |
+| Inoltro a Nexus (M6) | Conversazione di prova: 287 s in 13 pezzi, chiusa col doppio tocco e `CloseStream`, trascritta. Pausa e ripresa aprono e chiudono una sessione sola |
+| Ripristino dello stato | Al riavvio dell'app iOS ha restituito il ciondolo già collegato, e l'inoltro è ripartito da solo |
+| Decodifica Opus | Con il codec di sistema (AudioToolbox): nessuna libreria, testata anche in `swift test` |
 
 Ancora aperte:
 
-- Il Bluetooth in background per ore con l'account gratuito, e il ripristino dello stato dopo
-  che iOS ha chiuso l'app. Si misura nell'uso di M6.
+- Il Bluetooth in background per ore con l'account gratuito, e il rilancio dell'app da parte
+  di iOS dopo che l'ha chiusa. Si misura nell'uso reale.
 - Il guadagno del microfono a `0`: dopo il cambio i pacchetti pesavano ancora circa 80 B, ma
   senza un confronto fra parlato e silenzio non si sa se è un muto o solo -20 dB.
 - La lettura della memoria: formato dei blocchi da 440 byte e tempo per scaricare un'ora.
@@ -340,7 +350,8 @@ Ancora aperte:
   registrazione si ferma in silenzio. Il segnale periodico verso Nexus serve a saperlo.
 - **Firmware che cambia**: ogni versione nuova può cambiare protocollo. L'app lavora solo sulle
   versioni dichiarate nella configurazione e sul bitmask delle funzioni.
-- **Due app, un ciondolo**: se l'app Omi si collega, l'app nostra non riceve niente.
+- **Due app, un ciondolo**: se l'app Omi torna collegata, registra in parallelo verso Nexus e
+  risponde agli stessi gesti, invertendo la pausa. Resta col ciondolo dimenticato.
 - **Scadenza a 7 giorni**: un rinnovo saltato ferma l'app. Lo copre lo stesso segnale periodico.
 - **Accensioni accidentali**: sul 3.0.21 il ciondolo acceso per sbaglio registra e consuma, e
   l'app non può spegnerlo.

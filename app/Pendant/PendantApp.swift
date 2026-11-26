@@ -21,21 +21,28 @@ struct PendantApp: App {
   @Environment(\.scenePhase) private var scenePhase
   @State private var log: ProbeLog
   @State private var link: DeviceLink
+  @State private var capture: CaptureCoordinator
 
   init() {
     let config = Configuration.defaults
     let log = ProbeLog(screenLimit: config.logScreenEntries)
+    // The app delegate runs after this init: a Bluetooth relaunch shows up as `restored`.
     log.record(
       "launch",
-      "version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")"
-        + (AppDelegate.launchedForBluetooth ? ", by Bluetooth restoration" : ""))
+      "version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
+    if let outcome = Credentials.importBootstrap() { log.record("credentials", outcome) }
+    let notifier = Notifier()
+    notifier.requestPermission()
+    let link = DeviceLink(log: log, config: config)
     _log = State(initialValue: log)
-    _link = State(initialValue: DeviceLink(log: log, config: config))
+    _link = State(initialValue: link)
+    _capture = State(
+      initialValue: CaptureCoordinator(link: link, config: config, log: log, notifier: notifier))
   }
 
   var body: some Scene {
     WindowGroup {
-      ProbeView(link: link, log: log)
+      ProbeView(link: link, capture: capture, log: log)
     }
     .onChange(of: scenePhase) { _, phase in
       log.record("scene", "\(phase)")

@@ -2,9 +2,9 @@
 
 ## Cos'è
 
-Il ciondolo Omi collegato a Nexus. Oggi l'app Omi manda l'audio a `audio_stream` di Nexus con
-lo STT personalizzato; in costruzione un'app iOS nostra in Swift (`app/`) che la sostituisce e
-lascia all'app Omi solo gli aggiornamenti del firmware. Il ciondolo fai-da-te su ESP32-S3 è
+Il ciondolo Omi collegato a Nexus. Un'app iOS nostra in Swift (`app/`) riceve l'audio via
+Bluetooth e lo manda a `audio_stream` di Nexus; l'app Omi resta solo per gli aggiornamenti del
+firmware. Il ciondolo fai-da-te su ESP32-S3 è
 superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 
 ## Dove sta cosa
@@ -29,7 +29,9 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 - App, da `app/`: `make run` (genera il progetto, compila, installa e avvia sull'iPhone
   collegato), `make test`, `make check` prima di ogni commit che tocca l'app, `make help` per
   il resto. Primo setup: `brew install xcodegen`, Apple ID in Xcode, `DEVELOPMENT_TEAM` in
-  `app/Local.xcconfig` (il Team ID è l'OU del certificato "Apple Development" nel portachiavi).
+  `app/Local.xcconfig` (il Team ID è l'OU del certificato "Apple Development" nel portachiavi),
+  poi `make credentials TOKEN_FILE=<file col token di audio_stream>`. `make logs` scarica il
+  log dell'app in `app/.logs/`.
 - Prototipo: `PROBE_TOKEN=<token> uv run prototype/omi_stt_probe.py` (ascolta su
   127.0.0.1:8765, scrive WAV ed `events.jsonl` in `prototype/recordings/`).
 - Esposizione per l'iPhone: `cloudflared tunnel --url http://localhost:8765`, poi nell'app
@@ -44,7 +46,8 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   è indietro rispetto al codice.
 - **Il riferimento per il Bluetooth su iOS è Swift**: `app/ios/Runner/Ble/OmiBleManager.swift`
   nel clone Omi, non il Dart.
-- **Una sola connessione Bluetooth**: con l'app Omi collegata l'app nostra non riceve niente.
+- **iOS condivide il ciondolo fra le app**: con l'app Omi collegata, anche lei riceve audio e
+  gesti e manda a Nexus una seconda registrazione. Va tenuta col ciondolo dimenticato.
 - **Nessun valore di comportamento nel codice dell'app**: va nello schema della configurazione
   (`ARCHITECTURE.md #Configurazione`).
 - **L'iPhone vero serve**: il simulatore non ha Bluetooth. L'app firmata col Personal Team

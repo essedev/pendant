@@ -2,20 +2,20 @@
 
 ## Stato corrente
 
-Omi in uso con l'app Omi e lo STT personalizzato: l'audio arriva a `audio_stream` di Nexus, in
-produzione dal 28/10/2026, e la trascrizione la fa Nexus (Voxtral di riserva, confronto fatto il
-28/10). Il 26/11/2026 si è deciso di scrivere un'app iOS nostra (DECISIONS): architettura in
-`ARCHITECTURE.md #L'app`. Verifica sul ciondolo fatta (M5). Prossimo: l'inoltro dal vivo (M6).
+Dal 26/11/2026 l'audio del ciondolo arriva a `audio_stream` di Nexus con l'app iOS nostra
+(M5 e M6); l'app Omi resta solo per il firmware, col ciondolo dimenticato. La trascrizione la
+fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. Prossimo: stato e configurazione in Nexus
+(M7).
 
 ## Prossime milestone
 
 - [x] M5 Verifica sul ciondolo (26/11/2026): app di verifica in `app/`, esiti in
   `ARCHITECTURE.md #Verifiche sul ciondolo`. Il premi e parla è escluso; il background resta da
   misurare nell'uso di M6.
-- [ ] M6 Inoltro dal vivo: l'app sostituisce l'app Omi verso `audio_stream` senza modifiche a
-  Nexus (Opus decodificato in PCM sul telefono, `CloseStream`, ping), con pausa al doppio
-  tocco, vibrazione di conferma e notifiche locali. Valori dai default dello schema; URL e token
-  nel portachiavi. Chiude la misura del background.
+- [x] M6 Inoltro dal vivo (26/11/2026): l'app sostituisce l'app Omi verso `audio_stream` senza
+  modifiche a Nexus, con pausa al doppio tocco, vibrazione e notifiche locali. Prova da capo a
+  fondo riuscita (`ARCHITECTURE.md #Verifiche sul ciondolo`). Resta da misurare il background
+  per ore nell'uso reale.
 - [ ] M7 Stato e configurazione in Nexus: configurazione scaricata da Nexus, eventi del ciondolo
   e segnale periodico, avviso su Telegram se l'app tace o il ciondolo resta scollegato.
 - [ ] M8 Offline dalla memoria: lettura alla connessione, invio a Nexus con l'ora vera,

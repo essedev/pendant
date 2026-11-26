@@ -11,7 +11,7 @@ DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/
 	and x['connectionProperties'].get('pairingState')=='paired' and x['connectionProperties'].get('tunnelState')!='unavailable'),''))" 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help project build install run test lint format check logs devices clean
+.PHONY: help project build install run test lint format check credentials logs devices clean
 
 help: ## Elenca i comandi
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -45,6 +45,19 @@ format: ## Formatta il codice Swift
 	swift format -i -r $(SOURCES)
 
 check: lint test build ## Giro completo: formattazione, test, build per l'iPhone
+
+NEXUS_WS ?= wss://nexus.esse.dev/api/audio-stream/ws
+
+credentials: ## Porta URL e token di Nexus nel portachiavi dell'app: TOKEN_FILE=<file col token>
+	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
+	@test -f "$(TOKEN_FILE)" || (echo "Serve TOKEN_FILE=<file col token>" && exit 1)
+	@tmp=$$(mktemp -d) && trap 'rm -rf "$$tmp"' EXIT && \
+		python3 -I -c "import json,sys; print(json.dumps({'url': sys.argv[1], 'token': open(sys.argv[2]).read().strip()}))" \
+			"$(NEXUS_WS)" "$(TOKEN_FILE)" > "$$tmp/bootstrap.json" && \
+		xcrun devicectl device copy to --device $(DEVICE) --domain-type appDataContainer \
+			--domain-identifier $(BUNDLE_ID) --source "$$tmp/bootstrap.json" \
+			--destination Documents/bootstrap.json >/dev/null && \
+		echo "Credenziali copiate: l'app le sposta nel portachiavi al prossimo avvio."
 
 logs: ## Copia dall'iPhone il log e i file della verifica in app/.logs
 	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)

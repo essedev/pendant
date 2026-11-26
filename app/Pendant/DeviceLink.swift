@@ -32,6 +32,14 @@ final class DeviceLink: NSObject {
   /// The gain to restore after the mute test, set while the test runs.
   private(set) var gainBeforeMuteTest: UInt8?
 
+  /// Called with true once audio notifications are on, with false at a disconnection.
+  var onReadyChanged: ((Bool) -> Void)?
+  /// Called for each audio notification, with the largest piece the connection can carry.
+  var onAudio: ((AudioPacket, Int) -> Void)?
+  /// Called for each button event.
+  var onButton: ((ButtonEvent) -> Void)?
+  private var ready = false
+
   /// A read of the storage ring saved to a file, for checking the offline format.
   struct RingRead {
     let startedAt: Date
@@ -155,6 +163,12 @@ final class DeviceLink: NSObject {
     target.discoverServices(nil)
   }
 
+  private func setReady(_ value: Bool) {
+    guard value != ready else { return }
+    ready = value
+    onReadyChanged?(value)
+  }
+
   private func resetSession() {
     connectedSince = nil
     characteristics = [:]
@@ -207,11 +221,16 @@ final class DeviceLink: NSObject {
     case OmiGatt.Audio.data:
       guard let packet = AudioPacket(value) else { return }
       audio.record(packet)
+      if let peripheral {
+        // The firmware cuts a frame at MTU - 3 bytes, the same limit iOS reports for writes.
+        onAudio?(packet, peripheral.maximumWriteValueLength(for: .withoutResponse))
+      }
       logPeriodicStats()
     case OmiGatt.Button.event:
       guard let event = ButtonEvent(value) else { return }
       buttonCounts["\(event)", default: 0] += 1
       log.record("button", "\(event)")
+      onButton?(event)
     case OmiGatt.Standard.batteryLevel:
       guard let level = value.first else { return }
       if battery != Int(level) { log.record("battery", "\(level)%") }
@@ -370,6 +389,7 @@ extension DeviceLink: CBCentralManagerDelegate {
         "after \(duration), audio received \(audio.received) lost \(audio.lost)"
           + (error.map { ", \($0.localizedDescription)" } ?? ""))
       resetSession()
+      setReady(false)
       connect(peripheral)
     }
   }
@@ -414,6 +434,8 @@ extension DeviceLink: CBPeripheralDelegate {
         log.record("notifyError", "\(characteristic.uuid.uuidString) \(error.localizedDescription)")
       } else if characteristic.uuid.uuidString == OmiGatt.Storage.control {
         requestRingInfo()
+      } else if characteristic.uuid.uuidString == OmiGatt.Audio.data {
+        setReady(characteristic.isNotifying)
       }
     }
   }

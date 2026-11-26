@@ -20,7 +20,7 @@ public enum DeviceCommand {
 }
 
 /// Vibration lengths the firmware knows.
-public enum Vibration: UInt8, Sendable, CaseIterable {
+public enum Vibration: UInt8, Sendable, CaseIterable, Codable {
   /// 100 ms.
   case short = 1
   /// 300 ms.

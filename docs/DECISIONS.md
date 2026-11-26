@@ -224,3 +224,13 @@ accensioni accidentali restano il problema principale.
 La prova di due settimane usa il "Personal Team" di Xcode: l'app scade ogni 7 giorni e si
 rinnova via Wi-Fi o con SideStore. I 99 $ l'anno si spendono solo se l'app viene tenuta.
 Bastano le notifiche locali: quelle che nascono da Nexus vanno su Telegram.
+
+## 2026-11-26 Opus decodificato sul telefono col codec di sistema
+
+Il primo inoltro parla a `audio_stream` come l'app Omi, quindi il telefono decodifica l'Opus del
+ciondolo in PCM con il codec Opus di AudioToolbox, senza librerie. In coda resta l'Opus
+compresso (circa 4 KB/s), decodificato solo all'invio: mezz'ora senza rete sta in memoria.
+Scartati: una libreria libopus (dipendenza in più per una cosa che il sistema fa), e mandare
+subito l'Opus a Nexus (circa 7 invece di 115 MB l'ora, ma richiede di cambiare `audio_stream`:
+si fa dopo, insieme alle altre aggiunte lato Nexus). Il token va nell'header `Authorization`,
+non nell'URL, che proxy e Cloudflare scrivono nei log.
