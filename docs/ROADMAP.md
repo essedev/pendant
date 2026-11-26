@@ -2,32 +2,38 @@
 
 ## Stato corrente
 
-Omi in uso. Il trasporto dell'audio verso un endpoint nostro è verificato col prototipo
-(28/10/2026), la PR della vibrazione è aperta e l'ingest in Nexus è progettato (repo `nexus`,
-`docs/features/audio-stream.md`, DECISIONS #97). Prossimo: il codice dell'extension in Nexus.
+Omi in uso con l'app Omi e lo STT personalizzato: l'audio arriva a `audio_stream` di Nexus, in
+produzione dal 28/10/2026, e la trascrizione la fa Nexus (Voxtral di riserva, confronto fatto il
+28/10). Il 26/11/2026 si è deciso di scrivere un'app iOS nostra (DECISIONS): architettura in
+`ARCHITECTURE.md #L'app`. Prossimo: la verifica sul ciondolo.
 
 ## Prossime milestone
 
-- [x] M0 Prototipo del trasporto: 7 verifiche, esito in `ARCHITECTURE.md #Esito del prototipo`.
-- [x] M1 PR vibrazione: [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912)
-  (28/10/2026), conferma ogni azione del doppio tocco. In attesa di revisione; si sovrappone
-  alla #18765 (tasti personalizzabili, approvata) e va riallineata se quella entra prima.
-- [ ] M2 Confronto provider: 2-3 registrazioni vere su Mistral, Speechmatics Melia 1 ed
-  Enhanced. Spesa stimata sotto 1 $, da approvare prima del lancio.
-- [ ] M3 Ingest in Nexus, progettato il 28/10 (`nexus/docs/features/audio-stream.md`):
-  extension con token dedicato, sessione per connessione, audio scritto a pezzi e recuperato
-  dopo un riavvio, AAC alla chiusura, creazione della `transcription`, `wss://` dietro
-  Cloudflare e Caddy in produzione. Stima 1-2 giorni.
-- [ ] M4 Uso reale: misurare quanto spesso capitano audio offline e pause dimenticate.
+- [ ] M5 Verifica sul ciondolo, mezza giornata: app Swift minima che si collega, legge versione,
+  funzioni, batteria e info della memoria, riceve audio e pulsante, scrive l'ora. Chiude le
+  voci di `ARCHITECTURE.md #Verifiche aperte`, compreso il background con l'account gratuito.
+  Se il background non regge, ci si ferma e si rivaluta.
+- [ ] M6 Inoltro dal vivo: l'app sostituisce l'app Omi verso `audio_stream` senza modifiche a
+  Nexus (PCM, `CloseStream`, ping), con pausa al doppio tocco, vibrazione, notifiche locali e
+  configurazione scaricata da Nexus (prima aggiunta lato Nexus).
+- [ ] M7 Stato in Nexus: eventi del ciondolo e segnale periodico, avviso su Telegram se l'app
+  tace o il ciondolo resta scollegato.
+- [ ] M8 Offline dalla memoria: lettura alla connessione, invio a Nexus con l'ora vera,
+  avanzamento solo dopo la conferma. Richiede l'aggiunta in Nexus.
+- [ ] M9 Note a tocchi: apertura e chiusura, controllo della voce, invio a Nexus come nota.
+
+Dopo M9 due settimane d'uso, poi la scelta: tenere Omi (e l'account Apple a 99 $) o passare al
+reSpeaker Clip riscrivendo solo il collegamento.
 
 ## Domande aperte
 
-- Audio offline verso Nexus: per ora condivisione manuale del WAV. Chiesto a Omi di
-  includerlo nella issue [#20174](https://github.com/BasedHardware/omi/issues/20174)
-  (29/10/2026: una connessione per registrazione, ora di registrazione nell'URL); un
-  contributore si è offerto di scrivere la PR.
-- Pausa che vale anche da scollegato: chiesta come opzione sulla PR firmware
-  [#23735](https://github.com/BasedHardware/omi/pull/23735) (29/10/2026). Finché manca,
-  per non registrare si spegne il ciondolo.
-- Autenticazione in produzione: token nella query o header dal JSON avanzato dell'app.
-- Segmentazione con LLM e filtro sulla mia voce: solo se M4 mostra pause dimenticate frequenti.
+- Pausa che vale anche da scollegato: arriva col firmware 3.0.24 (muto salvato), pubblicato il
+  9/11 ma al 0% il 26/11. Sul 3.0.21 forse si ottiene col guadagno del microfono a 0, da
+  misurare in M5.
+- Accensioni accidentali in tasca: quante sono si misura in M5 e M6. Lo spegnimento dall'app
+  arriva col 3.0.24.
+- PR vibrazione [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912):
+  aperta senza revisione, in conflitto con `main` dal 26/11. Con l'app nostra la vibrazione la
+  comandiamo noi: si decide se chiuderla o tenerla per chi usa l'app Omi.
+- Segmentazione con LLM e filtro sulla mia voce: solo se l'uso mostra pause dimenticate
+  frequenti.

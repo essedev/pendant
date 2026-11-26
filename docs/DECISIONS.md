@@ -174,3 +174,53 @@ non risolve la pausa, che decide il firmware); il fork dell'app (enorme, legata 
 Omi, cambia di circa 75 PR al giorno); il fork del firmware (fattibile, la chiave di firma è
 nel repo, ma un firmware che rompe il Bluetooth blocca il ciondolo). Le correzioni vere si
 chiedono a Omi: issue #20174 e PR #23735.
+
+## 2026-11-26 App iOS nostra al posto dell'app Omi
+
+Un'app iOS nostra riceve l'audio dal ciondolo via Bluetooth e lo manda a Nexus; l'app Omi
+resta solo per aggiornare il firmware. Supera la decisione del 2026-10-29 e, quando l'app
+sarà in uso, il trasporto con lo STT personalizzato del 2026-10-28. Riaperta perché l'app Omi
+accumula copie locali che non rilascia mai (21 h il 26/11), non espone stato, batteria né
+pulsante, e i maintainer accettano poche PR. Il protocollo non va più ricostruito: il codice del
+firmware 3.0.21 e quello Swift nativo dell'app Omi (MIT) lo danno intero. Serve anche a
+decidere se tenere Omi o passare al reSpeaker Clip dopo due settimane d'uso. Scartati: restare
+sull'app Omi con PR (troppo lente), il fork dell'app Omi (enorme, legata al loro backend),
+comprare subito il Clip (in prevendita, e l'app serve comunque).
+
+## 2026-11-26 Swift nativo, solo iPhone
+
+L'app è in Swift con CoreBluetooth. Il Bluetooth in background e il ripristino dello stato
+dopo che iOS chiude l'app si gestiscono direttamente, e il riferimento è già Swift
+(`OmiBleManager.swift` dell'app Omi). Scartato Flutter: avrebbe permesso di copiare il Dart
+dell'app Omi, ma su iOS anche loro sono passati al Bluetooth nativo, e il livello in più
+complica background e debug. Android non serve.
+
+## 2026-11-26 Configurazione da Nexus, niente valori nel codice
+
+Ogni valore di comportamento dell'app (mappa dei gesti, tempi, politica dell'offline,
+notifiche, versioni del firmware supportate) sta in una configurazione che l'app scarica da
+Nexus. Lo schema con i default e i limiti vive nell'app, che tiene l'ultima configurazione
+valida. Nell'app restano solo URL e token. Scartata una schermata di impostazioni nell'app:
+due posti dove cambiare le cose, e ogni modifica di default richiederebbe un nuovo build, che
+con l'account gratuito scade ogni 7 giorni.
+
+## 2026-11-26 Note col pulsante a tocchi, niente premi e parla
+
+Col firmware 3.0.21 le note si aprono e chiudono con dei tocchi, non tenendo premuto. Il
+firmware non manda l'inizio di una pressione, non manda il rilascio di una pressione tenuta, e
+a 3 s si spegne (`button.c`). Il premi e parla richiede un firmware modificato: si rivaluta col
+Clip o se Omi aggiunge gli eventi di pressione (issue #25872). Scartato ricavare la pressione
+dal flusso audio: non ha un inizio affidabile.
+
+## 2026-11-26 Firmware di serie, 3.0.24 solo dal rollout
+
+L'app lavora sul firmware distribuito, oggi il 3.0.21, e usa muto e spegnimento dall'app quando
+il 3.0.24 arriva a tutti. Scartato installarlo a mano adesso: Omi lo tiene al 0% di proposito,
+e un aggiornamento fallito si recupera solo con un J-Link. Si rivaluta se l'app regge e le
+accensioni accidentali restano il problema principale.
+
+## 2026-11-26 Account Apple gratuito per la prova
+
+La prova di due settimane usa il "Personal Team" di Xcode: l'app scade ogni 7 giorni e si
+rinnova via Wi-Fi o con SideStore. I 99 $ l'anno si spendono solo se l'app viene tenuta.
+Bastano le notifiche locali: quelle che nascono da Nexus vanno su Telegram.

@@ -2,21 +2,26 @@
 
 ## Cos'è
 
-Integrazione del ciondolo Omi con Nexus: l'app Omi manda l'audio a un endpoint nostro invece
-che al cloud Omi, e Nexus lo trascrive. Il ciondolo fai-da-te su ESP32-S3 progettato prima è
+Il ciondolo Omi collegato a Nexus. Oggi l'app Omi manda l'audio a `audio_stream` di Nexus con
+lo STT personalizzato; in costruzione un'app iOS nostra in Swift (`app/`) che la sostituisce e
+lascia all'app Omi solo gli aggiornamenti del firmware. Il ciondolo fai-da-te su ESP32-S3 è
 superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 
 ## Dove sta cosa
 
-- `docs/ARCHITECTURE.md`: flusso, hardware e consumi di Omi, protocollo dello STT
-  personalizzato, impostazioni dell'app, esito del prototipo, rischi.
-- `docs/DECISIONS.md`: scelte fatte e perché.
-- `docs/ROADMAP.md`: milestone e domande aperte.
-- `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app.
-- `docs/archive/`: architettura, BOM e disegni del ciondolo fai-da-te. Si legge, non si aggiorna.
-- Clone di Omi per le PR: `~/Development/Projects/omi`, remote `origin` (BasedHardware, come
-  vogliono i loro controlli su `origin/main`) e `fork` (`essedev/omi`). Una PR = un worktree
-  accanto al clone. Flutter 3.44.5 in `~/Development/tools/flutter-3.44.5`.
+- `docs/ARCHITECTURE.md`: flusso, protocollo Bluetooth del firmware, componenti dell'app,
+  custodia dell'audio, configurazione, contratto con Nexus, verifiche aperte, rischi.
+- `docs/DECISIONS.md`: scelte fatte e perché. `docs/ROADMAP.md`: milestone e domande aperte.
+- `docs/CONVENTIONS.md`: regole di codice e di prosa.
+- `app/`: l'app iOS (nasce con M5).
+- `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app
+  Omi.
+- `docs/archive/`: il ciondolo fai-da-te. Si legge, non si aggiorna.
+- Lato Nexus: repo `~/Development/Projects/nexus`, `docs/features/audio-stream.md` (contratto
+  del WebSocket) e `backend/src/extensions/audio_stream/`.
+- Clone di Omi: `~/Development/Projects/omi`, remote `origin` (BasedHardware) e `fork`
+  (`essedev/omi`). Una PR = un worktree accanto al clone. Flutter 3.44.5 in
+  `~/Development/tools/flutter-3.44.5`.
 
 ## Comandi
 
@@ -24,18 +29,28 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   127.0.0.1:8765, scrive WAV ed `events.jsonl` in `prototype/recordings/`).
 - Esposizione per l'iPhone: `cloudflared tunnel --url http://localhost:8765`, poi nell'app
   `wss://<nome>.trycloudflare.com/stream?token=<token>`. Il tunnel lo autorizza Simone.
+- Firmware distribuito per il CV1: `curl -s "https://api.omi.me/v2/firmware/stable?device_model=Omi%20CV%201"`.
 
 ## Gotcha
 
+- **Il protocollo si legge al tag del firmware in uso**, non su `main`:
+  `git -C ~/Development/Projects/omi show Omi_CV1_v3.0.21:omi/firmware/omi/src/<file>`. `main`
+  ha funzioni (muto, spegnimento, `LIVE_MARK`) che il ciondolo non ha. `sdks/device/PROTOCOL.md`
+  è indietro rispetto al codice.
+- **Il riferimento per il Bluetooth su iOS è Swift**: `app/ios/Runner/Ble/OmiBleManager.swift`
+  nel clone Omi, non il Dart.
+- **Una sola connessione Bluetooth**: con l'app Omi collegata l'app nostra non riceve niente.
+- **Nessun valore di comportamento nel codice dell'app**: va nello schema della configurazione
+  (`ARCHITECTURE.md #Configurazione`).
+- **L'iPhone vero serve**: il simulatore non ha Bluetooth. L'app firmata col Personal Team
+  scade dopo 7 giorni.
 - L'app Omi accetta solo URL `wss://`. Tailscale con il nome MagicDNS non ha funzionato
-  dall'iPhone (risoluzione del nome fallita nell'app): usare il tunnel Cloudflare.
-- Con lo STT personalizzato l'app tiene comunque aperta una connessione col backend Omi: le
-  impostazioni che tengono l'audio fuori dal cloud sono in `ARCHITECTURE.md #Trasporto`.
+  dall'iPhone: usare il tunnel Cloudflare.
 - `prototype/recordings/` contiene voci vere: è in `.gitignore` e non va mai committata.
 - Il repo Omi ha regole di contribuzione proprie (`AGENTS.md`, template della PR,
   `make preflight`, `scripts/pr-preflight`): leggerle prima di toccarlo. `make preflight` va
   lanciato con `OMI_PR_BODY_FILE=<bozza>` o fallisce su `ui-evidence`. Push e PR col solo
   account `essedev` (`GH_TOKEN=$(gh auth token --user essedev)`) ed email `hello@esse.dev`,
   mai pubblicare senza il via di Simone.
-- Il codice dell'app Omi cambia ogni giorno: prima di affermare come si comporta, leggere il
-  clone aggiornato (`git -C ~/Development/Projects/omi fetch upstream main`).
+- Il codice dell'app Omi cambia ogni giorno: prima di affermare come si comporta, aggiornare il
+  clone (`git -C ~/Development/Projects/omi fetch origin main --tags`).
