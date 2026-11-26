@@ -310,21 +310,28 @@ La fa Nexus, a sessione chiusa, con la pipeline `transcription`: prima l'Executo
 di casa, poi la riserva cloud (Voxtral, scelta col confronto del 28/10, DECISIONS #100 di
 Nexus). Dettagli nel repo `nexus`, `docs/features/transcriptions.md`.
 
-## Verifiche aperte
+## Verifiche sul ciondolo
 
-Lette nel codice, da confermare sul ciondolo con la prima milestone.
+Fatte il 26/11/2026 con l'app di verifica (M5), firmware 3.0.21, iPhone 15 Pro. Il log si
+scarica con `make logs`.
 
-- Il Bluetooth in background regge ore con l'account gratuito, e il ripristino dello stato
-  riprende la connessione dopo che iOS ha chiuso l'app.
-- La dimensione delle notifiche audio rispetto all'MTU (`transport.c:1075-1099`).
-- Il guadagno del microfono a `0` è un muto vero o solo -20 dB: il codice lo chiama "mute", il
-  registro dell'nRF5340 dice minimo. Se è muto, è una pausa che regge anche da scollegato già
-  sul 3.0.21.
-- Il pulsante: che una pressione fra 0,3 e 3 s non mandi niente, e che la polarità del
-  pulsante nel codice (`button.c:275` contro il risveglio a livello basso, `button.c:412`) non
-  inverta qualcosa.
-- La lettura della memoria: blocchi da 440 byte con byte residui in coda, e quanto dura
-  scaricare un'ora di offline.
+| Verifica | Esito |
+|---|---|
+| Collegamento e lettura | Modello `Omi CV 1`, firmware `3.0.21`, codec `21`, bitmask `0x1EC` come nel codice |
+| Ora | Scritta a ogni connessione, la memoria la vede valida |
+| Audio | Circa 46 notifiche al secondo da circa 85 B: un frame per notifica, nessuna spezzatura. Zero persi su 7.600 pacchetti. Nel silenzio il flusso si ferma, come previsto |
+| Pulsante | Tocco: `singleTap` più `release`. Doppio tocco: `doubleTap` più `release`. Pressione di 1-2 s, provata due volte: nessun evento. Il premi e parla è escluso |
+| Vibrazione | Le tre durate funzionano |
+| Memoria | Info letta: 53 pacchetti in attesa, capacità 1.115.064 pacchetti da 444 B (circa 30 h di parlato, stima a 100 ms per pacchetto) |
+| Batteria | Da 100% a 92% nei primi 2 minuti: forse il primo valore era vecchio, da seguire |
+
+Ancora aperte:
+
+- Il Bluetooth in background per ore con l'account gratuito, e il ripristino dello stato dopo
+  che iOS ha chiuso l'app. Si misura nell'uso di M6.
+- Il guadagno del microfono a `0`: dopo il cambio i pacchetti pesavano ancora circa 80 B, ma
+  senza un confronto fra parlato e silenzio non si sa se è un muto o solo -20 dB.
+- La lettura della memoria: formato dei blocchi da 440 byte e tempo per scaricare un'ora.
 - Quanto spesso il ciondolo si accende da solo in tasca.
 
 ## Rischi

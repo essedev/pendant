@@ -5,19 +5,19 @@
 Omi in uso con l'app Omi e lo STT personalizzato: l'audio arriva a `audio_stream` di Nexus, in
 produzione dal 28/10/2026, e la trascrizione la fa Nexus (Voxtral di riserva, confronto fatto il
 28/10). Il 26/11/2026 si è deciso di scrivere un'app iOS nostra (DECISIONS): architettura in
-`ARCHITECTURE.md #L'app`. Prossimo: la verifica sul ciondolo.
+`ARCHITECTURE.md #L'app`. Verifica sul ciondolo fatta (M5). Prossimo: l'inoltro dal vivo (M6).
 
 ## Prossime milestone
 
-- [ ] M5 Verifica sul ciondolo, mezza giornata: app Swift minima che si collega, legge versione,
-  funzioni, batteria e info della memoria, riceve audio e pulsante, scrive l'ora. Chiude le
-  voci di `ARCHITECTURE.md #Verifiche aperte`, compreso il background con l'account gratuito.
-  Se il background non regge, ci si ferma e si rivaluta.
+- [x] M5 Verifica sul ciondolo (26/11/2026): app di verifica in `app/`, esiti in
+  `ARCHITECTURE.md #Verifiche sul ciondolo`. Il premi e parla è escluso; il background resta da
+  misurare nell'uso di M6.
 - [ ] M6 Inoltro dal vivo: l'app sostituisce l'app Omi verso `audio_stream` senza modifiche a
-  Nexus (PCM, `CloseStream`, ping), con pausa al doppio tocco, vibrazione, notifiche locali e
-  configurazione scaricata da Nexus (prima aggiunta lato Nexus).
-- [ ] M7 Stato in Nexus: eventi del ciondolo e segnale periodico, avviso su Telegram se l'app
-  tace o il ciondolo resta scollegato.
+  Nexus (Opus decodificato in PCM sul telefono, `CloseStream`, ping), con pausa al doppio
+  tocco, vibrazione di conferma e notifiche locali. Valori dai default dello schema; URL e token
+  nel portachiavi. Chiude la misura del background.
+- [ ] M7 Stato e configurazione in Nexus: configurazione scaricata da Nexus, eventi del ciondolo
+  e segnale periodico, avviso su Telegram se l'app tace o il ciondolo resta scollegato.
 - [ ] M8 Offline dalla memoria: lettura alla connessione, invio a Nexus con l'ora vera,
   avanzamento solo dopo la conferma. Richiede l'aggiunta in Nexus.
 - [ ] M9 Note a tocchi: apertura e chiusura, controllo della voce, invio a Nexus come nota.

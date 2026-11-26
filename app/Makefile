@@ -11,7 +11,7 @@ DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/
 	and x['connectionProperties'].get('pairingState')=='paired' and x['connectionProperties'].get('tunnelState')!='unavailable'),''))" 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help project build install run test lint format check devices clean
+.PHONY: help project build install run test lint format check logs devices clean
 
 help: ## Elenca i comandi
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -45,6 +45,12 @@ format: ## Formatta il codice Swift
 	swift format -i -r $(SOURCES)
 
 check: lint test build ## Giro completo: formattazione, test, build per l'iPhone
+
+logs: ## Copia dall'iPhone il log e i file della verifica in app/.logs
+	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
+	mkdir -p .logs
+	xcrun devicectl device copy from --device $(DEVICE) --domain-type appDataContainer \
+		--domain-identifier $(BUNDLE_ID) --source Documents --destination .logs
 
 devices: ## Elenca i dispositivi visti da Xcode
 	xcrun devicectl list devices

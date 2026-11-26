@@ -10,7 +10,7 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 ## Dove sta cosa
 
 - `docs/ARCHITECTURE.md`: flusso, protocollo Bluetooth del firmware, componenti dell'app,
-  custodia dell'audio, configurazione, contratto con Nexus, verifiche aperte, rischi.
+  custodia dell'audio, configurazione, contratto con Nexus, verifiche sul ciondolo, rischi.
 - `docs/DECISIONS.md`: scelte fatte e perché. `docs/ROADMAP.md`: milestone e domande aperte.
 - `docs/CONVENTIONS.md`: regole di codice e di prosa.
 - `app/`: l'app iOS. `project.yml` (XcodeGen), `Pendant/` il target dell'app, `PendantKit/`
