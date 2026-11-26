@@ -20,9 +20,11 @@ restano in `docs/archive/`.
 ```
 Omi ──BLE, Opus 16 kHz──> app pendant (iPhone) ──wss──> Nexus audio_stream ──> transcription
      <── ora, vibrazione,         │                       (sessione = connessione)
-         comandi della memoria    ├──> Nexus: stato del ciondolo, segnale periodico, note
-                                  └──< Nexus: configurazione dell'app
+         comandi della memoria    └──> Nexus: stato del ciondolo, segnale periodico, note
 ```
+
+L'app non conosce Nexus: parla un protocollo (oggi quello di `audio_stream`) verso un server
+che si imposta nell'app, con indirizzo e token. Nexus è il server che uso io.
 
 - **Registrazione continua**: finché il ciondolo è collegato e non sono in pausa, l'app
   inoltra l'audio a `audio_stream`. Una connessione è una conversazione: si apre alla ripresa
@@ -181,7 +183,8 @@ che su iOS ha sostituito il plugin Flutter.
 | Gesti | Riconoscimento dei gesti dagli eventi del firmware, mappa gesto-azione dalla configurazione |
 | Note | Ritaglio dell'audio fra apertura e chiusura, controllo che ci sia voce, invio a Nexus |
 | Stato | Eventi del ciondolo e segnale periodico verso Nexus, notifiche locali |
-| Configurazione | Scarica la configurazione da Nexus, la valida, tiene l'ultima buona |
+| Configurazione | Impostazioni sul telefono, validate contro lo schema con default e limiti |
+| Comandi di sistema | Controlli per tasto Azione, Centro di Controllo e blocco schermo, attività in tempo reale (`docs/features/system-controls.md`) |
 
 ### Ciclo di una connessione
 
@@ -231,9 +234,9 @@ se due azioni non bastano: è una scelta della configurazione, non del firmware.
 ### Configurazione
 
 Nessun valore di comportamento è scritto nel codice. Lo schema della configurazione (chiavi,
-tipi, limiti, default) vive nell'app e i valori arrivano da Nexus, che è dove li modifico.
-L'app tiene l'ultima configurazione valida e, se Nexus non risponde, lavora con quella.
-Nell'app restano solo URL di Nexus e token, nel portachiavi di iOS.
+tipi, limiti, default) vive nell'app, i valori si cambiano dalle impostazioni dell'app e
+restano sul telefono. Indirizzo del server e token stanno nel portachiavi di iOS. Un valore
+fuori dai limiti si riporta nei limiti, uno sconosciuto si ignora.
 
 | Gruppo | Esempi |
 |---|---|
@@ -243,14 +246,16 @@ Nell'app restano solo URL di Nexus e token, nel portachiavi di iOS.
 | Stato | Intervallo del segnale periodico, soglia di batteria bassa, quali notifiche locali |
 | Inoltro | Lingua, intervallo del ping, tempo di riconnessione |
 | Firmware | Versioni supportate e funzioni da usare su ognuna |
+| Ciondolo | LED: segue la registrazione (acceso quando registra, spento in pausa, default), sempre acceso, sempre spento; luminosità. Il firmware decide il colore, l'app solo la luminosità (`led.c`); da scollegato vale l'ultimo valore salvato. Il LED acceso è anche l'avviso per chi ti sta davanti |
 
 Restano fissi solo i valori del firmware (tempi del pulsante, formato dei pacchetti): l'app li
 legge dal protocollo, non li sceglie.
 
-## Contratto con Nexus
+## Contratto col server
 
-Il primo passo non cambia Nexus: l'app parla a `audio_stream` come l'app Omi. Contratto
-completo nel repo `nexus`, `docs/features/audio-stream.md`.
+L'app parla a qualunque server che implementi questo protocollo; oggi è `audio_stream` di
+Nexus, che lo parla come l'app Omi. Contratto completo nel repo `nexus`,
+`docs/features/audio-stream.md`.
 
 | Punto | Valore |
 |---|---|
@@ -266,11 +271,22 @@ Da aggiungere in Nexus, in proposta, uno alla volta quando la milestone li richi
 
 | Aggiunta | Perché |
 |---|---|
-| Configurazione dell'app | Un documento con i valori della sezione Configurazione, modificabile in Nexus |
+| Segnalibri | Il messaggio `Mark` dei comandi di sistema: un'ora dentro la conversazione. Oggi `audio_stream` lo ignora senza danni |
 | Eventi del ciondolo e segnale periodico | Storico dello stato e avviso su Telegram se l'app tace |
 | Audio offline | Pezzi con l'ora vera di registrazione, conferma per pezzo e idempotenza su `seq` |
 | Note | Audio di una nota, trascritto e salvato separato dalle conversazioni |
 | Opus invece di PCM | Da circa 115 a circa 7 MB l'ora di dati dal telefono, decodifica su Nexus |
+
+## Interfaccia
+
+Scelta il 26/11/2026 sul mock `docs/concepts/concept-a-app-fable.html`, variante L (DECISIONS):
+la home è il display di un registratore, unica superficie tinta, col tempo a unità piccole
+(`12m08s`), il livello a tacche con la scala in dB e la riga del server. Palette grafite e
+rosso: il rosso vuol dire solo "registra" (spia piena sul display, livello acceso) e "fai
+registrare" (il tasto Riprendi). Display come materiale (cornice d'alluminio, vetro con un
+riflesso), alluminio caldo come seconda tinta. Un solo tasto, incassato nella stessa cornice:
+grafite "Pausa" mentre registra, rosso "Riprendi" quando è fermo. Schede: Adesso, Oggi,
+Impostazioni. Font Archivo. Vetro solo sulla barra in basso, che galleggia sul contenuto.
 
 ## Distribuzione
 

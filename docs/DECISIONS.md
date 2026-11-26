@@ -195,14 +195,15 @@ dopo che iOS chiude l'app si gestiscono direttamente, e il riferimento è già S
 dell'app Omi, ma su iOS anche loro sono passati al Bluetooth nativo, e il livello in più
 complica background e debug. Android non serve.
 
-## 2026-11-26 Configurazione da Nexus, niente valori nel codice
+## 2026-11-26 App indipendente, server configurabile, impostazioni sul telefono
 
-Ogni valore di comportamento dell'app (mappa dei gesti, tempi, politica dell'offline,
-notifiche, versioni del firmware supportate) sta in una configurazione che l'app scarica da
-Nexus. Lo schema con i default e i limiti vive nell'app, che tiene l'ultima configurazione
-valida. Nell'app restano solo URL e token. Scartata una schermata di impostazioni nell'app:
-due posti dove cambiare le cose, e ogni modifica di default richiederebbe un nuovo build, che
-con l'account gratuito scade ogni 7 giorni.
+L'app non è legata a Nexus: parla un protocollo (oggi quello di `audio_stream`) verso un server
+che si imposta nell'app con indirizzo e token, e nell'interfaccia il server si chiama solo
+Server. Ogni valore di comportamento sta nello schema della configurazione, con default e
+limiti, e si cambia dalle impostazioni dell'app, che restano sul telefono. Riscrive la scelta
+della mattina, che voleva i valori scaricati da Nexus: avrebbe legato l'app a un server solo e
+richiesto un'aggiunta a Nexus prima di poter cambiare un'impostazione. Scartato anche tenere le
+impostazioni sia nell'app sia sul server: due posti da tenere allineati senza un bisogno.
 
 ## 2026-11-26 Note col pulsante a tocchi, niente premi e parla
 
@@ -234,3 +235,24 @@ Scartati: una libreria libopus (dipendenza in più per una cosa che il sistema f
 subito l'Opus a Nexus (circa 7 invece di 115 MB l'ora, ma richiede di cambiare `audio_stream`:
 si fa dopo, insieme alle altre aggiunte lato Nexus). Il token va nell'header `Authorization`,
 non nell'URL, che proxy e Cloudflare scrivono nei log.
+
+## 2026-11-26 Interfaccia: il display di un registratore, grafite e rosso
+
+L'app ha la forma della variante L del mock (`docs/concepts/concept-a-app-fable.html`,
+`ARCHITECTURE.md #Interfaccia`): la home è il display di un registratore, il rosso vuol dire
+solo registrare, un solo tasto incassato (grafite "Pausa", rosso "Riprendi"). Scartati, dopo
+dodici giri: la schermata tecnica di oggi, il telecomando col pulsante enorme, il diario come
+home, la lista nativa di iOS, il ciondolo fotografato o disegnato al centro, la linea a tre
+fermate (`concept-a-app.html`, varianti A-I, J e K), altre undici coppie di colori, e per la
+pausa la slitta, i tasti a scatto, la spia toccabile, il tasto nel display, il tasto di vetro e
+il tieni premuto. Il tieni premuto per registrare un pezzo è scartato anche nel merito: l'app
+si apre per controllare, non per registrare.
+
+## 2026-11-26 Comandi di sistema per la pausa e i segnalibri (proposta)
+
+Pausa e ripresa e "segna questo momento" diventano controlli di sistema (tasto Azione, Centro
+di Controllo, blocco schermo) più un'attività in tempo reale, così dal telefono non serve
+aprire l'app; il segnalibro è un terzo gesto che il ciondolo non può dare. Gli intent adottano
+`LiveActivityIntent` per girare nel processo dell'app, dove ci sono Bluetooth e WebSocket.
+Dettagli e verifiche in `docs/features/system-controls.md`. Scartato `AudioRecordingIntent`:
+serve a chi registra col microfono del telefono e chiede di partire dall'app in primo piano.

@@ -13,6 +13,8 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   custodia dell'audio, configurazione, contratto con Nexus, verifiche sul ciondolo, rischi.
 - `docs/DECISIONS.md`: scelte fatte e perché. `docs/ROADMAP.md`: milestone e domande aperte.
 - `docs/CONVENTIONS.md`: regole di codice e di prosa.
+- `docs/features/`: una feature per file (comandi di sistema). `docs/concepts/`: i mock HTML
+  dell'interfaccia; `docs/concepts/inspo/` è ispirazione scaricata, non versionata.
 - `app/`: l'app iOS. `project.yml` (XcodeGen), `Pendant/` il target dell'app, `PendantKit/`
   il pacchetto con la logica.
 - `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app

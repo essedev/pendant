@@ -4,8 +4,8 @@
 
 Dal 26/11/2026 l'audio del ciondolo arriva a `audio_stream` di Nexus con l'app iOS nostra
 (M5 e M6); l'app Omi resta solo per il firmware, col ciondolo dimenticato. La trascrizione la
-fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. Prossimo: stato e configurazione in Nexus
-(M7).
+fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. Prossimo: l'app vera (M7), interfaccia
+scelta sul mock del 26/11.
 
 ## Prossime milestone
 
@@ -16,13 +16,17 @@ fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. Prossimo: stato e configuraz
   modifiche a Nexus, con pausa al doppio tocco, vibrazione e notifiche locali. Prova da capo a
   fondo riuscita (`ARCHITECTURE.md #Verifiche sul ciondolo`). Resta da misurare il background
   per ore nell'uso reale.
-- [ ] M7 Stato e configurazione in Nexus: configurazione scaricata da Nexus, eventi del ciondolo
-  e segnale periodico, avviso su Telegram se l'app tace o il ciondolo resta scollegato.
-- [ ] M8 Offline dalla memoria: lettura alla connessione, invio a Nexus con l'ora vera,
-  avanzamento solo dopo la conferma. Richiede l'aggiunta in Nexus.
-- [ ] M9 Note a tocchi: apertura e chiusura, controllo della voce, invio a Nexus come nota.
+- [ ] M7 L'app vera: l'interfaccia scelta (`ARCHITECTURE.md #Interfaccia`), le impostazioni sul
+  telefono con server configurabile, il LED che segue la registrazione, i comandi di sistema
+  (tasto Azione, Centro di Controllo, blocco schermo, attività in tempo reale:
+  `docs/features/system-controls.md`). Target a iOS 26 per il vetro.
+- [ ] M8 Stato verso il server: eventi del ciondolo e segnale periodico, avviso su Telegram se
+  l'app tace o il ciondolo resta scollegato. Aggiunta lato Nexus.
+- [ ] M9 Offline dalla memoria: lettura alla connessione, invio al server con l'ora vera,
+  avanzamento solo dopo la conferma. Richiede l'aggiunta lato Nexus.
+- [ ] M10 Note a tocchi: apertura e chiusura, controllo della voce, invio al server come nota.
 
-Dopo M9 due settimane d'uso, poi la scelta: tenere Omi (e l'account Apple a 99 $) o passare al
+Dopo M10 due settimane d'uso, poi la scelta: tenere Omi (e l'account Apple a 99 $) o passare al
 reSpeaker Clip riscrivendo solo il collegamento.
 
 ## Domande aperte
