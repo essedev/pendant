@@ -288,6 +288,22 @@ riflesso), alluminio caldo come seconda tinta. Un solo tasto, incassato nella st
 grafite "Pausa" mentre registra, rosso "Riprendi" quando è fermo. Schede: Adesso, Oggi,
 Impostazioni. Font Archivo. Vetro solo sulla barra in basso, che galleggia sul contenuto.
 
+Colori, presi dal mock (coppia Grafite e rosso con la seconda tinta):
+
+| Ruolo | Chiaro | Scuro |
+|---|---|---|
+| Fondo | `#e4e5e2` | `#141518` |
+| Celle | `#f1f1ef` | `#1d1f23` |
+| Display | `#2b2e34` | `#23262b` |
+| Inchiostro del display | `#f1f2f4` | `#eceef1` |
+| Inchiostro secondario del display | `#a9aeb7` | `#9ba0a9` |
+| Tacche spente e righe del display | `#3d4149`, `#464a53` | `#34383f`, `#3a3e45` |
+| Cornice d'alluminio | `#cfd0cc` | `#2c2f34` |
+| Tasto Pausa | `#2b2e34` | `#3a3e46` |
+| Rosso (spia, livello, Riprendi, adesso) | `#e5402f`, livello `#ff5a47` | `#ff5a47` |
+| Tratti registrati della giornata | `#7c818a` | `#6f757f` |
+| Avvisi | `#9a5600`, sul display `#f0a840` | `#f0a840` |
+
 ## Distribuzione
 
 - **Account Apple gratuito**: Xcode firma con il "Personal Team" e l'app scade dopo 7 giorni.
