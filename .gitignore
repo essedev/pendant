@@ -19,3 +19,6 @@ app/PendantKit/.build/
 app/PendantKit/.swiftpm/
 app/Local.xcconfig
 app/Pendant/Info.plist
+
+# Design inspiration downloaded from Dribbble: other people's work, never committed
+docs/concepts/inspo/

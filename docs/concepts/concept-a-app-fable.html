@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept A - App, giro 5</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=Figtree:wght@400..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet" />
+		<!--
+			Concept A, giro 5: rilettura critica di G, H, I (giro 4) e tre direzioni rifatte da zero.
+			Il mock dei giri 1-4 resta in concept-a-app.html, questo file non lo sostituisce.
+
+			Giro 6: L è la migliore finora; manca un colore d'accento convinto. Pannello di taratura
+			(solo su L, in basso a destra): quattro coppie accento e display, ognuna motivata, più un
+			accento libero. La riga dei valori si copia. Le coppie:
+			1 LED blu: il colore del LED del ciondolo, quello di oggi.
+			2 Rosso registrazione: la convenzione di ogni registratore, display grigio neutro.
+			3 Verde display: i display retroilluminati dei registratori (voice-02), accento verde.
+			4 Grafite: monocromo, nessun colore; lo stato lo dicono forma e testo.
+			L'ambra resta riservata agli avvisi (server irraggiungibile), quindi non è fra gli accenti.
+			Giro 7: "un colore tipo blu per le superfici e un accento tipo arancione". Due coppie nuove:
+			blu sulle superfici (display, tasto pausa, tratti registrati della giornata) e arancio
+			solo su ciò che è vivo (livello acceso, punto del tag, segno di adesso). Gli avvisi
+			passano dall'ambra al rosso, sempre con forma e frase, per non confondersi con l'arancio.
+			5 Blu e arancio: display blu notte con l'inchiostro chiaro, l'arancio che si accende sopra.
+			6 Azzurro e arancio: display azzurro con l'inchiostro blu scuro, tasto blu notte.
+			Giro 8: "altre coppie, anche diverse". Sei coppie con caratteri diversi, stessa logica
+			(una tinta per le superfici, un accento per ciò che è vivo). Niente viola né lime acido,
+			che sono i colori dei mock generati. Gli avvisi restano ambra dove l'accento è lontano,
+			passano al rosso dove l'accento è giallo o arancio.
+			7 Grafite e rosso: apparecchio da studio, superfici antracite, rosso segnale.
+			8 Petrolio e giallo: verde-azzurro profondo, accento giallo come una spia.
+			9 Bosco e corallo: verde scuro, accento corallo caldo.
+			10 Salvia e arancio bruciato: display chiaro grigio-verde, tasto oliva, terroso.
+			11 Notte e menta: blu notte, accento menta.
+			12 LCD e rosso: il display giallo-verde delle calcolatrici e dei registratori, segmenti
+			   scuri, rosso solo sul punto e su adesso.
+			Giro 9: Grafite e rosso "ci sta ma manca qualcosa". Diagnosi: nel silenzio il rosso
+			sparisce (sta solo sul livello), la grafite piena si legge come una card scura e non
+			come un display, fuori dal display è tutto bianco e grigio, il livello non ha scala.
+			Quattro interruttori nel pannello, combinabili, attivi solo su L:
+			- Spia REC: il tag diventa pieno nell'accento finché registra; grigio in pausa,
+			  contorno ambra o rosso se c'è un problema. Il rosso c'è anche nel silenzio.
+			- Materiale: cornice d'alluminio intorno al display (concentrica: raggio 28 più 6),
+			  vetro con un riflesso diagonale, gradiente minimo dall'alto, filo chiaro sul bordo.
+			  In SwiftUI: un overlay di LinearGradient e uno strokeBorder.
+			- Seconda tinta: alluminio caldo per il fondo e per i tratti registrati della
+			  giornata, così il resto dello schermo è legato al display.
+			- Scala: tacche numerate in dB sotto il livello, come un VU meter.
+			Giro 10: ripensare "Metti in pausa". Il tasto attuale pesa quanto il display pur essendo
+			la via secondaria (la principale è il doppio tocco), è ambiguo come ogni play/pausa
+			(dice l'azione, il tag dice lo stato) ed è il bottone generico di qualunque app. Cinque
+			scelte nel pannello (pausa):
+			- tasto: quello di oggi, per confronto.
+			- slitta: interruttore a due posizioni Registra/Pausa; la levetta è lo stato. Raggi
+			  concentrici, 28 fuori e 24 la levetta più 4 di gioco.
+			- display: tasto tondo dentro il display, nella riga del server, come un tasto di
+			  registratore.
+			- vetro: tasto tondo di vetro accanto alla barra in basso, in ogni scheda; il vetro qui
+			  è legittimo perché galleggia sopra il contenuto che scorre.
+			- tieni: tasto leggero; mezzo secondo premuto per la pausa (si riempie), un tocco per
+			  riprendere. Niente pause per sbaglio.
+			Giro 11: "altre opzioni". Tre in più nel pannello:
+			- tasti: due tasti a scatto, Registra e Pausa, come un registratore a cassette; quello
+			  attivo resta abbassato (pieno, ombra interna), l'altro sporge.
+			- spia: la spia del display è il comando; la tocchi e passa da Registra a In pausa.
+			  Nessun tasto in più, una riga sotto lo dice.
+			- angolo: un piccolo tasto Pausa in alto a destra nel display; la batteria scende nella
+			  riga del server.
+			Giro 12: "non ci siamo, un bottone singolo ma migliore". Tolte slitta, display, vetro,
+			tieni, tasti, spia e angolo. Il tasto resta uno, con un'idea: il rosso vuol dire "fai
+			registrare". Mentre registra il tasto è grafite e dice Pausa; in pausa diventa rosso e dice
+			Riprendi, come il tasto REC di un registratore. Tre forme nel pannello:
+			- incassato: a tutta larghezza, dentro una cornice d'alluminio come il display (raggi
+			  34 = 28 + 6), etichetta corta.
+			- tondo: un tasto REC tondo da 64 dentro un anello da 76, al centro, con l'etichetta
+			  sotto.
+			- capsula: una capsula chiara al centro, larga quanto serve, con l'icona in un cerchio
+			  che prende il colore dello stato.
+			Fuori dall'app, da aggiungere a qualunque scelta: il controllo nel Centro di Controllo,
+			sul blocco schermo e sul tasto Azione dell'iPhone (Controls e App Intents di iOS), più
+			l'attività in tempo reale sul blocco schermo col tempo e la pausa. Così la pausa non
+			richiede di aprire l'app.
+			Tasti: j, k, l per la variante, t tema, s cambia lo stato (registra, in pausa, ciondolo
+			scollegato, server irraggiungibile), p nasconde la barra. Il pulsante di pausa funziona.
+
+			CRITICA AL GIRO 4 (guardato nel browser, a 390x844)
+			1. Composizione. In G ci sono 270 px vuoti fra il pulsante e le righe, in H 200 px sotto
+			   le righe, in I il pulsante galleggia in mezzo al niente. Lo schermo non è composto: i
+			   blocchi sono impilati dall'alto e quello che avanza resta buco.
+			2. Scala tipografica. Nove misure (13, 14, 15, 16, 17, 18, 28, 34, 68) senza rapporto fra
+			   loro. Le unità del tempo sono 0,42em: a 68 px reggono, a 28 px (H) diventano 12 px e a
+			   18 px (I) 7,5 px, illeggibili. La stessa regola applicata a tre misure diverse.
+			3. Allineamenti. In H il punto LED sporge a sinistra e manda titolo e sottotitolo a
+			   x=39 mentre tavola e righe partono a x=20: due margini sinistri nella stessa schermata.
+			   In G "Vedi" va a capo da solo sotto il valore. In I testo centrato sopra, righe
+			   giustificate sotto.
+			4. Tre varianti, uno scheletro. Intestazione, blocco di stato, capsula di pausa, tre
+			   righe chiave-valore: cambiano font e tinta, non l'idea. È un cambio di palette.
+			5. Le impostazioni sono la lista di iOS con raggio 26, identica nelle tre: nessuna è
+			   disegnata. Il chevron è il carattere "›", la riga "Salvate sul telefono" ha l'icona di
+			   una nuvola (dice il contrario), gli interruttori sono blu.
+			6. Il colore perde significato. Il blu del LED doveva voler dire "registra", ma è anche
+			   sugli interruttori, sulla scheda attiva, sui link: a colpo d'occhio non dice più niente.
+			7. Il vetro. La capsula di pausa è di vetro con l'ombra su un fondo piatto: non c'è niente
+			   dietro da sfocare, quindi è decorazione. Nella barra la scheda attiva è una pillola
+			   grigia con testo blu da 10 px, e l'ingranaggio viene da un altro set di icone (tratto
+			   1,9 contro 2, disegno diverso).
+			8. Dettagli. I: il render copre l'ora della barra di stato (nero su nero) e la Dynamic
+			   Island taglia il cordino; il riquadro nero col raggio 34 su fondo chiaro sembra una
+			   foto incollata. H: i tratti della giornata sono quadrati arrotondati da 15 px che
+			   sembrano pulsanti, e "Conversazione" è ripetuto tre volte. G: le tacche del livello
+			   hanno altezze casuali fisse, non misurano niente. Fili da 0,75 px che su schermo 1x
+			   spariscono.
+
+			COSA CAMBIA IN TUTTE
+			- Scala unica: 11 (solo etichette della barra), 13, 15, 17, 22, 34, più una misura
+			  display per variante. Spazi su griglia da 4 e 8. Raggi concentrici: schermo 55, barra a
+			  21 dal bordo con raggio 32, pillola della scheda a 4 dal bordo della barra con raggio 28.
+			- Il blu del LED vuol dire solo "sta registrando". Selezioni, schede attive e
+			  interruttori sono inchiostro. L'ambra vuol dire "serve un'occhiata" ed è sempre
+			  accompagnata da una forma (anello vuoto) e da una frase.
+			- Vetro solo sulla barra delle schede (e, in J, sul tasto di pausa accanto alla barra):
+			  sono i due comandi che stanno sopra un contenuto che scorre.
+			- Icone: un solo set disegnato qui, griglia 24, tratto 2, estremi tondi. Le impostazioni
+			  sono i cursori (slider.horizontal.3), non l'ingranaggio.
+			- Tempo trascorso 12:08 (la registrazione è partita alle 17:30, sono le 17:42), così non
+			  si confonde con la conversazione delle 17:21 da 4 min 47 s. Il tempo scorre davvero.
+			- Impostazioni riordinate: prima il ciondolo e i suoi gesti, poi la registrazione, in
+			  fondo server e avanzate. Il catalogo è completo in tutte e tre.
+
+			J  LINEA. La scommessa: l'app è un tratto di strada, ciondolo, telefono, server, e i
+			   quattro stati sono "dove si è fermato l'audio". Lo schermo disegna quel tratto come una
+			   linea con tre fermate: tratteggio blu che scorre dove l'audio passa, linea grigia ferma
+			   in pausa, tratto interrotto e anello ambra dove non passa. È un dato, non un ornamento.
+			   Tutto allineato a sinistra su una colonna, niente card.
+			   Carattere: Instrument Sans (600 per titoli e nomi, 400 per il resto, cifre tabellari).
+			   Colori: carta #F7F8FA, inchiostro #14161A, grigio testo #5A606A, filo #DFE2E6,
+			   LED #2F5BEA, ambra #9A5600. Scuro: #0F1114, #ECEEF1, #9BA1AB, #262A30, #8CA6FF, #F0A840.
+			   Pausa: tasto tondo di vetro staccato dalla barra, come la scheda di ricerca di iOS 26,
+			   visibile in ogni scheda. Impostazioni in tre capitoli che ripetono le tre fermate.
+
+			K  DISCO. La scommessa: l'oggetto, ma disegnato e non fotografato. Il ciondolo sta al
+			   centro a grandezza naturale (25 mm sono 152 pt su questo schermo), appeso a un cordino
+			   che scende dalla Dynamic Island. Tre toni piatti dell'acrilico e della grafite, il LED
+			   acceso quando registra, spento in pausa, sagoma tratteggiata quando non è collegato.
+			   Tutto il resto è centrato e sottovoce.
+			   Carattere: Figtree (600 titoli, 500 comandi, 400 testo).
+			   Colori: bruma #E9ECF2, cella #F7F8FB, inchiostro #1B1D22, grigio testo #565C67,
+			   acrilico #C2CAD8, grafite #3A3C41, LED #2F5BEA. Scuro: #0C0E12, #171A20, #ECEEF2,
+			   #9AA1AD, #2A3242, #34373D, #9DB3FF.
+			   Impostazioni a gruppi come iOS, con il disco in testa accanto a nome e batteria.
+
+			L  SCHERMO. La scommessa: il display di un registratore (yuhang, wear-01), una sola
+			   superficie tinta in tutta l'app. Dentro: l'etichetta di stato che si legge insieme al
+			   tempo ("Registra da 12m08s"), il tempo con le unità piccole, il livello della voce a
+			   tacche. Le tacche tornano due volte: la giornata dalle 8 alle 20 a quarti d'ora e il
+			   regolo della luminosità del LED nelle impostazioni.
+			   Carattere: Archivo, con l'asse della larghezza: 112% per le cifre del display, 100% per
+			   il testo.
+			   Colori: scocca #EEEFF1, cella #FAFAFB, inchiostro #15171B, grigio testo #5B6068,
+			   display #C4CEDE con inchiostro #121722, LED #2F5BEA. Scuro: #0D0E10, #17181B, #ECEDEF,
+			   #9A9EA6, display #1A2130 con inchiostro #DDE5F3, LED #86A2FF.
+			   Pausa: un tasto pieno sotto il display, niente vetro.
+
+			Fattibilità in SwiftUI: la linea di J è un Path con tratteggio e dashPhase animata; il
+			disco di K sono tre Circle; il display di L è una VStack su un RoundedRectangle. La barra
+			è la TabView di iOS 26; il tasto staccato di J è un overlay con .glassEffect(). Gli
+			interruttori usano .tint. Instrument Sans, Figtree e Archivo sono OFL, vanno in
+			UIAppFonts. Il vetro qui è una sfocatura con un bordo chiaro: la rifrazione vera l'HTML
+			non la fa.
+
+			Dati veri: firmware 3.0.21, batteria 84%, conversazione delle 17:21 da 4 min 47 s,
+			nexus.esse.dev, 3 conversazioni e 1 h 36 min oggi, 53 pacchetti in memoria, versione
+			0.3.0, firma che scade il 3 dicembre. Plausibili: orari e durate delle altre due
+			conversazioni (11:30 da 48 min, 09:04 da 43 min), i minuti nei vari stati.
+
+			Scelta (26/11/2026): L, palette Grafite e rosso, con spia REC, materiale, seconda tinta e
+			scala accese; tasto incassato. Il pannello resta per riprendere la taratura. Decisione in
+			DECISIONS ("Interfaccia: il display di un registratore") e ARCHITECTURE #Interfaccia.
+			Resta aperto: la scheda Oggi, i comandi di sistema (docs/features/system-controls.md).
+		-->
+		<style>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			body { min-height: 100vh; background: #dcdee3; font: 13px/1.4 system-ui, -apple-system, sans-serif; }
+			:root[data-theme='dark'] body { background: #1a1b1e; }
+			[hidden] { display: none !important; }
+			button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; }
+			button:focus-visible { outline: 2px solid var(--ink, #fff); outline-offset: 2px; }
+			h1, h2, h3, p, ol, ul, figure { margin: 0; padding: 0; }
+			ol, ul { list-style: none; }
+
+			/* Concept chrome. */
+			.switch { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; background: #111214; color: #b4b7bd; }
+			.switch button { padding: 6px 10px; border-radius: 6px; background: #26282c; color: #eeeff1; }
+			.switch button[aria-pressed='true'] { background: #eeeff1; color: #111214; }
+			.switch p { margin-left: 8px; flex: 1 1 280px; min-width: 0; }
+			body[data-chrome='off'] .switch { display: none; }
+			.stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 48px; padding: 32px 16px 48px; }
+			.shot { display: grid; gap: 12px; justify-items: center; }
+			.shot > figcaption { color: #50545c; }
+			:root[data-theme='dark'] .shot > figcaption { color: #a4a8b0; }
+
+			/* The phone: 390x844 screen, radius 55, bezel 10. */
+			.phone { width: 410px; height: 864px; padding: 10px; border-radius: 65px; background: #08080a; box-shadow: 0 0 0 1px #34363b, 0 24px 48px rgb(0 0 0 / 0.22); }
+			.screen { position: relative; width: 390px; height: 844px; border-radius: 55px; overflow: hidden; background: var(--bg); color: var(--ink); font: 400 17px/24px var(--font); -webkit-font-smoothing: antialiased; isolation: isolate; }
+			.island { position: absolute; z-index: 40; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 19px; background: #000; }
+			.statusbar { position: absolute; z-index: 35; top: 0; left: 0; right: 0; height: 54px; padding-top: 7px; display: flex; justify-content: space-between; align-items: center; font: 600 17px/1 -apple-system, 'SF Pro Text', system-ui, sans-serif; letter-spacing: -0.01em; }
+			.statusbar > span { width: 132px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+			.statusbar svg { display: block; }
+			.homebar { position: absolute; z-index: 40; bottom: 8px; left: 50%; width: 138px; height: 5px; margin-left: -69px; border-radius: 3px; background: var(--ink); }
+			.sb-fade { position: absolute; z-index: 30; top: 0; left: 0; right: 0; height: 64px; background: linear-gradient(var(--bg) 54px, transparent); pointer-events: none; }
+			.sb-fade.bottom { z-index: 15; top: auto; bottom: 0; height: 120px; background: linear-gradient(transparent, var(--bg) 88px); }
+			.num { font-variant-numeric: tabular-nums; }
+
+			/* Glass: only the tab bar and J's detached pause key. */
+			.glass { background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%); box-shadow: inset 0 0 0 1px var(--glass-rim), inset 0 1px 0 var(--glass-top), 0 10px 28px var(--glass-shadow); }
+			.dock { position: absolute; z-index: 20; left: 21px; right: 21px; bottom: 21px; display: flex; gap: 8px; }
+			.tabbar { flex: 1; height: 64px; padding: 4px; border-radius: 32px; display: flex; }
+			.tabbar button { flex: 1; border-radius: 28px; display: grid; justify-items: center; align-content: center; gap: 3px; font: 600 11px/13px var(--font); color: var(--ink2); }
+			.tabbar button svg { width: 24px; height: 24px; }
+			.tabbar button[aria-current='true'] { background: var(--pill); color: var(--ink); }
+			.fab { flex: none; width: 64px; height: 64px; border-radius: 32px; display: grid; place-items: center; color: var(--ink); }
+			.fab svg { width: 26px; height: 26px; }
+			.fab:disabled { color: var(--ink3); cursor: default; }
+
+			/* Settings, shared anatomy; each variant dresses it. */
+			.scroll { position: absolute; inset: 0; overflow-y: auto; padding: 62px 0 128px; scrollbar-width: none; }
+			.scroll::-webkit-scrollbar { display: none; }
+			.set-title { font: 600 34px/40px var(--font); letter-spacing: -0.02em; }
+			.row { display: flex; align-items: center; gap: 12px; min-height: 52px; }
+			.row .main { flex: 1; min-width: 0; padding: 8px 0; }
+			.row .main small { display: block; font: 400 13px/18px var(--font); color: var(--ink2); }
+			.row .value { font-size: 17px; color: var(--ink2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+			.row .chev { flex: none; width: 8px; height: 14px; color: var(--ink3); }
+			.row .btn { flex: none; height: 32px; padding: 0 14px; border-radius: 16px; background: var(--pill); font: 500 15px/20px var(--font); }
+			.foot { font: 400 13px/18px var(--font); color: var(--ink2); text-wrap: pretty; }
+			.toggle { flex: none; position: relative; width: 58px; height: 30px; border-radius: 15px; background: var(--off); transition: background-color 0.2s; }
+			.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 34px; height: 26px; border-radius: 13px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25); transition: transform 0.2s; }
+			.toggle[aria-checked='true'] { background: var(--on); }
+			.toggle[aria-checked='true']::after { transform: translateX(20px); }
+			.slider { flex: none; position: relative; width: 148px; height: 28px; }
+			.slider::before { content: ''; position: absolute; left: 0; right: 0; top: 12px; height: 4px; border-radius: 2px; background: linear-gradient(to right, var(--ink) var(--p), var(--off) var(--p)); }
+			.slider::after { content: ''; position: absolute; top: 2px; left: calc(var(--p) - 12px); width: 24px; height: 24px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 2px 6px rgb(0 0 0 / 0.22); }
+			.day-rows li { display: flex; justify-content: space-between; align-items: center; height: 52px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+			.day-rows li span:last-child { color: var(--ink2); font-size: 15px; }
+
+			/* J Linea. */
+			body[data-v='j'] .screen { --font: 'Instrument Sans', sans-serif; --bg: #f7f8fa; --ink: #14161a; --ink2: #5a606a; --ink3: #a3a8b1; --line: #dfe2e6; --led: #2f5bea; --warn: #9a5600; --idle: #8b919b; --on: #1c1e23; --off: #d5d8dd; --pill: rgb(20 22 26 / 0.08); --glass: rgb(255 255 255 / 0.66); --glass-rim: rgb(255 255 255 / 0.7); --glass-top: #fff; --glass-shadow: rgb(20 22 26 / 0.12); }
+			:root[data-theme='dark'] body[data-v='j'] .screen { --bg: #0f1114; --ink: #eceef1; --ink2: #9ba1ab; --ink3: #555b65; --line: #262a30; --led: #8ca6ff; --warn: #f0a840; --idle: #6b717b; --on: #7d8594; --off: #2b2f36; --pill: rgb(255 255 255 / 0.1); --glass: rgb(36 39 45 / 0.62); --glass-rim: rgb(255 255 255 / 0.1); --glass-top: rgb(255 255 255 / 0.16); --glass-shadow: rgb(0 0 0 / 0.5); }
+			.lin { position: absolute; inset: 0; padding: 84px 24px 0; }
+			.lin-head { display: grid; grid-template-columns: 12px 1fr auto; column-gap: 16px; align-items: center; }
+			.lin-head h1 { font: 600 34px/40px var(--font); letter-spacing: -0.02em; }
+			.lin-head time { font: 400 34px/40px var(--font); letter-spacing: -0.02em; }
+			.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+			.dot.hollow { background: none; box-shadow: inset 0 0 0 2.5px var(--c); }
+			.c-led { --c: var(--led); }
+			.c-idle { --c: var(--idle); }
+			.c-warn { --c: var(--warn); }
+			.lin-sub { margin: 8px 0 0 28px; min-height: 48px; color: var(--ink2); text-wrap: pretty; }
+			.lin-path { margin-top: 36px; }
+			.lin-path li { position: relative; display: grid; grid-template-columns: 12px 1fr; column-gap: 16px; padding-bottom: 32px; }
+			.lin-path li:last-child { padding-bottom: 0; }
+			.lin-path .dot { margin-top: 6px; }
+			.lin-path b { display: block; font-weight: 600; }
+			.lin-path span.d { display: block; font-size: 15px; line-height: 20px; color: var(--ink2); }
+			.lin-path span.d.warn { color: var(--warn); }
+			.link { position: absolute; left: 5px; top: 23px; bottom: -1px; width: 2px; border-radius: 1px; }
+			.link.idle { background: var(--idle); }
+			.link.flow { background: linear-gradient(to bottom, var(--led) 5px, transparent 5px) 0 0 / 2px 8px repeat-y; animation: flow 0.7s linear infinite; }
+			.link.down { background: linear-gradient(to bottom, var(--ink3) 2px, transparent 2px) 0 5px / 2px 10px repeat-y; }
+			@keyframes flow { to { background-position-y: 8px; } }
+			.lin-day { margin: 48px 0 0 28px; }
+			.lin-day h2 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			.lin-day h2 span { font: 400 15px/20px var(--font); letter-spacing: 0; color: var(--ink2); }
+			.lin-day .day-rows { margin-right: -24px; padding-right: 24px; }
+			.lin-day .day-rows li { margin-right: -24px; padding-right: 24px; }
+			body[data-v='j'] .scroll { padding-left: 24px; }
+			body[data-v='j'] .chapter { display: flex; align-items: center; gap: 12px; margin: 36px 0 4px; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			body[data-v='j'] .chapter:first-of-type { margin-top: 24px; }
+			body[data-v='j'] .grp h3 { margin: 24px 0 0; font: 600 15px/20px var(--font); color: var(--ink2); }
+			body[data-v='j'] .row { padding-right: 24px; }
+			body[data-v='j'] .row + .row { border-top: 1px solid var(--line); }
+			body[data-v='j'] .foot { margin: 4px 24px 0 0; }
+			body[data-v='j'] .grp h3 + .rows { margin-top: 0; }
+
+			/* K Disco. */
+			body[data-v='k'] .screen { --font: 'Figtree', sans-serif; --bg: #e9ecf2; --cell: #f7f8fb; --ink: #1b1d22; --ink2: #565c67; --ink3: #a2a8b3; --line: #dde1e8; --led: #2f5bea; --warn: #8f5000; --shell: #c2cad8; --lip: #d6dce7; --core: #3a3c41; --led-off: #5b5e65; --lit: #7c9bff; --cord: #1b1d22; --soft: #d9dee7; --on: #1b1d22; --off: #d3d8e0; --pill: rgb(27 29 34 / 0.08); --glass: rgb(247 248 251 / 0.66); --glass-rim: rgb(255 255 255 / 0.7); --glass-top: #fff; --glass-shadow: rgb(27 29 34 / 0.12); }
+			:root[data-theme='dark'] body[data-v='k'] .screen { --bg: #0c0e12; --cell: #171a20; --ink: #eceef2; --ink2: #9aa1ad; --ink3: #555c68; --line: #252931; --led: #9db3ff; --warn: #f0a840; --shell: #2a3242; --lip: #3a4457; --core: #34373d; --led-off: #1d1f23; --lit: #9db3ff; --cord: #3c424d; --soft: #1e232b; --on: #7d8594; --off: #2a2f38; --pill: rgb(255 255 255 / 0.1); --glass: rgb(34 38 46 / 0.62); --glass-rim: rgb(255 255 255 / 0.1); --glass-top: rgb(255 255 255 / 0.16); --glass-shadow: rgb(0 0 0 / 0.5); }
+			.dis { position: absolute; inset: 0; text-align: center; }
+			.dis-obj { position: absolute; left: 50%; top: 0; width: 152px; height: 328px; margin-left: -76px; }
+			.dis-obj svg { display: block; width: 152px; height: 328px; overflow: visible; }
+			.dis-text { position: absolute; left: 32px; right: 32px; top: 352px; }
+			.dis-text h1 { display: inline-flex; align-items: center; gap: 10px; font: 600 34px/40px var(--font); letter-spacing: -0.02em; }
+			.dis-text h1 .dot { width: 10px; height: 10px; }
+			.dis-time { margin-top: 2px; color: var(--ink2); }
+			.dis-sub { margin: 10px auto 0; max-width: 300px; min-height: 40px; font-size: 15px; line-height: 20px; color: var(--ink2); text-wrap: balance; }
+			.dis-pause { position: absolute; left: 50%; top: 492px; transform: translateX(-50%); height: 48px; padding: 0 24px 0 20px; border-radius: 24px; background: var(--soft); display: inline-flex; align-items: center; gap: 8px; font: 500 17px/24px var(--font); white-space: nowrap; }
+			.dis-pause svg { width: 20px; height: 20px; }
+			.dis-pause:disabled { color: var(--ink3); cursor: default; }
+			.dis-cells { position: absolute; left: 16px; right: 16px; top: 568px; border-radius: 24px; background: var(--cell); padding: 0 16px; text-align: left; }
+			.dis-cells .row + .row { border-top: 1px solid var(--line); }
+			.dis-cells .value.warn { color: var(--warn); }
+			body[data-v='k'] .set-title { margin: 0 32px; }
+			body[data-v='k'] .device { display: flex; align-items: center; gap: 16px; margin: 20px 32px 20px; }
+			body[data-v='k'] .device svg { flex: none; width: 56px; height: 56px; }
+			body[data-v='k'] .device b { display: block; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			body[data-v='k'] .device span { display: block; font-size: 15px; line-height: 20px; color: var(--ink2); }
+			body[data-v='k'] .grp h3, body[data-v='l'] .grp h3 { margin: 28px 32px 8px; font: 500 13px/18px var(--font); color: var(--ink2); }
+			body[data-v='k'] .rows, body[data-v='l'] .rows { margin: 0 16px; padding: 0 16px; background: var(--cell); }
+			body[data-v='k'] .rows { border-radius: 24px; }
+			body[data-v='k'] .row + .row, body[data-v='l'] .row + .row { border-top: 1px solid var(--line); }
+			body[data-v='k'] .foot, body[data-v='l'] .foot { margin: 8px 32px 0; }
+
+			/* L Schermo. */
+			body[data-v='l'] .screen { --font: 'Archivo', sans-serif; --bg: #eeeff1; --cell: #fafafb; --ink: #15171b; --ink2: #5b6068; --ink3: #a5a9b0; --line: #e2e4e8; --led: #2f5bea; --warn: #8f5000; --lcd: #c4cede; --lcd-ink: #121722; --lcd-ink2: #3d485c; --lcd-dim: #a3adbf; --lcd-line: #adb7c9; --tag-led: #8ca6ff; --lcd-warn: #6e3d00; --on: #15171b; --off: #d6d8dc; --pill: rgb(21 23 27 / 0.08); --glass: rgb(250 250 251 / 0.66); --glass-rim: rgb(255 255 255 / 0.7); --glass-top: #fff; --glass-shadow: rgb(21 23 27 / 0.12); }
+			:root[data-theme='dark'] body[data-v='l'] .screen { --bg: #0d0e10; --cell: #17181b; --ink: #ecedef; --ink2: #9a9ea6; --ink3: #555961; --line: #25272b; --led: #86a2ff; --warn: #f0a840; --lcd: #1a2130; --lcd-ink: #dde5f3; --lcd-ink2: #93a0b8; --lcd-dim: #303a4d; --lcd-line: #2b3446; --tag-led: #2f5bea; --lcd-warn: #f0a840; --on: #7d8594; --off: #2a2c31; --pill: rgb(255 255 255 / 0.1); --glass: rgb(34 36 40 / 0.62); --glass-rim: rgb(255 255 255 / 0.1); --glass-top: rgb(255 255 255 / 0.16); --glass-shadow: rgb(0 0 0 / 0.5); }
+			.sch { position: absolute; inset: 0; padding: 66px 16px 0; }
+			.lcd { border-radius: 28px; background: var(--lcd); color: var(--lcd-ink); padding: 20px 20px 16px; }
+			.lcd-top { display: flex; align-items: center; gap: 8px; height: 28px; }
+			.tag { height: 28px; padding: 0 10px; border-radius: 8px; background: var(--lcd-ink); color: var(--lcd); display: inline-flex; align-items: center; gap: 7px; font: 600 15px/20px var(--font); white-space: nowrap; }
+			.tag .dot { width: 8px; height: 8px; --c: var(--tag-led); }
+			.tag.line { background: none; color: var(--lcd-ink); box-shadow: inset 0 0 0 1.5px var(--lcd-ink); }
+			.tag.warn { background: none; color: var(--lcd-warn); box-shadow: inset 0 0 0 1.5px var(--lcd-warn); }
+			.lcd-batt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 500 15px/20px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; }
+			.lcd-time { margin-top: 28px; font: 600 72px/72px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+			.lcd-time i { font: 500 28px/28px var(--font); font-stretch: 100%; letter-spacing: 0; margin: 0 8px 0 3px; }
+			.lcd-time i:last-child { margin-right: 0; }
+			.lcd-time.still { color: var(--lcd-ink2); }
+			.meter { margin-top: 20px; display: flex; gap: 3px; height: 20px; }
+			.meter i { flex: 1; border-radius: 1px; background: var(--lcd-dim); }
+			.meter i.on { background: var(--meter-on, var(--lcd-ink)); }
+			.lcd-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--lcd-line); display: flex; justify-content: space-between; font-size: 15px; line-height: 20px; }
+			.lcd-foot span:last-child { color: var(--lcd-ink2); }
+			.lcd-foot span.warn { color: var(--lcd-warn); }
+			.sch-key { margin-top: 12px; width: 100%; height: 56px; border-radius: 28px; background: var(--key, var(--ink)); color: var(--key-ink, var(--bg)); display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 17px/24px var(--font); }
+			.sch-key svg { width: 20px; height: 20px; }
+			.sch-key:disabled { background: var(--off); color: var(--ink2); cursor: default; }
+			.sch-hint { margin-top: 10px; text-align: center; font-size: 13px; line-height: 18px; color: var(--ink2); }
+			.sch-day { margin: 32px 8px 0; }
+			.sch-day h2 { display: flex; justify-content: space-between; align-items: baseline; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			.sch-day h2 span { font: 400 15px/20px var(--font); letter-spacing: 0; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.tape { margin-top: 14px; display: flex; gap: 3px; height: 24px; }
+			.tape i { flex: 1; border-radius: 1px; background: var(--off); }
+			.tape i.rec { background: var(--tape-rec, var(--ink)); }
+			.tape i.now { background: var(--led); }
+			.tape-axis { margin: 6px 0 10px; display: flex; justify-content: space-between; font-size: 13px; line-height: 18px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.sch-day .day-rows li { height: 48px; }
+			body[data-v='l'] .set-title { margin: 0 24px 16px; }
+			body[data-v='l'] .rows { border-radius: 20px; }
+			body[data-v='l'] .lcd.device { margin: 0 16px 8px; border-radius: 20px; padding: 16px; }
+			body[data-v='l'] .lcd.device .name { display: flex; align-items: baseline; justify-content: space-between; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			body[data-v='l'] .lcd.device .name span { font: 500 15px/20px var(--font); letter-spacing: 0; color: var(--lcd-ink2); display: inline-flex; gap: 6px; align-items: center; font-variant-numeric: tabular-nums; }
+			body[data-v='l'] .lcd.device p { font-size: 15px; line-height: 20px; color: var(--lcd-ink2); }
+			body[data-v='l'] .lcd.device .lab { margin-top: 16px; display: flex; justify-content: space-between; font-size: 15px; line-height: 20px; }
+			body[data-v='l'] .lcd.device .lab span:last-child { font-variant-numeric: tabular-nums; color: var(--lcd-ink2); }
+			.ruler { margin-top: 8px; display: flex; gap: 3px; height: 24px; align-items: end; }
+			.ruler i { flex: 1; height: 12px; border-radius: 1px; background: var(--lcd-dim); }
+			.ruler i.past { background: var(--lcd-ink2); }
+			.ruler i.at { height: 24px; background: var(--lcd-ink); }
+
+			@media (prefers-reduced-motion: reduce) {
+				.link.flow { animation: none; }
+				.toggle, .toggle::after { transition: none; }
+			}
+			/* Round 9: four options for L, toggled from the panel. */
+			body.x-rec[data-v='l'] .lcd .tag:not(.line):not(.warn) { background: var(--led); color: #fff; }
+			body.x-rec[data-v='l'] .lcd .tag:not(.line):not(.warn) .dot { --c: #fff; }
+			body.x-mat[data-v='l'] .lcd { background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 38%), linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.08)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.12), 0 0 0 6px var(--bezel, #d8d9db), 0 0 0 6.75px rgb(0 0 0 / 0.08); margin: 6px 6px 0; }
+			:root[data-theme='dark'] body.x-mat[data-v='l'] .lcd { --bezel: #2c2f34; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 6px var(--bezel), 0 0 0 6.75px rgb(255 255 255 / 0.06); }
+			body.x-mat[data-v='l'] .lcd.device { margin: 6px 22px 14px; }
+			body.x-mat[data-v='l'] .sch-key { margin-top: 18px; }
+			.meter-scale { display: none; justify-content: space-between; margin-top: 6px; font: 500 11px/14px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; }
+			body.x-scale[data-v='l'] .meter-scale { display: flex; }
+			body.x-scale[data-v='l'] .meter { height: 16px; }
+
+			/* Round 12: one pause key, red means "make it record". */
+			.k-well { margin-top: 18px; padding: 6px; border-radius: 34px; background: var(--bezel, var(--off)); }
+			.k-btn { width: 100%; height: 56px; border-radius: 28px; border: 0; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 17px/24px var(--font); color: #fff; background: var(--key, var(--ink)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.25); cursor: pointer; }
+			.k-btn svg { width: 18px; height: 18px; }
+			.k-btn.rec { background: var(--led); }
+			.k-btn .recdot { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+			.k-btn:disabled { background: var(--ink3); cursor: default; }
+			.k-round { margin-top: 18px; display: grid; justify-items: center; gap: 8px; }
+			.k-ring { width: 76px; height: 76px; border-radius: 38px; padding: 6px; background: var(--bezel, var(--off)); }
+			.k-round .k-btn { width: 64px; height: 64px; border-radius: 32px; padding: 0; }
+			.k-round .k-btn svg { width: 22px; height: 22px; }
+			.k-round .k-btn .recdot { width: 20px; height: 20px; }
+			.k-round > span { font: 600 15px/20px var(--font); color: var(--ink); }
+			.k-cap { margin: 18px auto 0; height: 52px; padding: 6px 20px 6px 6px; border-radius: 26px; border: 0; display: flex; align-items: center; gap: 12px; background: var(--cell); box-shadow: inset 0 0 0 1px var(--line); font: 600 17px/24px var(--font); color: var(--ink); cursor: pointer; }
+			.k-cap i { width: 40px; height: 40px; border-radius: 20px; display: grid; place-items: center; background: var(--key, var(--ink)); color: #fff; }
+			.k-cap i svg { width: 16px; height: 16px; }
+			.k-cap i .recdot { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+			.k-cap.rec i { background: var(--led); }
+			.k-cap:disabled { color: var(--ink3); cursor: default; }
+			.k-cap:disabled i { background: var(--ink3); }
+			.k-center { display: flex; }
+
+			/* Round 6: accent tuning for L. Concept chrome, not part of the design. */
+			.tweaks { position: fixed; right: 12px; bottom: 12px; z-index: 100; width: 290px; padding: 12px; border-radius: 10px; background: #111; color: #ddd; font: 12px/1.4 ui-monospace, Menlo, monospace; }
+			body:not([data-v='l']) .tweaks, body[data-chrome='off'] .tweaks { display: none; }
+			.tweaks .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+			.tweaks button { font: inherit; border: 0; padding: 6px 8px; border-radius: 6px; background: #262626; color: #eee; cursor: pointer; display: flex; align-items: center; gap: 6px; text-align: left; }
+			.tweaks button[aria-pressed='true'] { background: #eee; color: #111; }
+			.tweaks button i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+			.tweaks label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+			.tweaks input[type='color'] { width: 44px; height: 24px; border: 0; background: none; padding: 0; }
+			.tweaks p { margin: 10px 0 0; color: #fff; user-select: all; word-break: break-all; }
+			.tweaks .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-bottom: 10px; }
+			.tweaks .pmodes { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 10px; }
+			.tweaks .pmodes button { padding: 4px 7px; }
+		</style>
+	</head>
+	<body data-v="j">
+		<div class="switch">
+			<span data-buttons></span>
+			<button data-state-toggle>s stato: <span data-state-label></span></button>
+			<button data-theme-toggle>t tema</button>
+			<p data-desc></p>
+		</div>
+
+		<main class="stage">
+			<figure class="shot">
+				<div class="phone"><div class="screen" data-screen="home"></div></div>
+				<figcaption data-caption="home"></figcaption>
+			</figure>
+			<figure class="shot">
+				<div class="phone"><div class="screen" data-screen="settings"></div></div>
+				<figcaption data-caption="settings"></figcaption>
+			</figure>
+		</main>
+
+		<div class="tweaks" data-tweaks>
+			<div class="presets" data-presets></div>
+			<div class="opts" data-opts>
+				<label><span>spia REC</span><input type="checkbox" data-opt="rec" /></label>
+				<label><span>materiale</span><input type="checkbox" data-opt="mat" /></label>
+				<label><span>seconda tinta</span><input type="checkbox" data-opt="tint" /></label>
+				<label><span>scala</span><input type="checkbox" data-opt="scale" /></label>
+			</div>
+			<div class="pmodes" data-pmodes>pausa
+				<button data-pm="key">oggi</button><button data-pm="well">incassato</button><button data-pm="round">tondo</button><button data-pm="cap">capsula</button>
+			</div>
+			<label>accento libero <input type="color" data-custom value="#2f5bea" /></label>
+			<p data-values></p>
+		</div>
+
+		<script>
+			const DESC = {
+				j: "Linea: il percorso dell'audio, ciondolo, telefono, server. Si vede dove passa e dove si ferma. Instrument Sans",
+				k: 'Disco: il ciondolo disegnato a grandezza naturale, appeso alla Dynamic Island; il LED dice lo stato. Figtree',
+				l: 'Schermo: il display di un registratore, una sola superficie tinta; tempo con le unità piccole, tutto a tacche. Archivo'
+			};
+
+			// The four states the home must show. `t` is seconds: elapsed while recording, time in the state otherwise.
+			const STATES = {
+				rec: { label: 'registra', title: 'Registra', sub: "L'audio arriva al server mentre parli, niente resta in coda.", live: true, t: 728 },
+				pause: { label: 'in pausa', title: 'In pausa', sub: 'Da 2 minuti. Tocca due volte il ciondolo per riprendere.', live: false, t: 130 },
+				off: { label: 'ciondolo scollegato', title: 'Scollegato', sub: 'Fuori portata da 3 minuti. Riprende da sola quando il ciondolo torna vicino.', live: false, t: 182 },
+				queue: { label: 'server irraggiungibile', title: 'In coda', sub: 'Il server non risponde: gli ultimi 2 minuti aspettano sul telefono.', live: true, t: 728 }
+			};
+			const ORDER = ['rec', 'pause', 'off', 'queue'];
+			let state = 'rec';
+			let elapsed = 728;
+
+			const DAY = [['17:21', '4 min 47 s'], ['11:30', '48 min'], ['09:04', '43 min']];
+
+			// One icon set: 24 grid, stroke 2, round caps.
+			const S = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+			const ICON = {
+				now: `<svg viewBox="0 0 24 24" ${S}><path d="M4 10.5v3M8 7v10M12 4v16M16 8v8M20 10.5v3"/></svg>`,
+				today: `<svg viewBox="0 0 24 24" ${S}><path d="M9.5 6H20M9.5 12H20M9.5 18H20"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></svg>`,
+				settings: `<svg viewBox="0 0 24 24" ${S}><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h9M19 18h1"/><circle cx="15" cy="6" r="2.5"/><circle cx="9" cy="12" r="2.5"/><circle cx="16" cy="18" r="2.5"/></svg>`,
+				pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4"/><rect x="13.5" y="5" width="4" height="14" rx="1.4"/></svg>',
+				play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.8v12.4a1.1 1.1 0 0 0 1.68.94l10-6.2a1.1 1.1 0 0 0 0-1.88l-10-6.2A1.1 1.1 0 0 0 8 5.8z"/></svg>',
+				chev: '<svg class="chev" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 7 7l-5.5 5.5"/></svg>',
+				batt: (pct) => `<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.75" y="0.75" width="20.5" height="10.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="3" width="${(16 * pct) / 100}" height="6" rx="1.5" fill="currentColor"/><path d="M23.5 4.2v3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+			};
+
+			const statusBar = () => `
+				<div class="island"></div>
+				<div class="statusbar"><span>17:42</span><span>
+					<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/></svg>
+					<svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M1.6 4.3a9.8 9.8 0 0 1 13.8 0M4.2 7a6.1 6.1 0 0 1 8.6 0"/><path d="M8.5 10.2h.01" stroke-width="2.6"/></svg>
+					<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x="0.6" y="0.6" width="22.8" height="11.8" rx="3.6" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/><rect x="2.3" y="2.3" width="15" height="8.4" rx="2.1" fill="currentColor"/><path d="M25.3 4.6v3.8" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.6" stroke-linecap="round"/></svg>
+				</span></div>
+				<div class="homebar"></div>`;
+
+			const TABS = [['now', 'Adesso'], ['today', 'Oggi'], ['settings', 'Impostazioni']];
+			const tabbar = (current) => `<nav class="tabbar glass">${TABS.map(([k, l]) => `<button aria-current="${k === current}">${ICON[k]}${l}</button>`).join('')}</nav>`;
+			const paused = () => state === 'pause';
+			const pauseLabel = () => (paused() ? 'Riprendi' : 'Metti in pausa');
+			const pauseIcon = () => (paused() ? ICON.play : ICON.pause);
+			const canPause = () => (state === 'off' ? ' disabled' : '');
+			const dock = (current, fab) => `<div class="dock">${tabbar(current)}${fab ? `<button class="fab glass" data-toggle-pause aria-label="${pauseLabel()}"${canPause()}>${pauseIcon()}</button>` : ''}</div>`;
+
+			// Time, three spellings.
+			const two = (n) => String(n).padStart(2, '0');
+			const FMT = {
+				clock: (t) => `${Math.floor(t / 60)}:${two(t % 60)}`,
+				words: (t) => `${Math.floor(t / 60)} min ${two(t % 60)} s`,
+				units: (t) => `${Math.floor(t / 60)}<i>m</i>${two(t % 60)}<i>s</i>`
+			};
+			const secs = () => (STATES[state].live ? elapsed : STATES[state].t);
+			const time = (fmt) => `<time class="num" data-fmt="${fmt}">${FMT[fmt](secs())}</time>`;
+			const dayRows = () => `<ul class="day-rows">${DAY.map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join('')}</ul>`;
+
+			// Settings catalog, one order for all: the pendant and its gestures, then recording, then the plumbing.
+			const row = (label, value = '', o = {}) => `
+				<div class="row">
+					<div class="main">${label}${o.sub ? `<small>${o.sub}</small>` : ''}</div>
+					${o.slider != null ? `<div class="slider" style="--p:${o.slider}%" role="slider" aria-valuenow="${o.slider}" aria-label="${label}"></div>` : ''}
+					${value ? `<span class="value">${value}</span>` : ''}
+					${o.toggle != null ? `<button class="toggle" role="switch" aria-checked="${o.toggle}" aria-label="${label}"></button>` : ''}
+					${o.btn ? `<button class="btn">${o.btn}</button>` : ''}
+					${o.nav ? ICON.chev : ''}
+				</div>`;
+			const grp = (title, rows, foot = '') => `<section class="grp">${title ? `<h3>${title}</h3>` : ''}<div class="rows">${rows.join('')}</div>${foot ? `<p class="foot">${foot}</p>` : ''}</section>`;
+			const R = {
+				device: () => [
+					row('Omi', '84%', { sub: 'Firmware 3.0.21, aggiornato' }),
+					row('Luminosità LED', '', { slider: 50 })
+				],
+				deviceMore: () => [
+					row('Guadagno microfono', '6', { nav: true }),
+					row('Vibrazione di prova', '', { btn: 'Fai vibrare' })
+				],
+				gestures: () => [
+					row('Doppio tocco', 'Pausa e ripresa', { nav: true }),
+					row('Tocco singolo', 'Apri e chiudi nota', { nav: true }),
+					row('Vibrazione di conferma', '', { toggle: true })
+				],
+				notes: () => [
+					row('Durata massima', '5 min', { nav: true }),
+					row('Secondi prima del tocco', '3 s', { nav: true }),
+					row('Scarta le note senza voce', '', { toggle: true })
+				],
+				offline: () => [
+					row('Alla connessione', 'Invia al server', { nav: true }),
+					row('In memoria ora', '53 pacchetti')
+				],
+				recording: () => [
+					row('Lingua', 'Italiano', { nav: true }),
+					row('Riprendi dopo un riavvio', '', { toggle: true }),
+					row('Coda senza rete', '30 min', { nav: true })
+				],
+				notify: () => [
+					row('Ciondolo scollegato', 'dopo 2 min', { nav: true }),
+					row('Server irraggiungibile', 'dopo 2 min', { nav: true }),
+					row('Batteria bassa', 'sotto 20%', { nav: true }),
+					row('Accensione inattesa', '', { toggle: true })
+				],
+				server: () => [
+					row('Indirizzo', 'nexus.esse.dev', { nav: true }),
+					row('Token', 'Nel portachiavi', { nav: true }),
+					row('Protocollo', 'audio_stream 1')
+				],
+				advanced: () => [
+					row('Ping', '20 s', { nav: true }),
+					row('Attesa massima fra i tentativi', '30 s', { nav: true }),
+					row('Log dell’app', '', { btn: 'Esporta' })
+				]
+			};
+			const FOOT = {
+				gestures: 'Tenere premuto oltre 3 secondi spegne il ciondolo: questo gesto non si può cambiare.',
+				offline: 'Lontano dal telefono il ciondolo registra nella sua memoria. La libera solo dopo la conferma del server.',
+				server: "L'app manda l'audio a qualunque server che parli questo protocollo.",
+				app: 'Pendant 0.3.0. Le impostazioni restano su questo telefono. La firma dell’app scade il 3 dicembre.'
+			};
+			const commonGroups = () => [
+				grp('Gesti del ciondolo', R.gestures(), FOOT.gestures),
+				grp('Registrazione', R.recording()),
+				grp('Note', R.notes()),
+				grp('Audio offline', R.offline(), FOOT.offline),
+				grp('Notifiche', R.notify()),
+				grp('Server', R.server(), FOOT.server),
+				grp('Avanzate', R.advanced(), FOOT.app)
+			].join('');
+
+			// K's pendant, flat: acrylic shell, frosted lip, graphite core, LED. 152 pt is its real size.
+			const disc = (size, mode) => {
+				const ghost = mode === 'off';
+				const led = mode === 'rec' || mode === 'queue';
+				if (ghost) return `<circle cx="76" cy="76" r="75" fill="none" stroke="var(--ink3)" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round"/>`;
+				return `<circle cx="76" cy="76" r="76" fill="var(--shell)"/><circle cx="76" cy="76" r="59" fill="var(--lip)"/><circle cx="76" cy="76" r="52" fill="var(--core)"/>
+					${led ? '<circle cx="76" cy="76" r="9" fill="var(--lit)" fill-opacity="0.3"/><circle cx="76" cy="76" r="4" fill="var(--lit)"/>' : '<circle cx="76" cy="76" r="3.5" fill="var(--led-off)"/>'}`;
+			};
+
+			const renderJ = () => {
+				const s = STATES[state];
+				const head = { rec: 'c-led', pause: 'c-idle', off: 'c-warn hollow', queue: 'c-warn' }[state];
+				// Node and link per stop: where the audio passes, where it stops.
+				const P = {
+					rec: [['c-led', 'flow', 'Omi, batteria 84%'], ['c-led', 'flow', "Invia l'audio mentre arriva"], ['c-led', '', 'nexus.esse.dev, in linea']],
+					pause: [['c-idle', 'idle', 'Omi, batteria 84%'], ['c-idle', 'idle', 'In pausa, non invia niente'], ['c-idle', '', 'nexus.esse.dev, in linea']],
+					off: [['c-warn hollow', 'down', 'Fuori portata da 3 minuti', 1], ['c-idle', 'idle', 'Lo sta cercando'], ['c-idle', '', 'nexus.esse.dev, in linea']],
+					queue: [['c-led', 'flow', 'Omi, batteria 84%'], ['c-led', 'down', '2 minuti di audio in coda'], ['c-warn hollow', '', 'nexus.esse.dev non risponde', 1]]
+				}[state];
+				const stop = (name, [node, link, text, warn]) => `<li><span class="dot ${node}"></span>${link ? `<i class="link ${link}"></i>` : ''}<div><b>${name}</b><span class="d${warn ? ' warn' : ''}">${text}</span></div></li>`;
+				return {
+					home: `${statusBar()}<div class="lin">
+						<header class="lin-head"><span class="dot ${head}"></span><h1>${s.title}</h1>${s.live ? time('clock') : ''}</header>
+						<p class="lin-sub">${s.sub}</p>
+						<ol class="lin-path">${stop('Ciondolo', P[0])}${stop('Telefono', P[1])}${stop('Server', P[2])}</ol>
+						<section class="lin-day"><h2>Oggi<span>1 h 36 min in 3 conversazioni</span></h2>${dayRows()}</section>
+					</div>${dock('now', true)}`,
+					settings: `${statusBar()}<div class="sb-fade"></div><div class="sb-fade bottom"></div><div class="scroll">
+						<h1 class="set-title">Impostazioni</h1>
+						<h2 class="chapter"><span class="dot ${P[0][0]}"></span>Ciondolo</h2>
+						${grp('', [...R.device(), ...R.deviceMore()])}
+						${grp('Gesti', R.gestures(), FOOT.gestures)}
+						${grp('Note', R.notes())}
+						${grp('Audio offline', R.offline(), FOOT.offline)}
+						<h2 class="chapter"><span class="dot ${P[1][0]}"></span>Telefono</h2>
+						${grp('Registrazione', R.recording())}
+						${grp('Notifiche', R.notify())}
+						<h2 class="chapter"><span class="dot ${P[2][0]}"></span>Server</h2>
+						${grp('', R.server(), FOOT.server)}
+						${grp('Avanzate', R.advanced(), FOOT.app)}
+					</div>${dock('settings', true)}`,
+					captions: ['J Linea, scheda Adesso', 'J Linea, scheda Impostazioni']
+				};
+			};
+
+			const renderK = () => {
+				const s = STATES[state];
+				const ghost = state === 'off';
+				const cord = ghost ? 'stroke="var(--ink3)" stroke-dasharray="2 7"' : 'stroke="var(--cord)"';
+				const line = `da ${time('words')}`;
+				return {
+					home: `${statusBar()}<div class="dis">
+						<div class="dis-obj"><svg viewBox="0 0 152 328" aria-label="Il ciondolo, a grandezza naturale">
+							<path d="M76 30V156" ${cord} stroke-width="2" stroke-linecap="round" fill="none"/>
+							${ghost ? '' : '<rect x="68.5" y="153.5" width="15" height="26" rx="7.5" fill="none" stroke="var(--shell)" stroke-width="3"/>'}
+							<g transform="translate(0 174)">${disc(152, state)}</g></svg></div>
+						<div class="dis-text">
+							<h1>${state === 'queue' || ghost ? `<span class="dot c-warn${ghost ? ' hollow' : ''}"></span>` : ''}${s.title}</h1>
+							<p class="dis-time">${line}</p>
+							<p class="dis-sub">${s.sub}</p>
+						</div>
+						<button class="dis-pause" data-toggle-pause${canPause()}>${pauseIcon()}${pauseLabel()}</button>
+						<div class="dis-cells">
+							${row('Ciondolo', ghost ? 'Fuori portata' : 'Omi, 84%', { nav: true })}
+							${row('Server', state === 'queue' ? '<span class="warn" style="color:var(--warn)">Non risponde</span>' : 'nexus.esse.dev', { nav: true })}
+							${row('Oggi', '3 conversazioni, 1 h 36 min', { nav: true })}
+						</div>
+					</div>${dock('now')}`,
+					settings: `${statusBar()}<div class="sb-fade"></div><div class="sb-fade bottom"></div><div class="scroll">
+						<h1 class="set-title">Impostazioni</h1>
+						<div class="device"><svg viewBox="0 0 152 152">${disc(56, state)}</svg><div><b>Omi</b><span>${ghost ? 'Non collegato' : 'Collegato, batteria 84%'}</span></div></div>
+						${grp('', [row('Firmware', '3.0.21, aggiornato'), row('Luminosità LED', '', { slider: 50 }), ...R.deviceMore()])}
+						${commonGroups()}
+					</div>${dock('settings')}`,
+					captions: ['K Disco, scheda Adesso', 'K Disco, scheda Impostazioni']
+				};
+			};
+
+			// Round 10: the pause control of L, chosen from the panel (window.PAUSE_MODE).
+			const pauseMode = () => window.PAUSE_MODE || 'key';
+			const pauseHint = () => `<p class="sch-hint">${state === 'off' ? 'Riprende da sola quando il ciondolo torna vicino.' : 'Oppure tocca due volte il ciondolo.'}</p>`;
+			const pauseControlL = () => {
+				const m = pauseMode();
+				const p = paused();
+				const dis = canPause();
+				const glyph = p ? '<span class="recdot"></span>' : ICON.pause;
+				const label = p ? 'Riprendi' : 'Pausa';
+				if (m === 'round') {
+					return `<div class="k-round"><div class="k-ring"><button class="k-btn${p ? ' rec' : ''}" data-toggle-pause aria-label="${label}"${dis}>${glyph}</button></div><span>${label}</span></div>${pauseHint()}`;
+				}
+				if (m === 'cap') {
+					return `<div class="k-center"><button class="k-cap${p ? ' rec' : ''}" data-toggle-pause${dis}><i>${glyph}</i>${p ? 'Riprendi la registrazione' : 'Metti in pausa'}</button></div>${pauseHint()}`;
+				}
+				if (m === 'well') {
+					return `<div class="k-well"><button class="k-btn${p ? ' rec' : ''}" data-toggle-pause${dis}>${glyph}${label}</button></div>${pauseHint()}`;
+				}
+				return `<button class="sch-key" data-toggle-pause${dis}>${pauseIcon()}${pauseLabel()}</button>${pauseHint()}`;
+			};
+
+			const renderL = () => {
+				const s = STATES[state];
+				const tag = { rec: '<span class="tag"><span class="dot"></span>Registra da</span>', pause: '<span class="tag line">In pausa da</span>', off: '<span class="tag warn">Scollegato da</span>', queue: '<span class="tag"><span class="dot"></span>Registra da</span><span class="tag warn">2 min in coda</span>' }[state];
+				const meter = Array.from({ length: 36 }, (_, i) => `<i class="${s.live && i < 21 ? 'on' : ''}"></i>`).join('');
+				// The day from 8 to 20, one tick per quarter of an hour.
+				const REC = new Set([4, 5, 6, 14, 15, 16, 17, 37]);
+				const tape = Array.from({ length: 48 }, (_, i) => `<i class="${REC.has(i) ? 'rec' : i === 38 && s.live ? 'now' : i === 38 && state !== 'rec' ? 'rec' : ''}"></i>`).join('');
+				const ruler = Array.from({ length: 33 }, (_, i) => `<i class="${i === 16 ? 'at' : i < 16 ? 'past' : ''}"></i>`).join('');
+				return {
+					home: `${statusBar()}<div class="sch">
+						<section class="lcd">
+							<div class="lcd-top">${tag}${state === 'off' ? '' : `<span class="lcd-batt">84%${ICON.batt(84)}</span>`}</div>
+							<div class="lcd-time${s.live ? '' : ' still'}" data-fmt="units">${FMT.units(secs())}</div>
+							<div class="meter" data-meter>${meter}</div>
+							<div class="meter-scale"><span>-40</span><span>-20</span><span>-10</span><span>-6</span><span>-3</span><span>0 dB</span></div>
+							<div class="lcd-foot"><span>nexus.esse.dev</span><span class="${state === 'queue' ? 'warn' : ''}">${state === 'queue' ? 'non risponde' : 'in linea'}</span></div>
+						</section>
+						${pauseControlL()}
+						<section class="sch-day">
+							<h2>Oggi<span>1 h 36 min in 3 conversazioni</span></h2>
+							<div class="tape">${tape}</div>
+							<div class="tape-axis"><span>8</span><span>11</span><span>14</span><span>17</span><span>20</span></div>
+							${dayRows()}
+						</section>
+					</div>${dock('now')}`,
+					settings: `${statusBar()}<div class="sb-fade"></div><div class="sb-fade bottom"></div><div class="scroll">
+						<h1 class="set-title">Impostazioni</h1>
+						<section class="lcd device">
+							<div class="name">Omi<span>84%${ICON.batt(84)}</span></div>
+							<p>Firmware 3.0.21, aggiornato</p>
+							<div class="lab"><span>Luminosità LED</span><span>50%</span></div>
+							<div class="ruler" role="slider" aria-valuenow="50" aria-label="Luminosità LED">${ruler}</div>
+						</section>
+						${grp('', R.deviceMore())}
+						${commonGroups()}
+					</div>${dock('settings')}`,
+					captions: ['L Schermo, scheda Adesso', 'L Schermo, scheda Impostazioni']
+				};
+			};
+
+			const RENDER = { j: renderJ, k: renderK, l: renderL };
+			const $ = (q) => document.querySelector(q);
+			const draw = () => {
+				const out = RENDER[document.body.dataset.v]();
+				$('[data-screen="home"]').innerHTML = out.home;
+				const set = $('[data-screen="settings"]');
+				const y = set.querySelector('.scroll')?.scrollTop || 0;
+				set.innerHTML = out.settings;
+				set.querySelector('.scroll').scrollTop = y;
+				$('[data-caption="home"]').textContent = out.captions[0];
+				$('[data-caption="settings"]').textContent = out.captions[1];
+				$('[data-state-label]').textContent = STATES[state].label;
+			};
+
+			const KEY = `concept:${location.pathname}`;
+			const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
+			const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
+			const root = document.documentElement;
+			const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+			$('[data-buttons]').innerHTML = Object.keys(DESC).map((v) => `<button data-v="${v}">${v.toUpperCase()} ${DESC[v].split(':')[0]}</button>`).join(' ');
+
+			const pick = (v) => {
+				if (!DESC[v]) return;
+				document.body.dataset.v = v;
+				document.querySelectorAll('.switch [data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+				$('[data-desc]').textContent = DESC[v];
+				history.replaceState(null, '', `${location.search}#${v}`);
+				$('[data-screen="settings"]').innerHTML = '';
+				draw();
+			};
+			const setTheme = (t) => { root.dataset.theme = t; save({ ...load(), theme: t }); };
+			const setState = (s) => { state = s; draw(); };
+
+			$('.switch').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-v]');
+				if (b) pick(b.dataset.v);
+			});
+			$('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+			$('[data-state-toggle]').addEventListener('click', () => setState(ORDER[(ORDER.indexOf(state) + 1) % ORDER.length]));
+			$('.stage').addEventListener('click', (e) => {
+				const p = e.target.closest('[data-toggle-pause]');
+				if (p && !p.disabled) setState(paused() ? 'rec' : 'pause');
+				const t = e.target.closest('.toggle');
+				if (t) t.setAttribute('aria-checked', String(t.getAttribute('aria-checked') !== 'true'));
+			});
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select')) return;
+				const k = e.key.toLowerCase();
+				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (k === 's') setState(ORDER[(ORDER.indexOf(state) + 1) % ORDER.length]);
+				else if (k === 'p') document.body.dataset.chrome = document.body.dataset.chrome === 'off' ? 'on' : 'off';
+				else pick(k);
+			});
+
+			// The clock runs while recording: it is the content, so it runs with reduced motion too.
+			setInterval(() => {
+				if (!STATES[state].live) return;
+				elapsed += 1;
+				document.querySelectorAll('[data-fmt]').forEach((el) => { el.innerHTML = FMT[el.dataset.fmt](elapsed); });
+			}, 1000);
+			// L's level meter follows the voice; still with reduced motion.
+			let level = 21;
+			setInterval(() => {
+				const m = $('[data-meter]');
+				if (!m || !STATES[state].live || still.matches) return;
+				level = Math.max(6, Math.min(33, level + Math.round((Math.random() - 0.5) * 12)));
+				[...m.children].forEach((el, i) => el.classList.toggle('on', i < level));
+			}, 160);
+
+			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'j');
+		
+			// Round 6: accent and display pairs for L, light and dark. Applied as inline variables on
+			// the two screens only while L is shown, so J and K keep their own tokens.
+			const PAIRS = {
+				blu: { name: 'LED blu', light: { led: '#2f5bea', tag: '#8ca6ff', lcd: '#c4cede', ink: '#121722', ink2: '#3d485c', dim: '#a3adbf', line: '#adb7c9' }, dark: { led: '#86a2ff', tag: '#2f5bea', lcd: '#1a2130', ink: '#dde5f3', ink2: '#93a0b8', dim: '#303a4d', line: '#2b3446' } },
+				rosso: { name: 'Rosso registrazione', light: { led: '#c8361f', tag: '#ff8a76', lcd: '#d3d3d0', ink: '#1a1918', ink2: '#4c4a46', dim: '#b2b0ab', line: '#bebcb7' }, dark: { led: '#ff6a52', tag: '#c8361f', lcd: '#201f1e', ink: '#ecebe8', ink2: '#a19f9a', dim: '#3a3835', line: '#32302e' } },
+				verde: { name: 'Verde display', light: { led: '#11795b', tag: '#5fd3a8', lcd: '#c3d6cd', ink: '#0f201a', ink2: '#3a5249', dim: '#a5bbb1', line: '#aec3b9' }, dark: { led: '#4fd1a0', tag: '#11795b', lcd: '#14231d', ink: '#dcefe6', ink2: '#8eaa9e', dim: '#2a3d35', line: '#263830' } },
+				bluarancio: { name: 'Blu e arancio', light: { led: '#f2711c', tag: '#e8641b', lcd: '#1e3a78', ink: '#f2f5fc', ink2: '#afc0e6', dim: '#2f4c8c', line: '#3a5799', key: '#1e3a78', keyInk: '#ffffff', meter: '#ff8a3d', tape: '#1e3a78', warn: '#c2362b', lcdWarn: '#ff8f85' }, dark: { led: '#ff9a55', tag: '#e8641b', lcd: '#1a3366', ink: '#eaf0ff', ink2: '#9db0db', dim: '#284579', line: '#2e4c84', key: '#2a4c93', keyInk: '#ffffff', meter: '#ff9a55', tape: '#4b6fbf', warn: '#ff6b5e', lcdWarn: '#ff8f85' } },
+				azzurroarancio: { name: 'Azzurro e arancio', light: { led: '#f2711c', tag: '#ff9a55', lcd: '#cfdcf5', ink: '#0f1e40', ink2: '#3d5280', dim: '#a9bde3', line: '#b4c6e8', key: '#1e3a78', keyInk: '#ffffff', meter: '#f2711c', tape: '#3a5db0', warn: '#c2362b', lcdWarn: '#b3261e' }, dark: { led: '#ff9a55', tag: '#e8641b', lcd: '#1a3366', ink: '#eaf0ff', ink2: '#9db0db', dim: '#284579', line: '#2e4c84', key: '#2a4c93', keyInk: '#ffffff', meter: '#ff9a55', tape: '#4b6fbf', warn: '#ff6b5e', lcdWarn: '#ff8f85' } },
+				grafiterosso: { name: 'Grafite e rosso', light: { led: '#e5402f', tag: '#e5402f', lcd: '#2b2e34', ink: '#f1f2f4', ink2: '#a9aeb7', dim: '#3d4149', line: '#464a53', key: '#2b2e34', keyInk: '#ffffff', meter: '#ff5a47', tape: '#2b2e34', warn: '#9a5600', lcdWarn: '#f0a840' }, dark: { led: '#ff5a47', tag: '#e5402f', lcd: '#23262b', ink: '#eceef1', ink2: '#9ba0a9', dim: '#34383f', line: '#3a3e45', key: '#3a3e46', keyInk: '#ffffff', meter: '#ff5a47', tape: '#8b919b', warn: '#f0a840', lcdWarn: '#f0a840' } },
+				petroliogiallo: { name: 'Petrolio e giallo', light: { led: '#c9950c', tag: '#d9a20f', lcd: '#0f4c5c', ink: '#eaf4f6', ink2: '#9cc3cc', dim: '#1c6375', line: '#25697a', key: '#0f4c5c', keyInk: '#ffffff', meter: '#ffc83d', tape: '#0f4c5c', warn: '#c2362b', lcdWarn: '#ff8f85' }, dark: { led: '#ffc83d', tag: '#d9a20f', lcd: '#0e3e4a', ink: '#e2f0f3', ink2: '#8db4bd', dim: '#185564', line: '#1e5b6a', key: '#146173', keyInk: '#ffffff', meter: '#ffc83d', tape: '#3a8fa3', warn: '#ff6b5e', lcdWarn: '#ff8f85' } },
+				boscocorallo: { name: 'Bosco e corallo', light: { led: '#e85a3c', tag: '#f2674a', lcd: '#1f4a3a', ink: '#eef5f1', ink2: '#a5c2b5', dim: '#2c5e4b', line: '#336653', key: '#1f4a3a', keyInk: '#ffffff', meter: '#ff7a5c', tape: '#1f4a3a', warn: '#9a5600', lcdWarn: '#f0a840' }, dark: { led: '#ff7a5c', tag: '#f2674a', lcd: '#183d30', ink: '#e6f1ec', ink2: '#93b3a5', dim: '#24503f', line: '#2a5646', key: '#255c47', keyInk: '#ffffff', meter: '#ff7a5c', tape: '#4e9479', warn: '#f0a840', lcdWarn: '#f0a840' } },
+				salviaarancio: { name: 'Salvia e arancio bruciato', light: { led: '#d35f1e', tag: '#f08a4b', lcd: '#d3dbcb', ink: '#1e2619', ink2: '#4f5b47', dim: '#b6c1ab', line: '#bec8b3', key: '#3f4d35', keyInk: '#ffffff', meter: '#d35f1e', tape: '#3f4d35', warn: '#b3261e', lcdWarn: '#a8261e' }, dark: { led: '#f08a4b', tag: '#d35f1e', lcd: '#1f2619', ink: '#e3eadc', ink2: '#9aa88f', dim: '#2e3826', line: '#343f2b', key: '#4a5a3e', keyInk: '#ffffff', meter: '#f08a4b', tape: '#7f9470', warn: '#ff6b5e', lcdWarn: '#ff8f85' } },
+				nottementa: { name: 'Notte e menta', light: { led: '#1a9a6e', tag: '#1fa97a', lcd: '#14213d', ink: '#edf2fb', ink2: '#9fb0cf', dim: '#22335a', line: '#2a3c66', key: '#14213d', keyInk: '#ffffff', meter: '#3ddc97', tape: '#14213d', warn: '#9a5600', lcdWarn: '#f0a840' }, dark: { led: '#3ddc97', tag: '#1fa97a', lcd: '#121d36', ink: '#e6ecf8', ink2: '#91a1c2', dim: '#1e2d50', line: '#24345a', key: '#22345f', keyInk: '#ffffff', meter: '#3ddc97', tape: '#5671a8', warn: '#f0a840', lcdWarn: '#f0a840' } },
+				lcdrosso: { name: 'LCD e rosso', light: { led: '#c8361f', tag: '#ff6a52', lcd: '#d4dbae', ink: '#1e2414', ink2: '#4e573a', dim: '#b9c193', line: '#c1c99e', key: '#1e2414', keyInk: '#e9edcf', tape: '#4e573a', warn: '#9a5600', lcdWarn: '#6e3d00' }, dark: { led: '#ff6a52', tag: '#c8361f', lcd: '#2a3020', ink: '#dde5b8', ink2: '#a0a981', dim: '#3a4230', line: '#404836', key: '#3a4230', keyInk: '#dde5b8', tape: '#8e9a6b', warn: '#f0a840', lcdWarn: '#f0a840' } },
+				grafite: { name: 'Grafite', light: { led: '#15171b', tag: '#ffffff', lcd: '#d5d7db', ink: '#15171b', ink2: '#4e535b', dim: '#b3b7bd', line: '#bfc3c9' }, dark: { led: '#eceef1', tag: '#15171b', lcd: '#1c1e22', ink: '#eceef1', ink2: '#9a9ea6', dim: '#34373d', line: '#2c2f34' } }
+			};
+			const VARS = { led: '--led', tag: '--tag-led', lcd: '--lcd', ink: '--lcd-ink', ink2: '--lcd-ink2', dim: '--lcd-dim', line: '--lcd-line', key: '--key', keyInk: '--key-ink', meter: '--meter-on', tape: '--tape-rec', warn: '--warn', lcdWarn: '--lcd-warn' };
+			let tune = load().tune || { pair: 'grafiterosso', custom: null };
+			let opts = load().opts || { rec: true, mat: true, tint: true, scale: true };
+			// Second tint: warm aluminium for the ground and the day's recorded blocks.
+			const TINT = { light: { '--bg': '#e4e5e2', '--cell': '#f1f1ef', '--off': '#d2d3cf', '--tape-rec': '#7c818a', '--bezel': '#cfd0cc' }, dark: { '--bg': '#141518', '--cell': '#1d1f23', '--off': '#2a2c30', '--tape-rec': '#6f757f', '--bezel': '#2c2f34' } };
+			const tuned = () => {
+				const theme = root.dataset.theme === 'dark' ? 'dark' : 'light';
+				const t = { ...PAIRS[tune.pair][theme] };
+				if (tune.custom) {
+					t.led = theme === 'dark' ? `color-mix(in srgb, ${tune.custom} 70%, white)` : tune.custom;
+					t.tag = theme === 'dark' ? tune.custom : `color-mix(in srgb, ${tune.custom} 55%, white)`;
+				}
+				return t;
+			};
+			const applyTune = () => {
+				const onL = document.body.dataset.v === 'l';
+				const t = tuned();
+				const theme = root.dataset.theme === 'dark' ? 'dark' : 'light';
+				for (const o of ['rec', 'mat', 'tint', 'scale']) document.body.classList.toggle(`x-${o}`, onL && !!opts[o]);
+				document.querySelectorAll('[data-opt]').forEach((c) => { c.checked = !!opts[c.dataset.opt]; });
+				document.querySelectorAll('.screen').forEach((el) => {
+					for (const [k, v] of Object.entries(VARS)) {
+						if (onL && t[k]) el.style.setProperty(v, t[k]);
+						else el.style.removeProperty(v);
+					}
+					for (const [v, val] of Object.entries(TINT[theme])) {
+						if (onL && opts.tint) el.style.setProperty(v, val);
+						else if (v !== '--tape-rec') el.style.removeProperty(v);
+					}
+					if (onL && !opts.tint && !t.tape) el.style.removeProperty('--tape-rec');
+				});
+				document.querySelectorAll('[data-pair]').forEach((b) => b.setAttribute('aria-pressed', String(!tune.custom && b.dataset.pair === tune.pair)));
+				document.querySelector('[data-values]').textContent = `${tune.custom ? 'accento ' + tune.custom + ' su ' : ''}${PAIRS[tune.pair].name}: ` + Object.entries(tuned()).map(([k, v]) => `${VARS[k]} ${v}`).join('; ');
+			};
+			document.querySelector('[data-presets]').innerHTML = Object.entries(PAIRS)
+				.map(([k, p]) => `<button data-pair="${k}"><i style="background:${p.light.key || p.light.led}"></i>${p.light.key ? `<i style="background:${p.light.led};margin-left:-4px"></i>` : ''}${p.name}</button>`).join('');
+			document.querySelector('[data-presets]').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-pair]');
+				if (!b) return;
+				tune = { pair: b.dataset.pair, custom: null };
+				save({ ...load(), tune });
+				applyTune();
+			});
+			document.querySelector('[data-opts]').addEventListener('change', (e) => {
+				const c = e.target.closest('[data-opt]');
+				if (!c) return;
+				opts = { ...opts, [c.dataset.opt]: c.checked };
+				save({ ...load(), opts });
+				applyTune();
+			});
+			document.querySelector('[data-custom]').addEventListener('input', (e) => {
+				tune = { ...tune, custom: e.target.value };
+				save({ ...load(), tune });
+				applyTune();
+			});
+			new MutationObserver(applyTune).observe(document.body, { attributes: true, attributeFilter: ['data-v'] });
+			new MutationObserver(applyTune).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+			applyTune();
+		
+			// Round 10: pause mode and the hold gesture.
+			window.PAUSE_MODE = ['key', 'well', 'round', 'cap'].includes(load().pauseMode) ? load().pauseMode : 'well';
+			const markPm = () => document.querySelectorAll('[data-pm]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pm === window.PAUSE_MODE)));
+			document.querySelector('[data-pmodes]').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-pm]');
+				if (!b) return;
+				window.PAUSE_MODE = b.dataset.pm;
+				save({ ...load(), pauseMode: window.PAUSE_MODE });
+				markPm();
+				draw();
+				applyTune();
+			});
+			markPm();
+			draw();
+			applyTune();
+		</script>
+	</body>
+</html>
