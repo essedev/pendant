@@ -1,0 +1,1450 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept B - App completa</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet" />
+		<!--
+			Concept B: il mock completo dell'app, da implementare in SwiftUI senza altri giri di design.
+			Parte dalla variante L di concept-a-app-fable.html (scelta il 26/11/2026): palette Grafite e
+			rosso con spia REC piena, display come materiale, seconda tinta alluminio, scala in dB, tasto
+			incassato. Stessi token, stessa scala, stessi componenti: qui sono fissi, senza pannello di
+			taratura. I colori sono quelli della tabella in ARCHITECTURE #Interfaccia.
+
+			COME SI USA
+			- Indice a sinistra: ogni voce porta a una schermata in uno stato preciso. Frecce su e giù
+			  (o sinistra e destra) per scorrere l'indice.
+			- Il telefono è navigabile: le righe aprono le pagine, il tasto indietro torna, i selettori
+			  aprono un foglio, interruttori e regoli funzionano, il tasto Pausa cambia stato.
+			- t tema chiaro o scuro, i annotazioni (riquadri numerati sul telefono, elenco a destra),
+			  p nasconde indice e barra, Esc chiude il foglio o torna indietro.
+			- L'indirizzo ha l'ancora della schermata (#adesso-pausa): si può linkare.
+
+			SCHERMATE
+			Primo avvio: benvenuto, permesso Bluetooth (spiegazione, richiesta di iOS, negato), ricerca
+			  del ciondolo (cerca, trovato, collegamento, collegato, non trovato), server (vuoto, prova
+			  in corso, riuscita, indirizzo irraggiungibile, token rifiutato, protocollo diverso),
+			  notifiche, fine.
+			Adesso: registra, in pausa, ciondolo scollegato, server irraggiungibile con coda, ciondolo in
+			  carica, batteria bassa, Bluetooth spento, accensione inattesa, primo uso senza conversazioni.
+			Oggi: oggi, oggi con la coda, giorno vuoto, ieri, dettaglio di una conversazione (inviata,
+			  in corso, interrotta).
+			Impostazioni: radice, Ciondolo (collegato e scollegato), Gesti, Note, Audio offline,
+			  Notifiche, Server, Comandi di sistema, Avanzate, Informazioni, Licenze; fogli di scelta,
+			  di testo, conferma per dimenticare il ciondolo, esportazione del log.
+			Sistema: blocco schermo con l'attività in tempo reale (registra, in pausa, in coda), Dynamic
+			  Island compatta, minima ed estesa, Centro di Controllo, conferma del tasto Azione, le
+			  quattro notifiche locali.
+			Errori: Bluetooth negato dopo il primo avvio, token rifiutato mentre registra, coda quasi
+			  piena, firmware non supportato.
+
+			DECISIONI PRESE QUI (da confermare)
+			1. La scheda Adesso scorre. Con un avviso sotto il tasto il contenuto supera lo schermo: il
+			   display e il tasto restano in alto, la giornata passa sotto la barra di vetro.
+			2. Gli avvisi sono una cella sotto il tasto: anello vuoto ambra, una frase che dice cosa è
+			   successo e cosa fare, al massimo due azioni. Uno alla volta: vince il più grave (permesso,
+			   Bluetooth, token, coda, batteria, firmware, accensione).
+			3. In carica il ciondolo continua a registrare e cambia solo la riga della batteria. Non è
+			   verificato sul ciondolo: se il firmware ferma l'audio in carica, lo stato diventa una
+			   spia a contorno "In carica da".
+			4. Coda piena: si perde l'audio più vecchio. ARCHITECTURE non lo dice; il testo dell'avviso
+			   dipende da questa scelta.
+			5. Nessun rosso fuori dalla registrazione, nemmeno per "Dimentica il ciondolo": la riga è
+			   inchiostro e la conferma è un confirmationDialog senza ruolo distruttivo.
+			6. Il rosso non è nemmeno la tinta di sistema: interruttori e selezioni usano l'inchiostro
+			   (.tint), il segno di spunta dei selettori è inchiostro.
+			7. Le impostazioni hanno una radice corta con le pagine; la cella del ciondolo in testa è un
+			   display piccolo, come in L. "Registrazione" di L è sparita: la lingua sta in Server
+			   (è un parametro del flusso), la coda senza rete in Avanzate.
+			8. Oggi: il giorno si cambia con due tasti di vetro in alto a destra (e, nell'app, con lo
+			   scorrimento orizzontale). I segnalibri sono triangoli sopra la striscia della giornata.
+			9. Un gesto si può assegnare anche a "Segna questo momento" o a "Niente": la mappa è già
+			   nella configurazione.
+			10. Il regolo a tacche serve due valori: luminosità della spia (33 tacche) e guadagno del
+			    microfono (9 tacche). Un solo componente.
+			11. Dopo 99 minuti il tempo del display passa da 12m08s a 1h42m, senza secondi, per restare
+			    nella larghezza.
+			12. Primo avvio: i passi sono sei tacche in alto. La richiesta di permesso di iOS arriva dopo
+			    una schermata che la spiega, mai da sola.
+			13. L'attività in tempo reale è un display piccolo (stesso fondo grafite), con un tasto
+			    Pausa a capsula; sul tasto Azione il default è "Segna questo momento".
+
+			PER CHI IMPLEMENTA
+			- Font: Archivo variabile (OFL) in UIAppFonts, con l'asse wdth. Larghezza 112% solo sulle
+			  cifre grandi del display, 100% altrove. Cifre tabellari ovunque ci sono numeri che cambiano.
+			- Scala del testo: 11 (etichette della barra, scala in dB), 13, 15, 17, 22, 34, 72 (tempo del
+			  display, unità a 28). Pesi 400, 500, 600. Niente altre misure.
+			- Spazi su griglia da 4 e 8. Raggi concentrici: schermo 55; display 28 dentro una cornice
+			  da 6 (34 fuori); tasto 28 nella stessa cornice; celle 20; fogli 38 in alto e 47 in basso a
+			  8 dal bordo (55 meno 8); barra di sistema.
+			- Vetro (.glassEffect) solo su ciò che galleggia sul contenuto: barra delle schede, tasti
+			  della barra di navigazione, fogli, avvisi di sistema. Il resto è superficie piena.
+			- Il bianco su #e5402f misura 4,1:1 e su #ff5a47 (scuro) 3,1:1: sotto il 4,5:1 del
+			  testo normale. È la scelta di L (spia e tasto Riprendi); se serve rientrare, nel tema
+			  scuro si può usare #e5402f anche per i fondi pieni.
+			- Tempo: Text(timerInterval:) nell'attività in tempo reale; nell'app un TimelineView.
+			- Con "Riduci movimento" il livello resta fermo e le pagine non scorrono; il tempo avanza
+			  comunque, perché è il contenuto.
+			- Le annotazioni (tasto i) dicono per ogni schermata il blocco SwiftUI, misure e token.
+
+			DATI
+			Veri: firmware 3.0.21, batteria 84%, conversazioni di oggi 09:04 da 43 min, 11:30 da 48 min,
+			17:21 da 4 min 47 s, nexus.esse.dev, 53 pacchetti in memoria, versione 0.3.0, firma che scade
+			il 3 dicembre. Plausibili: tutto il resto (ieri, i segnalibri, i minuti negli stati).
+
+			COSA IL MOCK NON MOSTRA
+			La rifrazione vera del vetro, la tastiera, le animazioni di sistema (foglio, Dynamic Island),
+			la vibrazione, VoiceOver e il testo dinamico, le superfici di sistema come le disegna
+			davvero iOS (qui sono ricostruite a mano).
+		
+			Scelta (26/11/2026): tutte le decisioni del report confermate; in M7 il rosso pieno sullo
+			scuro usa #e5402f per tornare a 4,5:1 col bianco. Da verificare sul ciondolo: registra anche
+			in carica.
+		-->
+		<style>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			body { min-height: 100vh; background: #dcdee3; color: #23252a; font: 13px/1.45 system-ui, -apple-system, sans-serif; }
+			:root[data-theme='dark'] body { background: #1a1b1e; color: #d5d7dc; }
+			[hidden] { display: none !important; }
+			button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; text-align: inherit; }
+			button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ink, #1f6feb); outline-offset: 2px; }
+			h1, h2, h3, h4, p, ol, ul, figure, dl, dd { margin: 0; padding: 0; }
+			ol, ul { list-style: none; }
+			input { font: inherit; color: inherit; }
+
+			/* Concept chrome: bar, index, notes. Not part of the design. */
+			.bar { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 12px; background: #111214; color: #b4b7bd; }
+			.bar strong { color: #fff; font-weight: 600; margin-right: 4px; }
+			.bar button { padding: 6px 10px; border-radius: 6px; background: #26282c; color: #eeeff1; }
+			.bar button[aria-pressed='true'] { background: #eeeff1; color: #111214; }
+			.bar p { flex: 1 1 260px; min-width: 0; margin-left: 4px; }
+			.bar kbd { font: 600 12px/1 ui-monospace, Menlo, monospace; padding: 2px 5px; border-radius: 4px; background: #34373c; color: #fff; }
+			.work { display: flex; align-items: flex-start; justify-content: center; gap: 32px; padding: 24px 16px 48px; }
+			.index { flex: none; width: 232px; position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; padding-right: 4px; }
+			.index h2 { margin: 16px 0 4px; font: 600 13px/18px system-ui, sans-serif; color: #50545c; }
+			.index h2:first-child { margin-top: 0; }
+			:root[data-theme='dark'] .index h2 { color: #a4a8b0; }
+			.index button { display: block; width: 100%; padding: 5px 8px; border-radius: 6px; font-size: 13px; line-height: 18px; }
+			.index button:hover { background: rgb(0 0 0 / 0.06); }
+			:root[data-theme='dark'] .index button:hover { background: rgb(255 255 255 / 0.08); }
+			.index button[aria-current='true'] { background: #111214; color: #fff; }
+			:root[data-theme='dark'] .index button[aria-current='true'] { background: #eeeff1; color: #111214; }
+			.stage { flex: none; display: grid; gap: 12px; justify-items: center; }
+			.stage figcaption { color: #50545c; max-width: 410px; text-align: center; }
+			:root[data-theme='dark'] .stage figcaption { color: #a4a8b0; }
+			.notes { flex: 0 1 340px; min-width: 260px; position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; }
+			body:not([data-anno='on']) .notes { display: none; }
+			.notes h2 { font: 600 15px/20px system-ui, sans-serif; margin-bottom: 8px; }
+			.notes ol { display: grid; gap: 10px; }
+			.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+			.notes li > b { width: 20px; height: 20px; border-radius: 10px; background: #1f6feb; color: #fff; font: 600 11px/20px system-ui, sans-serif; text-align: center; }
+			.notes li strong { display: block; font-weight: 600; }
+			.notes li.hot { background: rgb(31 111 235 / 0.1); outline: 6px solid rgb(31 111 235 / 0.1); border-radius: 2px; }
+			.notes details { margin-top: 20px; padding-top: 12px; border-top: 1px solid rgb(128 128 128 / 0.3); }
+			.notes summary { cursor: pointer; font-weight: 600; }
+			.notes table { margin-top: 8px; border-collapse: collapse; width: 100%; font-size: 12px; }
+			.notes td { padding: 3px 6px 3px 0; vertical-align: top; }
+			.notes td i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; box-shadow: 0 0 0 1px rgb(128 128 128 / 0.4); }
+			.notes code { font: 12px/1.4 ui-monospace, Menlo, monospace; }
+			body[data-chrome='off'] .bar, body[data-chrome='off'] .index { display: none; }
+			@media (max-width: 760px) { .work { flex-wrap: wrap; } .index, .notes { position: static; width: 100%; max-height: none; flex-basis: 100%; } }
+
+			/* The phone: 390x844 screen, radius 55, bezel 10. */
+			.phone { position: relative; width: 410px; height: 864px; padding: 10px; border-radius: 65px; background: #08080a; box-shadow: 0 0 0 1px #34363b, 0 24px 48px rgb(0 0 0 / 0.22); }
+			.abtn { position: absolute; left: -4px; top: 178px; width: 4px; height: 34px; border-radius: 2px 0 0 2px; background: #34363b; }
+			.phone.hold .abtn { background: #ff5a47; left: -2px; }
+			.screen { position: relative; width: 390px; height: 844px; border-radius: 55px; overflow: hidden; background: var(--bg); color: var(--ink); font: 400 17px/24px var(--font); -webkit-font-smoothing: antialiased; isolation: isolate;
+				--font: 'Archivo', sans-serif;
+				--bg: #e4e5e2; --cell: #f1f1ef; --ink: #15171b; --ink2: #5b6068; --ink3: #a5a9b0; --line: #dfe0dc; --off: #d2d3cf; --bezel: #cfd0cc;
+				--led: #e5402f; --meter: #ff5a47; --warn: #9a5600; --key: #2b2e34; --tape-rec: #7c818a;
+				--lcd: #2b2e34; --lcd-ink: #f1f2f4; --lcd-ink2: #a9aeb7; --lcd-dim: #3d4149; --lcd-line: #464a53; --lcd-warn: #f0a840;
+				--on: #15171b; --pill: rgb(21 23 27 / 0.08);
+				--glass: rgb(241 241 239 / 0.66); --glass-rim: rgb(255 255 255 / 0.7); --glass-top: #fff; --glass-shadow: rgb(21 23 27 / 0.12); --sheet: rgb(236 237 234 / 0.9); --scrim: rgb(0 0 0 / 0.3); }
+			:root[data-theme='dark'] .screen {
+				--bg: #141518; --cell: #1d1f23; --ink: #ecedef; --ink2: #9a9ea6; --ink3: #555961; --line: #2a2c31; --off: #2a2c30; --bezel: #2c2f34;
+				--led: #ff5a47; --meter: #ff5a47; --warn: #f0a840; --key: #3a3e46; --tape-rec: #6f757f;
+				--lcd: #23262b; --lcd-ink: #eceef1; --lcd-ink2: #9ba0a9; --lcd-dim: #34383f; --lcd-line: #3a3e45; --lcd-warn: #f0a840;
+				--on: #7d8594; --pill: rgb(255 255 255 / 0.1);
+				--glass: rgb(34 36 40 / 0.62); --glass-rim: rgb(255 255 255 / 0.1); --glass-top: rgb(255 255 255 / 0.16); --glass-shadow: rgb(0 0 0 / 0.5); --sheet: rgb(30 32 36 / 0.9); --scrim: rgb(0 0 0 / 0.5); }
+			#view { position: absolute; inset: 0; }
+			.island { position: absolute; z-index: 60; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 19px; background: #000; color: #fff; }
+			.statusbar { position: absolute; z-index: 35; top: 0; left: 0; right: 0; height: 54px; padding-top: 7px; display: flex; justify-content: space-between; align-items: center; font: 600 17px/1 -apple-system, 'SF Pro Text', system-ui, sans-serif; letter-spacing: -0.01em; }
+			.statusbar > span { width: 132px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+			.statusbar svg { display: block; }
+			.homebar { position: absolute; z-index: 70; bottom: 8px; left: 50%; width: 138px; height: 5px; margin-left: -69px; border-radius: 3px; background: var(--ink); pointer-events: none; }
+			.sb-fade { position: absolute; z-index: 30; top: 0; left: 0; right: 0; height: 64px; background: linear-gradient(var(--bg) 54px, transparent); pointer-events: none; }
+			.sb-fade.tall { height: 116px; background: linear-gradient(var(--bg) 96px, transparent); }
+			.sb-fade.bottom { z-index: 15; top: auto; bottom: 0; height: 120px; background: linear-gradient(transparent, var(--bg) 88px); }
+			.num { font-variant-numeric: tabular-nums; }
+
+			/* Glass: tab bar, navigation buttons, sheets, system alerts. */
+			.glass { background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%); box-shadow: inset 0 0 0 1px var(--glass-rim), inset 0 1px 0 var(--glass-top), 0 10px 28px var(--glass-shadow); }
+			.dock { position: absolute; z-index: 20; left: 21px; right: 21px; bottom: 21px; display: flex; }
+			.tabbar { flex: 1; height: 64px; padding: 4px; border-radius: 32px; display: flex; }
+			.tabbar button { flex: 1; border-radius: 28px; display: grid; justify-items: center; align-content: center; gap: 3px; font: 600 11px/13px var(--font); color: var(--ink2); text-align: center; }
+			.tabbar button svg { width: 24px; height: 24px; }
+			.tabbar button[aria-current='true'] { background: var(--pill); color: var(--ink); }
+			.nav { position: absolute; z-index: 36; top: 56px; left: 16px; right: 16px; height: 44px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+			.nav h1 { position: absolute; left: 60px; right: 60px; text-align: center; font: 600 17px/22px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.nav-btn { pointer-events: auto; width: 44px; height: 44px; border-radius: 22px; display: grid; place-items: center; color: var(--ink); }
+			.nav-btn svg { width: 22px; height: 22px; }
+			.nav-btn:disabled { color: var(--ink3); cursor: default; }
+			.nav-pair { pointer-events: auto; display: flex; height: 44px; border-radius: 22px; margin-left: auto; }
+			.nav-pair .nav-btn { width: 46px; }
+
+			/* Pages and lists. */
+			.scroll { position: absolute; inset: 0; overflow-y: auto; padding: 62px 0 128px; scrollbar-width: none; }
+			.scroll::-webkit-scrollbar { display: none; }
+			.scroll.pushed { padding-top: 112px; }
+			.scroll.bare { padding-bottom: 48px; }
+			.page-in { animation: push 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+			.page-back { animation: pop 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+			@keyframes push { from { transform: translateX(36px); opacity: 0.4; } }
+			@keyframes pop { from { transform: translateX(-36px); opacity: 0.4; } }
+			.set-title { margin: 0 24px 16px; font: 600 34px/40px var(--font); letter-spacing: -0.02em; }
+			.set-sub { margin: -12px 24px 20px; font-size: 15px; line-height: 20px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.grp h3 { margin: 28px 32px 8px; font: 500 13px/18px var(--font); color: var(--ink2); }
+			.grp { margin-top: 20px; }
+			.grp:has(h3) { margin-top: 0; }
+			.scroll > .grp:first-child, .scroll > div:first-child > .grp, .scroll > .grp:first-child h3, .scroll > div:first-child > .grp h3 { margin-top: 0; }
+			.rows { margin: 0 16px; padding: 0 16px; border-radius: 20px; background: var(--cell); }
+			.row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; }
+			.row + .row, .row + .rule, .rule + .row { border-top: 1px solid var(--line); }
+			.row .main { flex: 1; min-width: 0; padding: 8px 0; }
+			.row .main small { display: block; font: 400 13px/18px var(--font); color: var(--ink2); text-wrap: pretty; }
+			.row .value { font-size: 17px; color: var(--ink2); white-space: nowrap; font-variant-numeric: tabular-nums; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+			.row .value.warn { color: var(--warn); }
+			.row .chev { flex: none; width: 8px; height: 14px; color: var(--ink3); }
+			.row .check { flex: none; width: 20px; height: 20px; color: var(--ink); }
+			.row .btn, .btn { flex: none; height: 36px; padding: 0 14px; border-radius: 18px; background: var(--pill); font: 500 15px/36px var(--font); white-space: nowrap; color: var(--ink); }
+			.row[disabled], .row.dis { color: var(--ink3); }
+			.row.dis .value, .row.dis small { color: var(--ink3); }
+			.btn:disabled { color: var(--ink3); cursor: default; }
+			.foot { margin: 8px 32px 0; font: 400 13px/18px var(--font); color: var(--ink2); text-wrap: pretty; }
+			.foot.warn { color: var(--warn); }
+			.toggle { flex: none; position: relative; width: 58px; height: 30px; border-radius: 15px; background: var(--off); transition: background-color 0.2s; }
+			.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 34px; height: 26px; border-radius: 13px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25); transition: transform 0.2s; }
+			.toggle[aria-checked='true'] { background: var(--on); }
+			.toggle[aria-checked='true']::after { transform: translateX(20px); }
+			.ring { flex: none; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 2.5px var(--warn); }
+			.dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c, currentColor); }
+
+			/* The display. */
+			.sch { position: absolute; inset: 0; overflow-y: auto; padding: 66px 16px 128px; scrollbar-width: none; }
+			.sch::-webkit-scrollbar { display: none; }
+			.lcd { margin: 6px 6px 0; border-radius: 28px; background: var(--lcd); color: var(--lcd-ink); padding: 20px 20px 16px;
+				background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 38%), linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.08));
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.12), 0 0 0 6px var(--bezel), 0 0 0 6.75px rgb(0 0 0 / 0.08); }
+			:root[data-theme='dark'] .lcd { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 6px var(--bezel), 0 0 0 6.75px rgb(255 255 255 / 0.06); }
+			.lcd-top { display: flex; align-items: center; gap: 8px; height: 28px; }
+			.tag { height: 28px; padding: 0 10px; border-radius: 8px; background: var(--led); color: #fff; display: inline-flex; align-items: center; gap: 7px; font: 600 15px/20px var(--font); white-space: nowrap; }
+			.tag .dot { --c: #fff; }
+			.tag.line { background: none; color: var(--lcd-ink); box-shadow: inset 0 0 0 1.5px var(--lcd-ink); }
+			.tag.warn { background: none; color: var(--lcd-warn); box-shadow: inset 0 0 0 1.5px var(--lcd-warn); }
+			.lcd-batt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 500 15px/20px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+			.lcd-batt.warn { color: var(--lcd-warn); }
+			.lcd-batt .bolt { width: 10px; height: 14px; margin-right: -2px; }
+			.lcd-time { margin-top: 28px; font: 600 72px/72px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+			.lcd-time i { font: 500 28px/28px var(--font); font-stretch: 100%; letter-spacing: 0; margin: 0 8px 0 3px; }
+			.lcd-time i:last-child { margin-right: 0; }
+			.lcd-time.still { color: var(--lcd-ink2); }
+			.meter { margin-top: 20px; display: flex; gap: 3px; height: 16px; }
+			.meter i { flex: 1; border-radius: 1px; background: var(--lcd-dim); }
+			.meter i.on { background: var(--meter); }
+			.meter-scale { display: flex; justify-content: space-between; margin-top: 6px; font: 500 11px/14px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; }
+			.lcd-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--lcd-line); display: flex; justify-content: space-between; gap: 12px; font-size: 15px; line-height: 20px; white-space: nowrap; }
+			.lcd-foot span:last-child { color: var(--lcd-ink2); }
+			.lcd-foot span.warn { color: var(--lcd-warn); }
+
+			/* The one key, set into the same aluminium frame: 34 = 28 + 6. */
+			.k-well { margin-top: 18px; padding: 6px; border-radius: 34px; background: var(--bezel); }
+			.k-btn { width: 100%; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 17px/24px var(--font); color: #fff; background: var(--key); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.25); }
+			.k-btn svg { width: 18px; height: 18px; }
+			.k-btn.rec { background: var(--led); }
+			.k-btn .recdot { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+			.k-btn:disabled { background: var(--off); color: var(--ink2); box-shadow: none; cursor: default; }
+			.sch-hint { margin-top: 10px; text-align: center; font-size: 13px; line-height: 18px; color: var(--ink2); }
+			.notice { margin-top: 16px; padding: 14px 16px; border-radius: 20px; background: var(--cell); display: grid; grid-template-columns: 12px 1fr; column-gap: 12px; }
+			.notice .ring { margin-top: 5px; }
+			.notice b { display: block; font: 600 15px/20px var(--font); }
+			.notice p { font-size: 15px; line-height: 20px; color: var(--ink2); text-wrap: pretty; }
+			.notice .acts { grid-column: 2; margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+			.sch-day { margin: 28px 8px 0; }
+			.sch-day h2, .day-head { display: flex; justify-content: space-between; align-items: baseline; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			.sch-day h2 span { font: 400 15px/20px var(--font); letter-spacing: 0; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.marks { position: relative; height: 10px; margin-top: 8px; }
+			.marks i { position: absolute; top: 0; width: 0; height: 0; margin-left: -4px; border: 4px solid transparent; border-top: 7px solid var(--ink); border-bottom: 0; }
+			.tape { margin-top: 14px; display: flex; gap: 3px; height: 24px; }
+			.marks + .tape { margin-top: 2px; }
+			.tape.big { height: 32px; }
+			.tape i { flex: 1; border-radius: 1px; background: var(--off); }
+			.tape i.rec { background: var(--tape-rec); }
+			.tape i.now { background: var(--led); }
+			.tape-axis { margin: 6px 0 10px; display: flex; justify-content: space-between; font-size: 13px; line-height: 18px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.day-rows li { display: flex; justify-content: space-between; align-items: center; height: 48px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+			.day-rows li span:last-child { color: var(--ink2); font-size: 15px; }
+			.empty { padding: 16px 0 0; font-size: 15px; line-height: 20px; color: var(--ink2); text-wrap: pretty; }
+
+			/* Today. */
+			.conv { display: grid; grid-template-columns: 56px 1fr auto 8px; align-items: center; column-gap: 12px; width: 100%; min-height: 60px; font-variant-numeric: tabular-nums; }
+			.conv + .conv { border-top: 1px solid var(--line); }
+			.conv time { font: 600 17px/24px var(--font); }
+			.conv .dur small { display: block; font: 400 13px/18px var(--font); color: var(--ink2); }
+			.st { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; line-height: 20px; color: var(--ink2); white-space: nowrap; }
+			.st svg { width: 14px; height: 14px; }
+			.st.rec { color: var(--ink); }
+			.st.rec .dot { --c: var(--led); }
+			.st.warn { color: var(--warn); }
+			.st .ring { width: 10px; height: 10px; box-shadow: inset 0 0 0 2px var(--warn); }
+			.legend { margin: 12px 32px 0; display: flex; gap: 16px; font-size: 13px; line-height: 18px; color: var(--ink2); }
+			.legend span { display: inline-flex; align-items: center; gap: 6px; }
+			.legend i { width: 3px; height: 12px; border-radius: 1px; background: var(--tape-rec); }
+			.legend i.now { background: var(--led); }
+			.legend i.mk { width: 0; height: 0; border: 4px solid transparent; border-top: 7px solid var(--ink); border-bottom: 0; border-radius: 0; background: none; }
+
+			/* The small display: device card, conversation card. */
+			.lcd.card { margin: 6px 22px 14px; border-radius: 20px; padding: 16px; display: block; width: calc(100% - 44px); text-align: left; }
+			.lcd.card .name { display: flex; align-items: baseline; justify-content: space-between; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			.lcd.card .name span { font: 500 15px/20px var(--font); letter-spacing: 0; color: var(--lcd-ink2); display: inline-flex; gap: 6px; align-items: center; font-variant-numeric: tabular-nums; }
+			.lcd.card .name span.warn { color: var(--lcd-warn); }
+			.lcd.card p { font-size: 15px; line-height: 20px; color: var(--lcd-ink2); }
+			.lcd.card .lab { margin-top: 16px; display: flex; justify-content: space-between; font-size: 15px; line-height: 20px; }
+			.lcd.card .lab span:last-child { font-variant-numeric: tabular-nums; color: var(--lcd-ink2); }
+			.lcd.card .more { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--lcd-line); font-size: 15px; line-height: 20px; }
+			.lcd.card .more .chev { width: 8px; height: 14px; color: var(--lcd-ink2); }
+			.lcd.card .big { margin-top: 12px; font: 600 34px/40px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+			.lcd.card .big i { font: 500 17px/24px var(--font); font-stretch: 100%; letter-spacing: 0; margin: 0 6px 0 2px; }
+			.ruler { margin-top: 8px; display: flex; gap: 3px; height: 24px; align-items: end; touch-action: none; cursor: pointer; }
+			.ruler i { flex: 1; height: 12px; border-radius: 1px; background: var(--lcd-dim); pointer-events: none; }
+			.ruler i.past { background: var(--lcd-ink2); }
+			.ruler i.at { height: 24px; background: var(--lcd-ink); }
+			.ruler.is-off { cursor: default; }
+			.ruler.is-off i, .ruler.is-off i.past, .ruler.is-off i.at { height: 12px; background: var(--lcd-dim); }
+			.ruler.on-cell { height: 28px; margin: 0 0 14px; gap: 0; justify-content: space-between; }
+			.ruler.on-cell i { flex: none; width: 4px; height: 14px; border-radius: 2px; background: var(--off); }
+			.ruler.on-cell i.past { background: var(--tape-rec); }
+			.ruler.on-cell i.at { height: 28px; background: var(--ink); }
+			.ruler.on-cell.is-off i { height: 14px; background: var(--off); }
+			.stack { display: block; padding-top: 2px; }
+			.stack .row { min-height: 48px; }
+
+			/* Sheets, alerts. */
+			.scrim { position: absolute; inset: 0; z-index: 80; background: var(--scrim); }
+			.sheet { position: absolute; z-index: 81; left: 8px; right: 8px; bottom: 8px; padding: 8px 0 28px; border-radius: 38px 38px 47px 47px; background: var(--sheet); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); box-shadow: inset 0 0 0 1px var(--glass-rim), inset 0 1px 0 var(--glass-top), 0 10px 40px var(--glass-shadow); animation: rise 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+			@keyframes rise { from { transform: translateY(60px); opacity: 0.3; } }
+			.sheet .grab { width: 36px; height: 5px; margin: 0 auto 6px; border-radius: 3px; background: var(--ink3); }
+			.sheet header { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 12px 0 24px; }
+			.sheet header h2 { font: 600 17px/22px var(--font); }
+			.sheet header button { height: 36px; padding: 0 14px; border-radius: 18px; background: var(--pill); font: 600 15px/36px var(--font); }
+			.sheet .rows { margin-top: 4px; }
+			.sheet .foot { margin-top: 10px; }
+			.field { display: block; width: calc(100% - 32px); margin: 4px 16px 0; height: 52px; padding: 0 16px; border-radius: 16px; border: 0; background: var(--cell); font: 400 17px/24px var(--font); outline: 0; box-shadow: inset 0 0 0 1.5px var(--ink); }
+			.alert { position: absolute; z-index: 81; left: 45px; right: 45px; top: 50%; transform: translateY(-50%); padding: 22px 16px 16px; border-radius: 34px; background: var(--sheet); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); box-shadow: inset 0 0 0 1px var(--glass-rim), 0 10px 40px var(--glass-shadow); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; }
+			.alert.own { font-family: var(--font); }
+			.alert h2 { padding: 0 8px; font-weight: 600; font-size: 17px; line-height: 22px; }
+			.alert p { margin-top: 6px; padding: 0 8px; font-size: 15px; line-height: 20px; color: var(--ink2); }
+			.alert .acts { margin-top: 18px; display: grid; gap: 8px; }
+			.alert .acts button { height: 48px; border-radius: 24px; background: var(--pill); text-align: center; font-weight: 500; font-size: 17px; }
+			.alert .acts button.main { background: var(--ink); color: var(--bg); font-weight: 600; }
+
+			/* First launch. */
+			.ob { position: absolute; inset: 0; padding: 70px 24px 0; }
+			.ob-steps { display: flex; gap: 4px; justify-content: center; }
+			.ob-steps i { width: 28px; height: 4px; border-radius: 2px; background: var(--off); }
+			.ob-steps i.past { background: var(--tape-rec); }
+			.ob-steps i.at { background: var(--ink); }
+			.ob-art { margin: 28px -8px 0; }
+			.ob-art .lcd { pointer-events: none; }
+			.ob h1 { margin-top: 32px; font: 600 34px/40px var(--font); letter-spacing: -0.02em; text-wrap: balance; }
+			.ob-art + h1 { margin-top: 36px; }
+			.ob .lead { margin-top: 12px; font-size: 17px; line-height: 24px; color: var(--ink2); text-wrap: pretty; }
+			.ob .rows { margin: 24px -8px 0; }
+			.ob .foot { margin: 8px 8px 0; }
+			.ob-acts { position: absolute; left: 24px; right: 24px; bottom: 38px; display: grid; gap: 4px; }
+			.btn-main { height: 56px; border-radius: 28px; background: var(--key); color: #fff; text-align: center; font: 600 17px/24px var(--font); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.25); }
+			.btn-main:disabled { background: var(--off); color: var(--ink2); box-shadow: none; cursor: default; }
+			.btn-text { height: 48px; text-align: center; font: 500 17px/24px var(--font); color: var(--ink); }
+			.ob-pend { margin: 20px -8px 0; height: 236px; border-radius: 28px; background: var(--cell); display: grid; place-items: center; overflow: hidden; }
+			.ob-pend img { display: block; width: 300px; height: 300px; margin-top: -40px; }
+			.ob-pend.ghost img { filter: grayscale(1); opacity: 0.35; }
+			.scan { display: flex; gap: 3px; height: 12px; margin-top: 16px; }
+			.scan i { flex: 1; border-radius: 1px; background: var(--off); }
+			.scan.run i { animation: scan 1.6s linear infinite; animation-delay: calc(var(--i) * 0.045s); }
+			.scan.done i { background: var(--tape-rec); }
+			@keyframes scan { 0%, 30%, 100% { background: var(--off); } 10% { background: var(--ink); } }
+			.steps3 li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; padding: 12px 0; font-size: 15px; line-height: 20px; }
+			.steps3 li + li { border-top: 1px solid var(--line); }
+			.steps3 li > span:first-child { font: 600 15px/20px var(--font); color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.steps3 b { display: block; font: 600 17px/24px var(--font); }
+			.steps3 li div span { color: var(--ink2); }
+			.form .row label { flex: none; width: 84px; }
+			.form .row input { flex: 1; min-width: 0; height: 52px; border: 0; background: none; outline: 0; font: 400 17px/24px var(--font); color: var(--ink); }
+			.form .row input::placeholder { color: var(--ink3); }
+			.result { margin: 14px 8px 0; display: grid; grid-template-columns: 14px 1fr; column-gap: 10px; font-size: 15px; line-height: 20px; color: var(--ink2); text-wrap: pretty; }
+			.result svg { width: 14px; height: 14px; margin-top: 3px; color: var(--ink); }
+			.result .ring { margin-top: 4px; }
+			.result b { display: block; font-weight: 600; color: var(--ink); }
+			.result.warn b { color: var(--warn); }
+			.result .scan { grid-column: 1 / -1; margin-top: 0; }
+			.sysalert-preview { margin: 28px 21px 0; padding: 18px 12px 12px; border-radius: 28px; background: var(--cell); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; }
+			.sysalert-preview h4 { padding: 0 8px; font-weight: 600; font-size: 15px; line-height: 20px; }
+			.sysalert-preview p { margin-top: 4px; padding: 0 8px; font-size: 13px; line-height: 18px; color: var(--ink2); }
+			.sysalert-preview div { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+			.sysalert-preview span { height: 40px; border-radius: 20px; background: var(--pill); text-align: center; font-size: 15px; line-height: 40px; color: var(--ink2); }
+			.sysalert-preview span.pick { background: var(--ink); color: var(--bg); font-weight: 600; }
+
+			/* System surfaces, rebuilt by hand. Wallpaper and neighbours are context. */
+			.sys { position: absolute; inset: 0; color: #fff; background: linear-gradient(#565a62, #2a2c31 62%, #1b1c1f); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; }
+			.sys .homebar { background: #fff; }
+			.sys-clock { position: absolute; top: 86px; left: 0; right: 0; text-align: center; }
+			.sys-clock small { display: block; font-size: 22px; line-height: 28px; font-weight: 500; color: rgb(255 255 255 / 0.86); }
+			.sys-clock b { display: block; font-size: 100px; line-height: 100px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+			.la { position: absolute; left: 8px; right: 8px; bottom: 124px; padding: 16px 16px 14px; border-radius: 30px; background: var(--lcd); color: var(--lcd-ink); font-family: var(--font); background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 38%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); }
+			.la-top { display: flex; align-items: center; gap: 8px; }
+			.la-top .who { margin-left: auto; font: 500 13px/18px var(--font); color: var(--lcd-ink2); }
+			.la-mid { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; }
+			.la-time { font: 600 34px/40px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+			.la-time.still { color: var(--lcd-ink2); }
+			.la-key { height: 44px; padding: 0 18px 0 14px; border-radius: 22px; background: var(--lcd-dim); color: #fff; display: inline-flex; align-items: center; gap: 8px; font: 600 15px/20px var(--font); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12); }
+			.la-key svg { width: 16px; height: 16px; }
+			.la-key.rec { background: var(--led); }
+			.la-key .recdot { width: 10px; height: 10px; border-radius: 50%; background: #fff; }
+			.la-foot { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--lcd-line); display: flex; justify-content: space-between; font: 400 13px/18px var(--font); }
+			.la-foot span:last-child { color: var(--lcd-ink2); }
+			.la-foot span.warn { color: var(--lcd-warn); }
+			.lock-ctl { position: absolute; bottom: 48px; width: 52px; height: 52px; border-radius: 26px; background: rgb(60 62 68 / 0.6); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); display: grid; place-items: center; color: #fff; }
+			.lock-ctl svg { width: 24px; height: 24px; }
+			.lock-ctl.l { left: 46px; }
+			.lock-ctl.r { right: 46px; }
+			.lock-ctl.on { background: #fff; color: #e5402f; }
+			.isl { position: absolute; z-index: 60; top: 11px; left: 50%; transform: translateX(-50%); height: 37px; border-radius: 19px; background: #000; color: #fff; display: flex; align-items: center; justify-content: space-between; font-family: var(--font); transition: width 0.3s, height 0.3s, border-radius 0.3s; }
+			.isl.compact { width: 180px; padding: 0 12px 0 13px; }
+			.isl.compact .t { font: 600 15px/20px var(--font); font-variant-numeric: tabular-nums; }
+			.isl .bars { display: flex; align-items: center; gap: 2px; height: 16px; }
+			.isl .bars i { width: 3px; border-radius: 1.5px; background: #ff5a47; }
+			.isl .bars.idle i { background: #8b9099; }
+			.isl-min { position: absolute; z-index: 60; top: 11px; left: 268px; width: 37px; height: 37px; border-radius: 19px; background: #000; display: grid; place-items: center; }
+			.isl.other { width: 126px; margin-left: -22px; padding: 0 12px; color: #8b9099; font: 600 13px/18px -apple-system, system-ui, sans-serif; }
+			.isl.big { width: 374px; height: 172px; border-radius: 46px; display: block; padding: 18px 20px; }
+			.isl.big .la-top .tag { height: 26px; }
+			.isl.big .la-time { font-size: 34px; }
+			.isl.big .acts { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+			.isl.big .la-key { justify-content: center; padding: 0 12px; background: #2b2e34; }
+			.isl.big .la-key.rec { background: #e5402f; }
+			.isl.big .srv { font: 400 13px/18px var(--font); color: #a9aeb7; }
+			.isl.big .srv.warn { color: #f0a840; }
+			.isl.fb { width: 300px; padding: 0 16px 0 12px; justify-content: flex-start; gap: 10px; font: 600 15px/20px var(--font); }
+			.isl.fb svg { width: 18px; height: 18px; }
+			.isl.fb span:last-child { margin-left: auto; color: #a9aeb7; font-weight: 500; font-variant-numeric: tabular-nums; }
+			.icons { position: absolute; top: 84px; left: 27px; right: 27px; display: grid; grid-template-columns: repeat(4, 64px); justify-content: space-between; row-gap: 34px; }
+			.icons i { width: 64px; height: 64px; border-radius: 15px; background: rgb(255 255 255 / 0.1); }
+			.icons i.me { background: #2b2e34; display: grid; place-items: center; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1); }
+			.icons i.me svg { width: 34px; height: 34px; color: #f1f2f4; }
+			.cc { position: absolute; inset: 0; padding: 96px 19px 0; background: rgb(18 19 22 / 0.72); }
+			.cc-grid { display: grid; grid-template-columns: repeat(4, 76px); grid-auto-rows: 76px; gap: 16px; }
+			.cc-tile { border-radius: 38px; background: rgb(255 255 255 / 0.13); display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px; line-height: 16px; font-weight: 600; text-align: left; color: #fff; }
+			.cc-tile.b22 { grid-column: span 2; grid-row: span 2; border-radius: 34px; display: grid; grid-template-columns: 1fr 1fr; place-items: center; padding: 14px; gap: 6px; }
+			.cc-tile.b22 i { width: 54px; height: 54px; border-radius: 27px; background: rgb(255 255 255 / 0.14); }
+			.cc-tile.b21 { grid-column: span 2; }
+			.cc-tile .ic { flex: none; width: 52px; height: 52px; border-radius: 26px; background: rgb(255 255 255 / 0.16); display: grid; place-items: center; }
+			.cc-tile .ic svg { width: 24px; height: 24px; }
+			.cc-tile.on .ic { background: #fff; color: #e5402f; }
+			.cc-tile small { display: block; font-size: 13px; font-weight: 400; color: rgb(255 255 255 / 0.7); }
+			.cc-tile.flash .ic { background: #fff; color: #15171b; }
+			.cc-cap { margin-top: 20px; font-size: 13px; line-height: 18px; color: rgb(255 255 255 / 0.7); text-align: center; }
+			.banners { position: absolute; left: 8px; right: 8px; bottom: 120px; display: grid; gap: 8px; }
+			.banner { display: grid; grid-template-columns: 38px 1fr; gap: 10px; padding: 12px 14px 12px 12px; border-radius: 24px; background: rgb(244 244 242 / 0.82); color: #15171b; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+			.appicon { width: 38px; height: 38px; border-radius: 9px; background: #2b2e34; display: grid; place-items: center; color: #f1f2f4; align-self: center; }
+			.appicon svg { width: 22px; height: 22px; }
+			.banner b { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; line-height: 20px; font-weight: 600; }
+			.banner b span { font-weight: 400; font-size: 13px; color: #5b6068; white-space: nowrap; }
+			.banner p { font-size: 15px; line-height: 20px; }
+
+			/* Action button illustration in settings. */
+			.ab-ill { position: relative; height: 150px; margin: 0 16px; border-radius: 20px; background: var(--cell); overflow: hidden; }
+			.ab-phone { position: absolute; left: 50%; top: 22px; width: 212px; height: 160px; margin-left: -106px; border-radius: 36px 36px 0 0; background: #1b1c1f; box-shadow: 0 0 0 3px var(--bezel); color: #f1f2f4; text-align: center; padding-top: 18px; }
+			.ab-phone::before { content: ''; position: absolute; left: -8px; top: 44px; width: 5px; height: 22px; border-radius: 2px 0 0 2px; background: var(--ink); }
+			.ab-phone::after { content: ''; position: absolute; left: -7px; top: 78px; width: 4px; height: 60px; border-radius: 2px 0 0 2px; background: var(--bezel); }
+			.ab-phone .ic { width: 40px; height: 40px; margin: 0 auto; border-radius: 20px; background: #34383f; display: grid; place-items: center; }
+			.ab-phone .ic svg { width: 20px; height: 20px; }
+			.ab-phone b { display: block; margin-top: 6px; font: 600 15px/20px var(--font); }
+			.ab-phone span { display: inline-block; margin-top: 6px; height: 26px; padding: 0 12px; border-radius: 13px; background: #34383f; font: 500 13px/26px var(--font); }
+			.ab-tip { position: absolute; left: 12px; top: 62px; width: 62px; font: 500 13px/16px var(--font); color: var(--ink2); }
+			.license { margin: 0 16px; padding: 16px; border-radius: 20px; background: var(--cell); font: 400 13px/18px ui-monospace, Menlo, monospace; color: var(--ink2); white-space: pre-wrap; }
+
+			/* Annotation layer. */
+			.anno { position: absolute; inset: 10px; z-index: 200; pointer-events: none; border-radius: 55px; }
+			body:not([data-anno='on']) .anno { display: none; }
+			.anno div { position: absolute; border: 1.5px solid #1f6feb; border-radius: 6px; background: rgb(31 111 235 / 0.06); }
+			.anno div.hot { background: rgb(31 111 235 / 0.22); }
+			.anno b { position: absolute; left: -10px; top: -10px; width: 20px; height: 20px; border-radius: 10px; background: #1f6feb; color: #fff; font: 600 11px/20px system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 2px #fff; }
+
+			@media (prefers-reduced-motion: reduce) {
+				.toggle, .toggle::after, .isl { transition: none; }
+				.page-in, .page-back, .sheet { animation: none; }
+				.scan.run i { animation: none; }
+				.scan.run i:nth-child(3n) { background: var(--tape-rec); }
+			}
+		</style>
+	</head>
+	<body data-chrome="on">
+		<div class="bar">
+			<strong>Pendant, mock completo</strong>
+			<button data-theme-toggle><kbd>t</kbd> tema</button>
+			<button data-anno-toggle aria-pressed="false"><kbd>i</kbd> annotazioni</button>
+			<button data-chrome-toggle><kbd>p</kbd> nascondi indice</button>
+			<p>Variante L, grafite e rosso. Il telefono si usa: righe, indietro, fogli, interruttori, regoli, tasto Pausa. Frecce per scorrere l'indice.</p>
+		</div>
+		<div class="work">
+			<nav class="index" data-index aria-label="Indice delle schermate"></nav>
+			<figure class="stage">
+				<div class="phone" data-phone>
+					<div class="abtn"></div>
+					<div class="screen"><div id="view"></div><div id="over"></div></div>
+					<div class="anno" data-anno-layer></div>
+				</div>
+				<figcaption data-caption></figcaption>
+			</figure>
+			<aside class="notes" data-notes aria-label="Annotazioni per chi implementa"></aside>
+		</div>
+		<script>
+			const $ = (q, r = document) => r.querySelector(q);
+			const $$ = (q, r = document) => [...r.querySelectorAll(q)];
+			const root = document.documentElement;
+			const still = matchMedia('(prefers-reduced-motion: reduce)');
+			const two = (n) => String(n).padStart(2, '0');
+
+			// One icon set: 24 grid, stroke 2, round caps. SF Symbols names are in the annotations.
+			const S = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+			const ICON = {
+				now: `<svg viewBox="0 0 24 24" ${S}><path d="M4 10.5v3M8 7v10M12 4v16M16 8v8M20 10.5v3"/></svg>`,
+				today: `<svg viewBox="0 0 24 24" ${S}><path d="M9.5 6H20M9.5 12H20M9.5 18H20"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></svg>`,
+				settings: `<svg viewBox="0 0 24 24" ${S}><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h9M19 18h1"/><circle cx="15" cy="6" r="2.5"/><circle cx="9" cy="12" r="2.5"/><circle cx="16" cy="18" r="2.5"/></svg>`,
+				pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4"/><rect x="13.5" y="5" width="4" height="14" rx="1.4"/></svg>',
+				chev: `<svg class="chev" viewBox="0 0 8 14" ${S}><path d="M1.5 1.5 7 7l-5.5 5.5"/></svg>`,
+				back: `<svg viewBox="0 0 24 24" ${S}><path d="M14.5 5 7.5 12l7 7"/></svg>`,
+				fwd: `<svg viewBox="0 0 24 24" ${S}><path d="M9.5 5l7 7-7 7"/></svg>`,
+				check: `<svg class="check" viewBox="0 0 24 24" ${S}><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+				mark: `<svg viewBox="0 0 24 24" ${S}><path d="M7 4h10v16l-5-4.2L7 20z"/></svg>`,
+				cut: `<svg viewBox="0 0 24 24" ${S}><path d="M3 12h6M15 12h6M11 8l-2 8M15 8l-2 8"/></svg>`,
+				bolt: '<svg class="bolt" viewBox="0 0 10 14" fill="currentColor"><path d="M6.2 0 0 8h4.1l-1 6L10 5.6H5.6z"/></svg>',
+				batt: (pct) => `<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.75" y="0.75" width="20.5" height="10.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="3" width="${Math.max(2, (16 * pct) / 100)}" height="6" rx="1.5" fill="currentColor"/><path d="M23.5 4.2v3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+			};
+
+			const statusBar = (island = true) => `
+				${island ? '<div class="island"></div>' : ''}
+				<div class="statusbar"><span>17:42</span><span>
+					<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/></svg>
+					<svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M1.6 4.3a9.8 9.8 0 0 1 13.8 0M4.2 7a6.1 6.1 0 0 1 8.6 0"/><path d="M8.5 10.2h.01" stroke-width="2.6"/></svg>
+					<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x="0.6" y="0.6" width="22.8" height="11.8" rx="3.6" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/><rect x="2.3" y="2.3" width="15" height="8.4" rx="2.1" fill="currentColor"/><path d="M25.3 4.6v3.8" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.6" stroke-linecap="round"/></svg>
+				</span></div>
+				<div class="homebar"></div>`;
+			const TABS = [['home', 'now', 'Adesso'], ['today', 'today', 'Oggi'], ['settings', 'settings', 'Impostazioni']];
+			const dock = (current) => `<div class="dock"><nav class="tabbar glass">${TABS.map(([k, ic, l]) => `<button data-tab="${k}" aria-current="${k === current}">${ICON[ic]}${l}</button>`).join('')}</nav></div>`;
+			const navBar = (title, right = '') => `<div class="nav"><button class="nav-btn glass" data-back aria-label="Indietro">${ICON.back}</button><h1>${title}</h1>${right}</div>`;
+
+			// Time. After 99 minutes the display drops the seconds to stay within its width.
+			const FMT = {
+				units: (t) => (t >= 6000 ? `${Math.floor(t / 3600)}<i>h</i>${two(Math.floor((t % 3600) / 60))}<i>m</i>` : `${Math.floor(t / 60)}<i>m</i>${two(t % 60)}<i>s</i>`),
+				clock: (t) => `${Math.floor(t / 60)}:${two(t % 60)}`,
+				words: (t) => `${Math.floor(t / 60)} min ${two(t % 60)} s`
+			};
+			let tick = 0;
+			const live = (fmt, base, cls = '') => `<span class="num ${cls}" data-fmt="${fmt}" data-base="${base}">${FMT[fmt](base + tick)}</span>`;
+
+			// Settings values. In the app: the configuration schema, stored on the phone.
+			const cfg = {
+				name: 'Omi', led: 'follow', bright: 50, gain: 6, dbl: 'pause', single: 'note', vib: true,
+				noteMax: '5 min', preroll: '3 s', discard: true, offline: 'send',
+				nDisc: true, nDiscT: '2 min', nServ: true, nServT: '2 min', nBatt: true, nBattT: '20%', nPower: true, nSign: true, nSignT: '2 giorni prima',
+				addr: 'nexus.esse.dev', token: '••••••••••••7f3a', lang: 'Italiano', ping: '20 s', retry: '30 s', queue: '30 min', liveAct: true
+			};
+			const ACTIONS = [['pause', 'Pausa e ripresa', 'Chiude la conversazione, il successivo ne apre una nuova'], ['note', 'Apri e chiudi nota', 'Il primo tocco apre la nota, il successivo la chiude'], ['mark', 'Segna questo momento', 'Un segnalibro nella conversazione in corso'], ['none', 'Niente']];
+			const PICK = {
+				led: { title: 'Spia del ciondolo', opts: [['follow', 'Segue la registrazione', 'Accesa quando registra, spenta in pausa'], ['on', 'Sempre accesa'], ['off', 'Sempre spenta', 'Chi ti sta davanti non vede che stai registrando']], foot: 'Il colore lo decide il ciondolo. Da scollegato resta l’ultima scelta.' },
+				dbl: { title: 'Doppio tocco', opts: ACTIONS },
+				single: { title: 'Tocco singolo', opts: ACTIONS, foot: 'Il tocco singolo arriva circa un terzo di secondo dopo: il ciondolo aspetta di capire se è un doppio tocco.' },
+				noteMax: { title: 'Durata massima di una nota', opts: ['1 min', '2 min', '5 min', '10 min'], foot: 'Passato questo tempo la nota si chiude da sola.' },
+				preroll: { title: 'Secondi prima del tocco', opts: ['0 s', '3 s', '5 s', '10 s'], foot: 'La nota comincia qualche secondo prima del tocco, così non perde l’inizio della frase.' },
+				offline: { title: 'Quando il ciondolo torna vicino', opts: [['send', 'Invia al server', 'Con l’ora vera di registrazione; poi libera la memoria'], ['clear', 'Svuota la memoria', 'Butta l’audio registrato lontano dal telefono'], ['keep', 'Lascia nel ciondolo', 'Non lo tocca: piena la memoria, si sovrascrive il più vecchio']] },
+				nDiscT: { title: 'Ciondolo scollegato, avvisa dopo', opts: ['1 min', '2 min', '5 min', '10 min'] },
+				nServT: { title: 'Server irraggiungibile, avvisa dopo', opts: ['1 min', '2 min', '5 min', '10 min'] },
+				nBattT: { title: 'Batteria bassa, avvisa sotto il', opts: ['10%', '15%', '20%', '30%'] },
+				nSignT: { title: 'Firma in scadenza, avvisa', opts: ['1 giorno prima', '2 giorni prima', '3 giorni prima'] },
+				lang: { title: 'Lingua del parlato', opts: ['Italiano', 'Inglese', 'La riconosce il server'], foot: 'Viene comunicata al server a ogni conversazione.' },
+				ping: { title: 'Ping nel silenzio', opts: ['10 s', '20 s', '30 s', '60 s'], foot: 'Quando nessuno parla l’app manda un segnale per tenere aperta la connessione. Molte reti la chiudono dopo 100 secondi di silenzio.' },
+				retry: { title: 'Attesa massima fra i tentativi', opts: ['10 s', '30 s', '60 s', '2 min'], foot: 'Se il server non risponde l’app riprova con attese sempre più lunghe, fino a questa.' },
+				queue: { title: 'Coda senza rete', opts: [['15 min', '15 min', 'Circa 4 MB'], ['30 min', '30 min', 'Circa 7 MB'], ['1 h', '1 h', 'Circa 14 MB'], ['2 h', '2 h', 'Circa 29 MB']], foot: 'Piena la coda, si perde l’audio più vecchio.' }
+			};
+			const optOf = (o) => (Array.isArray(o) ? o : [o, o]);
+			const labelOf = (key) => optOf(PICK[key].opts.find((o) => optOf(o)[0] === cfg[key]) || PICK[key].opts[0])[1];
+			const TEXT = {
+				name: { title: 'Nome del ciondolo', foot: 'Vale solo in questa app.' },
+				addr: { title: 'Indirizzo del server', foot: 'Solo il nome, senza https e senza percorso. La connessione è sempre cifrata.' },
+				token: { title: 'Nuovo token', foot: 'Incolla il token creato sul server per l’audio. Finisce nel portachiavi di iOS e sostituisce quello di prima.', empty: true }
+			};
+
+			// Rows.
+			const row = (label, value = '', o = {}) => {
+				const tap = o.go ? ` data-go="${o.go}"` : o.pick ? ` data-pick="${o.pick}"` : o.text ? ` data-text="${o.text}"` : o.act && !o.btn ? ` data-act="${o.act}"` : '';
+				const el = tap && !o.dis ? 'button' : 'div';
+				return `<${el} class="row${o.dis ? ' dis' : ''}${o.cls ? ' ' + o.cls : ''}"${o.dis ? '' : tap}>
+					<span class="main">${label}${o.sub ? `<small>${o.sub}</small>` : ''}</span>
+					${value ? `<span class="value${o.warn ? ' warn' : ''}">${value}</span>` : ''}
+					${o.toggle ? `<button class="toggle" role="switch" data-toggle="${o.toggle}" aria-checked="${!!cfg[o.toggle]}" aria-label="${label}"></button>` : ''}
+					${o.btn ? `<button class="btn" data-act="${o.act}"${o.dis ? ' disabled' : ''}>${o.btn}</button>` : ''}
+					${(o.go || o.pick || o.text || o.nav) && !o.dis ? ICON.chev : ''}
+				</${el}>`;
+			};
+			const pickRow = (key, label, o = {}) => row(label, labelOf(key), { pick: key, ...o });
+			const grp = (title, rows, foot = '', cls = '') => `<section class="grp">${title ? `<h3>${title}</h3>` : ''}<div class="rows ${cls}">${rows.join('')}</div>${foot ? `<p class="foot">${foot}</p>` : ''}</section>`;
+			const ruler = (key, n, max, o = {}) => {
+				const at = Math.round((cfg[key] / max) * (n - 1));
+				return `<div class="ruler${o.cell ? ' on-cell' : ''}${o.off ? ' is-off' : ''}" ${o.off ? '' : `data-ruler="${key}" data-max="${max}" tabindex="0"`} role="slider" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${cfg[key]}" aria-label="${o.label}">${Array.from({ length: n }, (_, i) => `<i class="${i === at ? 'at' : i < at ? 'past' : ''}"></i>`).join('')}</div>`;
+			};
+
+			// ADESSO. One display, many states. `base` is the elapsed time when the mock opens.
+			const N = (title, text, acts = []) => ({ title, text, acts });
+			const HOME = {
+				rec: { live: true },
+				pause: { tags: [['line', 'In pausa da']], t: 130, key: 'resume' },
+				off: { tags: [['warn', 'Scollegato da']], t: 182, batt: null, key: 'dis', hint: 'Riprende da sola quando il ciondolo torna vicino.' },
+				queue: { live: true, tags: [['rec', 'Registra da'], ['warn', '2 min in coda']], srv: 'non risponde' },
+				charge: { live: true, batt: { pct: 62, bolt: true }, hint: 'Il ciondolo è in carica e continua a registrare.' },
+				low: { live: true, batt: { pct: 12, warn: true }, notice: N('Batteria del ciondolo al 12%', 'Mettilo in carica appena puoi. Da spento non registra niente, nemmeno nella sua memoria.') },
+				btoff: { tags: [['warn', 'Bluetooth spento da']], t: 45, batt: null, key: 'dis', hint: 'Riprende da sola quando riaccendi il Bluetooth.', notice: N('Il Bluetooth del telefono è spento', 'Riaccendilo dal Centro di Controllo o dalle Impostazioni. Intanto il ciondolo registra nella sua memoria.', [['Apri Impostazioni', 'ios']]) },
+				poweron: { live: true, base: 2652, notice: N('Il ciondolo si è acceso da solo alle 16:58', 'Forse un tocco in tasca. Da allora registra. Per spegnerlo tienilo premuto 3 secondi.', [['Metti in pausa', 'pause'], ['Ho capito', 'dismiss']]) },
+				first: { live: true, base: 12, first: true },
+				denied: { tags: [['warn', 'Senza Bluetooth da']], t: 318, batt: null, key: 'dis', hint: 'Riprende da sola quando ridai il permesso.', notice: N('Pendant non ha più il permesso del Bluetooth', 'Senza permesso non riceve niente dal ciondolo. Apri Impostazioni, tocca Bluetooth e accendi Pendant.', [['Apri Impostazioni', 'ios']]) },
+				token: { live: true, tags: [['rec', 'Registra da'], ['warn', '3 min in coda']], srv: 'token rifiutato', notice: N('Il server ha rifiutato il token alle 17:39', 'L’audio aspetta in coda sul telefono. Incolla un token valido nella pagina Server e la coda parte da sola.', [['Apri Server', 'go:server']]) },
+				full: { live: true, base: 2468, tags: [['rec', 'Registra da'], ['warn', '27 min in coda']], srv: 'non risponde', notice: N('La coda è quasi piena: 27 minuti su 30', 'Il server non risponde dalle 17:15. Fra 3 minuti si comincia a perdere l’audio più vecchio. Controlla il server o allunga la coda.', [['Apri Server', 'go:server'], ['Allunga la coda', 'pick:queue']]) },
+				fw: { live: true, notice: N('Firmware 3.0.24, non ancora supportato', 'Questa versione dell’app conosce il 3.0.21. Registra e mette in pausa come prima; le funzioni nuove del ciondolo restano spente finché non aggiorni l’app.', [['Ho capito', 'dismiss']]) }
+			};
+			const REC = [4, 5, 6, 14, 15, 16, 17, 37];
+			const tape = (rec, now, cls = '') => `<div class="tape ${cls}">${Array.from({ length: 48 }, (_, i) => `<i class="${rec.includes(i) ? 'rec' : i === now ? 'now' : ''}"></i>`).join('')}</div>`;
+			const AXIS = '<div class="tape-axis"><span>8</span><span>11</span><span>14</span><span>17</span><span>20</span></div>';
+			const battHtml = (b, tight) => (b === null ? '' : `<span class="lcd-batt${b.warn ? ' warn' : ''}" aria-label="Batteria ${b.pct}%">${b.bolt ? `${ICON.bolt}In carica ` : ''}${tight ? '' : `${b.pct}%`}${ICON.batt(b.pct)}</span>`);
+			const tagHtml = ([kind, text]) => (kind === 'rec' ? `<span class="tag"><span class="dot"></span>${text}</span>` : `<span class="tag ${kind}">${text}</span>`);
+			const lcdHome = (h) => {
+				const base = h.base ?? 728;
+				return `<section class="lcd" data-n="lcd">
+					<div class="lcd-top">${(h.tags || [['rec', 'Registra da']]).map(tagHtml).join('')}${battHtml(h.batt === undefined ? { pct: 84 } : h.batt, (h.tags || []).length > 1)}</div>
+					<div class="lcd-time${h.live ? '' : ' still'}">${h.live ? live('units', base) : FMT.units(h.t)}</div>
+					<div class="meter" ${h.live ? 'data-meter' : ''}>${Array.from({ length: 36 }, (_, i) => `<i class="${h.live && i < 21 ? 'on' : ''}"></i>`).join('')}</div>
+					<div class="meter-scale"><span>-40</span><span>-20</span><span>-10</span><span>-6</span><span>-3</span><span>0 dB</span></div>
+					<div class="lcd-foot"><span>${cfg.addr}</span><span class="${h.srv ? 'warn' : ''}">${h.srv || 'in linea'}</span></div>
+				</section>`;
+			};
+			const noticeHtml = (n) => `<aside class="notice" data-n="notice"><span class="ring"></span><div><b>${n.title}</b><p>${n.text}</p></div>${n.acts.length ? `<div class="acts">${n.acts.map(([l, a]) => `<button class="btn" data-act="${a}">${l}</button>`).join('')}</div>` : ''}</aside>`;
+			const renderHome = (v) => {
+				const h = HOME[v.hs];
+				const resume = h.key === 'resume';
+				return `${statusBar()}<div class="sb-fade"></div><div class="sb-fade bottom"></div><div class="sch" data-scroll>
+					${lcdHome(h)}
+					<div class="k-well" data-n="key"><button class="k-btn${resume ? ' rec' : ''}" data-act="pause"${h.key === 'dis' ? ' disabled' : ''}>${resume ? '<span class="recdot"></span>Riprendi' : `${ICON.pause}Pausa`}</button></div>
+					<p class="sch-hint">${h.hint || 'Oppure tocca due volte il ciondolo.'}</p>
+					${h.notice ? noticeHtml(h.notice) : ''}
+					<section class="sch-day" data-n="day">
+						<h2>Oggi<span>${h.first ? 'ancora niente' : '1 h 36 min in 3 conversazioni'}</span></h2>
+						${tape(h.first ? [] : REC, h.live ? 38 : -1)}${AXIS}
+						${h.first ? '<p class="empty">La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa.</p>' : `<ul class="day-rows">${[['17:21', '4 min 47 s'], ['11:30', '48 min'], ['09:04', '43 min']].map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join('')}</ul>`}
+					</section>
+				</div>${dock('home')}`;
+			};
+
+			// OGGI.
+			const CONV = {
+				live: { day: 'oggi', a: '17:30', st: 'live', marks: [['17:36', 'a 6 min dall’inizio']] },
+				c1721: { day: 'oggi', a: '17:21', b: '17:26', dur: '4 min 47 s', secs: 287, st: 'sent', marks: [] },
+				c1130: { day: 'oggi', a: '11:30', b: '12:18', dur: '48 min', secs: 2892, st: 'sent', marks: [['11:42', 'a 12 min dall’inizio'], ['12:05', 'a 35 min dall’inizio']] },
+				c0904: { day: 'oggi', a: '09:04', b: '09:47', dur: '43 min', secs: 2586, st: 'sent', marks: [] },
+				y1840: { day: 'ieri', a: '18:40', b: '18:49', dur: '9 min', secs: 552, st: 'sent', marks: [] },
+				y1512: { day: 'ieri', a: '15:12', b: '15:34', dur: '22 min', secs: 1331, st: 'cut', marks: [] },
+				y1015: { day: 'ieri', a: '10:15', b: '11:27', dur: '1 h 12 min', secs: 4335, st: 'sent', marks: [['10:48', 'a 33 min dall’inizio']] },
+				y0852: { day: 'ieri', a: '08:52', b: '09:23', dur: '31 min', secs: 1874, st: 'sent', marks: [] }
+			};
+			const DAYS = {
+				oggi: { title: 'Oggi', date: 'giovedì 26 novembre', short: 'gio 26 nov', total: '1 h 36 min', count: 'in 3 conversazioni', rec: REC, marks: [222, 245, 576], convs: ['c1721', 'c1130', 'c0904'] },
+				ieri: { title: 'Ieri', date: 'mercoledì 25 novembre', short: 'mer 25 nov', total: '2 h 14 min', count: 'in 4 conversazioni', rec: [3, 4, 5, 9, 10, 11, 12, 13, 28, 29, 30, 42, 43], marks: [168], convs: ['y1840', 'y1512', 'y1015', 'y0852'] },
+				vuoto: { title: 'Martedì', date: 'martedì 24 novembre', short: 'mar 24 nov', total: 'Niente', count: '', rec: [], marks: [], convs: [] }
+			};
+			const DAY_ORDER = ['vuoto', 'ieri', 'oggi'];
+			const ST = {
+				sent: `<span class="st">${ICON.check}Inviata</span>`,
+				queued: '<span class="st warn"><span class="ring"></span>In coda</span>',
+				cut: `<span class="st">${ICON.cut}Interrotta</span>`,
+				live: '<span class="st rec"><span class="dot"></span>Registra</span>'
+			};
+			const convRow = (id, hs) => {
+				const c = CONV[id];
+				if (c.st === 'live') return `<button class="conv" data-go="conv:live"><time>${c.a}</time><span class="dur">${live('words', 728)}<small>in corso</small></span>${hs === 'queue' ? '<span class="st warn"><span class="ring"></span>2 min in coda</span>' : ST.live}${ICON.chev}</button>`;
+				return `<button class="conv" data-go="conv:${id}"><time>${c.a}</time><span class="dur">${c.dur}<small>fino alle ${c.b}</small></span>${ST[c.st]}${ICON.chev}</button>`;
+			};
+			const renderToday = (v) => {
+				const d = DAYS[v.day];
+				const i = DAY_ORDER.indexOf(v.day);
+				const isToday = v.day === 'oggi';
+				const first = v.first;
+				const convs = first ? [] : d.convs;
+				const marks = first ? [] : d.marks;
+				const emptyText = isToday
+					? 'Oggi non c’è ancora niente di chiuso. La conversazione in corso entra nell’elenco quando la chiudi: tocca due volte il ciondolo.'
+					: 'Martedì non hai registrato niente.';
+				return `${statusBar()}<div class="sb-fade"></div><div class="sb-fade bottom"></div>
+					<div class="nav"><div class="nav-pair glass" data-n="days"><button class="nav-btn" data-day="-1" aria-label="Giorno prima"${i === 0 ? ' disabled' : ''}>${ICON.back}</button><button class="nav-btn" data-day="1" aria-label="Giorno dopo"${isToday ? ' disabled' : ''}>${ICON.fwd}</button></div></div>
+					<div class="scroll" data-scroll>
+					<h1 class="set-title">${d.title}</h1>
+					<p class="set-sub">${d.date}</p>
+					<section class="sch-day" style="margin:0 24px" data-n="strip">
+						<h2>${first || !d.convs.length ? 'Niente' : d.total}<span>${first ? 'ancora nessuna conversazione chiusa' : d.count || 'nessuna conversazione'}</span></h2>
+						<div class="marks">${marks.map((m) => `<i style="left:${(m / 720) * 100}%"></i>`).join('')}</div>
+						${tape(first ? [] : d.rec, isToday ? 38 : -1, 'big')}${AXIS}
+					</section>
+					<p class="legend" style="margin:0 24px"><span><i></i>registrato</span>${isToday ? '<span><i class="now"></i>adesso</span>' : ''}<span><i class="mk"></i>momento segnato</span></p>
+					${isToday || convs.length ? `<section class="grp" style="margin-top:24px"><div class="rows" data-n="convs">${isToday ? convRow('live', v.hs) : ''}${convs.map((id) => convRow(id)).join('')}</div>
+						${convs.length ? '<p class="foot">Qui ci sono le conversazioni passate da questo telefono. Le trascrizioni si leggono sul server.</p>' : `<p class="foot" data-n="empty">${emptyText}</p>`}</section>`
+						: `<section class="grp" style="margin-top:24px"><div class="rows" data-n="empty"><div class="row"><span class="main">${emptyText}</span><button class="btn" data-day="2">Torna a oggi</button></div></div></section>`}
+				</div>${dock('today')}`;
+			};
+			const renderConv = (v) => {
+				const c = CONV[v.id];
+				const d = DAYS[c.day];
+				const isLive = c.st === 'live';
+				const queued = isLive && v.hs === 'queue';
+				// 48 ticks across the conversation; a bookmark is a tall tick.
+				const toMin = (s) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3));
+				const len = isLive ? 12 : Math.max(1, Math.round(c.secs / 60));
+				const mk = c.marks.map(([t]) => Math.min(47, Math.round(((toMin(t) - toMin(c.a)) / len) * 47)));
+				const strip = `<div class="ruler is-static" style="cursor:default" role="img" aria-label="La conversazione, con i momenti segnati">${Array.from({ length: 48 }, (_, i) => `<i class="${mk.includes(i) ? 'at' : 'past'}"></i>`).join('')}</div>`;
+				const state = isLive
+					? queued ? row('Stato', 'Ultimi 2 min in coda', { warn: true }) : row('Stato', 'In invio mentre parli')
+					: c.st === 'cut' ? row('Stato', `Interrotta alle ${c.b}`) : row('Stato', `Inviata alle ${c.b}`);
+				const foot = isLive
+					? queued ? 'Il server non risponde: l’audio degli ultimi 2 minuti aspetta sul telefono e parte da solo quando torna in linea.' : 'L’audio arriva al server mentre parli. Sul telefono non resta niente.'
+					: c.st === 'cut' ? 'Il ciondolo si è scollegato e non è tornato entro 2 minuti, quindi il server ha chiuso la conversazione. L’audio fino alle 15:34 è arrivato tutto.' : 'Sul telefono l’audio non c’è più: la trascrizione si legge sul server.';
+				return `${statusBar()}<div class="sb-fade tall"></div>${navBar('Conversazione')}<div class="scroll pushed bare" data-scroll>
+					<section class="lcd card" data-n="card">
+						<div class="name">${c.a}${isLive ? '' : ` - ${c.b}`}<span>${d.short}</span></div>
+						<div class="big">${isLive ? live('units', 728) : FMT.units(c.secs)}</div>
+						<div class="lab"><span>${isLive ? 'Dall’inizio a ora' : `Dalle ${c.a} alle ${c.b}`}</span><span>${c.marks.length === 1 ? '1 segnalibro' : c.marks.length ? `${c.marks.length} segnalibri` : 'nessun segnalibro'}</span></div>
+						${strip}
+					</section>
+					<section class="grp" data-n="marks"><h3>Momenti segnati</h3>${c.marks.length ? `<div class="rows">${c.marks.map(([t, w]) => row(`<span class="num">${t}</span>`, w)).join('')}</div>` : '<div class="rows"><div class="row"><span class="main" style="color:var(--ink2);font-size:15px;line-height:20px">Nessuno. Un momento si segna dal tasto Azione o dal Centro di Controllo, mentre registra.</span></div></div>'}
+						${c.marks.length ? '<p class="foot">Segnati dal telefono mentre registravi. Il server li riceve insieme all’audio.</p>' : ''}</section>
+					${grp('Invio', [state, row('Server', cfg.addr)], foot)}
+				</div>`;
+			};
+
+			// IMPOSTAZIONI.
+			const actLabel = { pause: 'pausa', note: 'nota', mark: 'segnalibro', none: 'niente' };
+			const renderSettings = (v) => `${statusBar()}<div class="sb-fade"></div><div class="sb-fade bottom"></div><div class="scroll" data-scroll>
+				<h1 class="set-title">Impostazioni</h1>
+				<button class="lcd card" data-go="ciondolo" data-n="device">
+					<span class="name">${cfg.name}<span>84%${ICON.batt(84)}</span></span>
+					<p>Collegato, firmware 3.0.21</p>
+					<span class="more"><span>Spia, microfono, vibrazione</span>${ICON.chev}</span>
+				</button>
+				<div data-n="list">${grp('', [
+					row('Gesti', `${actLabel[cfg.dbl]}, ${actLabel[cfg.single]}`, { go: 'gesti' }),
+					row('Note', `fino a ${cfg.noteMax}`, { go: 'note' }),
+					row('Audio offline', labelOf('offline'), { go: 'offline' }),
+					row('Notifiche', `${['nDisc', 'nServ', 'nBatt', 'nPower', 'nSign'].filter((k) => cfg[k]).length} attive`, { go: 'notifiche' })
+				])}</div>
+				${grp('', [row('Server', cfg.addr, { go: 'server' }), row('Comandi di sistema', '', { go: 'comandi' })])}
+				${grp('', [row('Avanzate', '', { go: 'avanzate' }), row('Informazioni', '0.3.0', { go: 'info' })], 'Le impostazioni restano su questo telefono. La firma dell’app scade giovedì 3 dicembre: come rinnovarla è in Avanzate.')}
+			</div>${dock('settings')}`;
+
+			let srv = 'idle';
+			const RESULT = {
+				testing: `<div class="result" data-n="result"><b style="grid-column:1/-1">Provo a collegarmi a ${cfg.addr}</b><div class="scan run">${Array.from({ length: 36 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div></div>`,
+				ok: `<div class="result" data-n="result">${ICON.check.replace('class="check" ', '')}<div><b>Collegato</b>Il server ha accettato il token e parla audio_stream 1.</div></div>`,
+				unreach: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>nexus.esse.dev non risponde</b>Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso.</div></div>',
+				token: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>Il server ha rifiutato il token</b>L’indirizzo è giusto, il token no. Incollalo di nuovo: deve essere quello creato per l’audio, intero.</div></div>',
+				proto: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>Il server parla un protocollo diverso</b>Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app.</div></div>'
+			};
+			const PAGES = {
+				ciondolo: (v) => {
+					const off = v.off;
+					const ledOff = cfg.led === 'off';
+					return ['Ciondolo', `
+					<section class="lcd card" data-n="device">
+						<div class="name">${cfg.name}${off ? '<span class="warn">non collegato</span>' : `<span>84%${ICON.batt(84)}</span>`}</div>
+						<p>${off ? 'Visto l’ultima volta alle 17:39' : 'Collegato, firmware 3.0.21'}</p>
+						<div class="lab"><span>Luminosità della spia</span><span>${ledOff ? 'spenta' : `${cfg.bright}%`}</span></div>
+						${ruler('bright', 33, 100, { off: ledOff || off, label: 'Luminosità della spia' })}
+					</section>
+					${off ? '<p class="foot" style="margin-top:0">Da scollegato il ciondolo tiene gli ultimi valori. Spia, microfono e vibrazione si cambiano quando torna vicino.</p>' : ''}
+					${grp('Spia', [pickRow('led', 'Accensione', { dis: off })], 'Il colore lo decide il ciondolo, qui scegli quando e quanto. Accesa, dice anche a chi ti sta davanti che stai registrando.')}
+					<section class="grp" data-n="gain"><h3>Microfono</h3><div class="rows stack">${row('Guadagno', `${cfg.gain} di 8`, { dis: off })}${ruler('gain', 9, 8, { cell: true, off, label: 'Guadagno del microfono' })}</div>
+						<p class="foot">Più alto sente meglio le voci lontane, e anche il rumore. Il ciondolo lo ricorda da solo.</p></section>
+					${grp('Ciondolo', [row('Nome', cfg.name, { text: 'name' }), row('Firmware', '3.0.21'), row('Vibrazione di prova', '', { btn: 'Fai vibrare', act: 'vibrate', dis: off })], 'Il firmware si aggiorna dall’app Omi: ricollega lì il ciondolo, aggiorna, poi fai Dimentica dispositivo. Finché è collegato anche a lei, registrate in due.')}
+					${grp('', [row('Dimentica il ciondolo', '', { act: 'forget', cls: 'forget' })], 'L’app smette di cercarlo e torna alla ricerca. Impostazioni e conversazioni restano.')}`];
+				},
+				gesti: () => ['Gesti', `
+					<div data-n="gest">${grp('Sul ciondolo', [pickRow('dbl', 'Doppio tocco'), pickRow('single', 'Tocco singolo')], 'Il ciondolo riconosce solo questi due. Tenerlo premuto oltre 3 secondi lo spegne: è un gesto del firmware e non si può cambiare. Da spento, un tocco breve lo riaccende.')}</div>
+					${grp('Conferma', [row('Vibrazione di conferma', '', { toggle: 'vib', sub: 'Lunga quando qualcosa parte, breve quando si ferma' })])}`],
+				note: () => ['Note', `
+					${grp('', [pickRow('noteMax', 'Durata massima'), pickRow('preroll', 'Secondi prima del tocco')], 'Una nota è un pezzo di audio tenuto da parte: si apre con un gesto e si chiude col successivo. Funziona anche in pausa.')}
+					${grp('', [row('Scarta le note senza voce', '', { toggle: 'discard', sub: 'Un tocco in tasca non lascia note vuote' })])}`],
+				offline: () => ['Audio offline', `
+					<div data-n="policy">${grp('', [pickRow('offline', 'Quando torna vicino')], 'Lontano dal telefono il ciondolo registra nella sua memoria. La libera solo dopo la conferma del server.')}</div>
+					${grp('Nel ciondolo adesso', [row('In memoria', '53 pacchetti', { sub: 'Circa 5 secondi di audio' }), row('Ultimo scarico', 'oggi, 14:02'), row('Scarica adesso', '', { btn: 'Scarica', act: 'drain' })])}`],
+				notifiche: () => ['Notifiche', `
+					${grp('', [row('Permesso di iOS', 'Consentite')])}
+					<div data-n="notif">${grp('Ciondolo scollegato', [row('Avvisa', '', { toggle: 'nDisc' }), pickRow('nDiscT', 'Dopo', { dis: !cfg.nDisc })])}</div>
+					${grp('Server irraggiungibile', [row('Avvisa', '', { toggle: 'nServ' }), pickRow('nServT', 'Dopo', { dis: !cfg.nServ })])}
+					${grp('Batteria bassa', [row('Avvisa', '', { toggle: 'nBatt' }), pickRow('nBattT', 'Sotto il', { dis: !cfg.nBatt })])}
+					${grp('Accensione inattesa', [row('Avvisa', '', { toggle: 'nPower' })], 'Quando il ciondolo si riaccende da solo dopo uno spegnimento, di solito per un tocco in tasca.')}
+					${grp('Firma in scadenza', [row('Avvisa', '', { toggle: 'nSign' }), pickRow('nSignT', 'Quando', { dis: !cfg.nSign })])}`],
+				server: () => ['Server', `
+					<div data-n="creds">${grp('', [row('Indirizzo', cfg.addr, { text: 'addr' }), row('Token', cfg.token, { text: 'token', sub: 'Nel portachiavi di iOS' })])}</div>
+					${grp('', [row('Protocollo', 'audio_stream 1'), pickRow('lang', 'Lingua del parlato')])}
+					<section class="grp"><div class="rows" data-n="test">${row('Ultimo contatto', srv === 'unreach' ? '17:15' : srv === 'token' ? '17:39' : 'adesso')}${row('Prova la connessione', '', { btn: srv === 'testing' ? 'Provo' : 'Prova', act: 'test', dis: srv === 'testing' })}</div>
+						${RESULT[srv] ? RESULT[srv].replace('class="result', 'style="margin:14px 32px 0" class="result') : ''}
+						<p class="foot" style="margin-top:${RESULT[srv] ? 16 : 8}px">L’app manda l’audio a qualunque server che parli questo protocollo. Il token viaggia nell’intestazione della richiesta, mai nell’indirizzo.</p></section>`],
+				comandi: () => ['Comandi di sistema', `
+					<p class="foot" style="margin:0 32px 20px;font-size:15px;line-height:20px">Pausa e segnalibri senza aprire l’app. Dove stanno lo decide iOS: qui c’è come metterli.</p>
+					<section class="grp"><h3 style="margin-top:0">Tasto Azione</h3>
+						<div class="ab-ill" data-n="ill" role="img" aria-label="La pagina Tasto Azione delle Impostazioni, con il controllo Segna questo momento di Pendant">
+							<span class="ab-tip">Tasto Azione</span>
+							<div class="ab-phone"><div class="ic">${ICON.mark}</div><b>Controlli</b><span>Segna questo momento</span></div>
+						</div>
+						<div class="rows" style="margin-top:12px"><ol class="steps3"><li><span>1</span><div>Apri Impostazioni, poi Tasto Azione.</div></li><li><span>2</span><div>Scorri di lato fino a Controlli.</div></li><li><span>3</span><div>Tocca Scegli un controllo e cerca Pendant: Segna questo momento, oppure Pausa e ripresa.</div></li></ol></div>
+						<p class="foot">Si attiva tenendolo premuto, quindi in tasca non parte. Il ciondolo vibra per conferma. Serve un iPhone 15 Pro o successivo.</p>
+						<div style="margin:12px 16px 0"><button class="btn" data-act="ios">Apri Impostazioni</button></div></section>
+					<section class="grp"><h3>Centro di Controllo e blocco schermo</h3>
+						<div class="rows"><ol class="steps3"><li><span>1</span><div>Apri il Centro di Controllo e tieni premuto su uno spazio vuoto.</div></li><li><span>2</span><div>Tocca Aggiungi un controllo e cerca Pendant.</div></li><li><span>3</span><div>Aggiungi Pausa e ripresa e Segna questo momento. Sul blocco schermo sostituiscono torcia e fotocamera.</div></li></ol></div></section>
+					<div data-n="live">${grp('Mentre registra', [row('Attività in tempo reale', '', { toggle: 'liveAct', sub: 'Tempo, server e tasto Pausa sul blocco schermo e nella Dynamic Island' })])}</div>`],
+				avanzate: () => ['Avanzate', `
+					${grp('Connessione al server', [pickRow('ping', 'Ping nel silenzio'), pickRow('retry', 'Attesa massima fra i tentativi')])}
+					<div data-n="queue">${grp('Coda senza rete', [pickRow('queue', 'Dimensione'), row('Occupata ora', '0 MB')], 'Quando il server non risponde l’audio aspetta sul telefono. Piena la coda, si perde l’audio più vecchio.')}</div>
+					${grp('Diagnostica', [row('Log dell’app', '', { btn: 'Esporta', act: 'export' })])}
+					<div data-n="sign">${grp('App', [row('Versione', '0.3.0 (41)'), row('Firma', 'scade il 3 dicembre', { warn: true })], 'Giovedì 3 dicembre l’app smette di aprirsi: è firmata con un account gratuito, che dura 7 giorni. Per rinnovarla collega l’iPhone al Mac e rilancia l’installazione da Xcode. Impostazioni e token restano.')}</div>
+					${grp('', [row('Riporta ai valori iniziali', '', { act: 'reset' })], 'Indirizzo e token del server non cambiano.')}`],
+				info: () => ['Informazioni', `
+					${grp('', [row('Pendant', '0.3.0'), row('Ciondolo', 'Omi CV 1'), row('Firmware supportato', '3.0.21')], 'Pendant riceve l’audio del ciondolo Omi e lo manda al server che scegli tu. Non ha account e non manda niente a nessun altro.')}
+					${grp('', [row('Licenze', '', { go: 'licenze' })])}`],
+				licenze: () => ['Licenze', `
+					<section class="grp"><h3 style="margin-top:0">Omi, di Based Hardware</h3>
+					<p class="foot" style="margin:0 32px 12px">La parte Bluetooth di Pendant riusa codice dell’app Omi, pubblicato con licenza MIT.</p>
+					<div class="license" data-n="lic">MIT License
+
+Copyright (c) 2024 Based Hardware Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software [...]
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.</div></section>
+					<section class="grp"><h3>Archivo, di Omnibus-Type</h3><p class="foot" style="margin:0 32px">Il carattere dell’app. SIL Open Font License 1.1.</p></section>`]
+			};
+			const renderPage = (v) => {
+				const [title, body] = PAGES[v.p](v);
+				return `${statusBar()}<div class="sb-fade tall"></div>${navBar(title)}<div class="scroll pushed bare" data-scroll>${body}</div>`;
+			};
+
+			// PRIMO AVVIO.
+			const OB_STEPS = ['welcome', 'bt', 'search', 'server', 'notif', 'done'];
+			const obSteps = (step) => `<div class="ob-steps" data-n="steps" role="img" aria-label="Passo ${OB_STEPS.indexOf(step) + 1} di 6">${OB_STEPS.map((s, i) => `<i class="${s === step ? 'at' : i < OB_STEPS.indexOf(step) ? 'past' : ''}"></i>`).join('')}</div>`;
+			const acts = (main, second = '') => `<div class="ob-acts" data-n="acts">${main}${second}</div>`;
+			const mainBtn = (label, act, dis = false) => `<button class="btn-main" data-act="${act}"${dis ? ' disabled' : ''}>${label}</button>`;
+			const textBtn = (label, act) => `<button class="btn-text" data-act="${act}">${label}</button>`;
+			const scan = (cls) => `<div class="scan ${cls}">${Array.from({ length: 36 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>`;
+			const PEND = '<img src="inspo/omi-pendant.png" alt="Il ciondolo Omi" width="300" height="300" />';
+			const OB = {
+				welcome: () => `<div class="ob-art" data-n="art">${lcdHome({ live: true, base: 0 })}</div>
+					<h1>Registra le conversazioni col ciondolo</h1>
+					<p class="lead">Pendant riceve l’audio dal ciondolo Omi e lo manda al tuo server mentre parli. Sul telefono resta qualcosa solo quando manca la rete.</p>
+					${acts(mainBtn('Inizia', 'ob:bt'))}`,
+				bt: () => `<h1>Serve il Bluetooth</h1>
+					<p class="lead">Il ciondolo manda l’audio al telefono via Bluetooth, anche quando l’app è chiusa. Al prossimo passo iOS chiede il permesso: scegli Consenti.</p>
+					<div class="sysalert-preview" data-n="art" role="img" aria-label="La richiesta di iOS, con Consenti evidenziato"><h4>“Pendant” vorrebbe usare il Bluetooth</h4><p>Serve per ricevere l’audio dal ciondolo.</p><div><span>Non consentire</span><span class="pick">Consenti</span></div></div>
+					${acts(mainBtn('Continua', 'ask:btperm'))}`,
+				denied: () => `<h1>Il Bluetooth non è consentito</h1>
+					<p class="lead">Senza Bluetooth l’app non riceve niente dal ciondolo. Si rimedia dalle Impostazioni di iOS, in tre tocchi.</p>
+					<div class="rows" data-n="art"><ol class="steps3"><li><span>1</span><div>Tocca Apri Impostazioni qui sotto.</div></li><li><span>2</span><div>Tocca Bluetooth.</div></li><li><span>3</span><div>Accendi l’interruttore e torna qui.</div></li></ol></div>
+					${acts(mainBtn('Apri Impostazioni', 'ios'), textBtn('Fatto, riprova', 'ob:search'))}`,
+				search: (v) => {
+					const st = v.st || 'scan';
+					const T = {
+						scan: ['Cerco il ciondolo', 'Tienilo acceso e vicino al telefono. Di solito bastano pochi secondi.'],
+						found: ['Trovato', 'C’è un ciondolo qui vicino. Se è il tuo, collegalo.'],
+						linking: ['Mi collego a Omi', 'Leggo versione e batteria e gli scrivo l’ora.'],
+						linked: ['Collegato', 'Il ciondolo è pronto. Resta collegato anche con l’app chiusa.'],
+						none: ['Non trovo il ciondolo', 'Ho cercato per 30 secondi. Di solito è una di queste tre cose.']
+					}[st];
+					const dev = {
+						found: row('Omi', '', { btn: 'Collega', act: 'ob:linking', sub: 'Segnale forte' }),
+						linking: row('Omi', 'Collegamento', { sub: 'Segnale forte' }),
+						linked: row('Omi', `84%`, { sub: 'Firmware 3.0.21' })
+					}[st];
+					return `<h1>${T[0]}</h1><p class="lead">${T[1]}</p>
+						${st === 'none'
+							? `<div class="rows" data-n="art"><ol class="steps3">
+								<li><span>1</span><div><b>È spento</b><span>Dagli un tocco breve: la spia si accende.</span></div></li>
+								<li><span>2</span><div><b>È collegato all’app Omi</b><span>Apri l’app Omi e fai Dimentica dispositivo: altrimenti il ciondolo resta con lei.</span></div></li>
+								<li><span>3</span><div><b>È scarico o lontano</b><span>Mettilo in carica qualche minuto e tienilo accanto al telefono.</span></div></li></ol></div>`
+							: `<div class="ob-pend${st === 'scan' ? ' ghost' : ''}" data-n="art">${PEND}</div>
+								${st === 'scan' || st === 'linking' ? `<div data-n="scan">${scan('run')}</div>` : `<div data-n="scan">${scan('done')}</div>`}
+								${dev ? `<div class="rows" style="margin-top:16px" data-n="dev">${dev}</div>` : ''}`}
+						${st === 'none' ? acts(mainBtn('Cerca di nuovo', 'ob:search'), textBtn('Apri l’app Omi', 'ios')) : acts(mainBtn('Continua', 'ob:server', st !== 'linked'))}`;
+				},
+				server: (v) => {
+					const s = v.srv || 'empty';
+					const filled = s !== 'empty';
+					return `<h1>Dove mando l’audio</h1>
+						<p class="lead">Scrivi l’indirizzo del tuo server e incolla il token che hai creato lì per l’audio.</p>
+						<div class="rows form" data-n="form">
+							<div class="row"><label for="f-addr">Indirizzo</label><input id="f-addr" placeholder="server.esempio.it" value="${filled ? cfg.addr : ''}" autocomplete="off" spellcheck="false" /></div>
+							<div class="row"><label for="f-token">Token</label><input id="f-token" placeholder="Incolla il token" value="${filled ? '••••••••••••••••7f3a' : ''}" autocomplete="off" /></div>
+						</div>
+						<p class="foot">Il token finisce nel portachiavi di iOS. Indirizzo e token si cambiano poi dalle impostazioni.</p>
+						${RESULT[s] || ''}
+						${acts(s === 'ok' ? mainBtn('Continua', 'ob:notif') : mainBtn(s === 'testing' ? 'Provo la connessione' : 'Prova la connessione', 'obtest', !filled || s === 'testing'))}`;
+				},
+				notif: () => `<h1>Un avviso quando qualcosa si ferma</h1>
+					<p class="lead">Pendant ti avvisa se il ciondolo si scollega, se il server non risponde o se la batteria è bassa. Quando e quali lo scegli dalle impostazioni.</p>
+					<div style="margin:28px -8px 0" data-n="art"><div class="banner" style="background:var(--cell);color:var(--ink)"><span class="appicon">${ICON.now}</span><div><b>Ciondolo scollegato da 2 minuti<span style="color:var(--ink2)">adesso</span></b><p style="color:var(--ink2)">Riprende da sola quando torna vicino.</p></div></div></div>
+					${acts(mainBtn('Consenti le notifiche', 'ask:notifperm'), textBtn('Non ora', 'ob:done'))}`,
+				done: () => `<h1>Sta registrando</h1>
+					<p class="lead">Da adesso Pendant lavora anche chiusa. Un doppio tocco sul ciondolo mette in pausa, un altro riprende.</p>
+					<div class="rows" data-n="art">${row('Ciondolo', 'Omi, 84%')}${row('Server', `${cfg.addr}, in linea`)}${row('Notifiche', 'Consentite')}</div>
+					<p class="foot">Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Comandi di sistema.</p>
+					${acts(mainBtn('Apri Pendant', 'home:first'))}`
+			};
+			const renderOb = (v) => `${statusBar()}<div class="ob">${obSteps(v.step === 'denied' ? 'bt' : v.step)}${OB[v.step](v)}</div>`;
+
+			// SISTEMA. Surfaces of iOS, rebuilt by hand around our content.
+			const SYS_STATE = {
+				rec: { tag: '<span class="tag"><span class="dot"></span>Registra</span>', live: true, srv: 'in linea' },
+				pause: { tag: '<span class="tag line">In pausa</span>', srv: 'in linea' },
+				queue: { tag: '<span class="tag"><span class="dot"></span>Registra</span><span class="tag warn">2 min in coda</span>', live: true, srv: 'non risponde', warn: true }
+			};
+			const laKey = (p) => `<button class="la-key${p ? ' rec' : ''}" data-act="pause">${p ? '<span class="recdot"></span>Riprendi' : `${ICON.pause}Pausa`}</button>`;
+			const lockClock = '<div class="sys-clock"><small>giovedì 26 novembre</small><b>17:42</b></div>';
+			const bars = (idle) => `<span class="bars${idle ? ' idle' : ''}">${[6, 12, 16, 10, 6].map((h) => `<i style="height:${idle ? 4 : h}px"></i>`).join('')}</span>`;
+			const iconGrid = `<div class="icons">${Array.from({ length: 16 }, (_, i) => (i === 5 ? `<i class="me">${ICON.now}</i>` : '<i></i>')).join('')}</div>`;
+			const SYS = {
+				lock: (v) => {
+					const s = SYS_STATE[v.hs];
+					const p = v.hs === 'pause';
+					return `${statusBar()}${lockClock}
+						<section class="la" data-n="la">
+							<div class="la-top">${s.tag}<span class="who">Pendant</span></div>
+							<div class="la-mid"><div class="la-time${s.live ? '' : ' still'}" data-n="timer">${s.live ? live('clock', 728) : '2:10'}</div>${laKey(p)}</div>
+							<div class="la-foot"><span>${cfg.addr}</span><span class="${s.warn ? 'warn' : ''}">${s.srv}</span></div>
+						</section>
+						<button class="lock-ctl l${p ? '' : ' on'}" data-act="pause" data-n="ctl" aria-label="Pausa e ripresa">${ICON.now}</button>
+						<button class="lock-ctl r" data-act="mark" aria-label="Segna questo momento">${ICON.mark}</button>`;
+				},
+				island: (v) => {
+					const p = v.hs === 'pause';
+					const body = {
+						compact: `<button class="isl compact" data-act="isl:big" data-n="isl" aria-label="Attività in tempo reale, compatta">${bars(p)}<span class="t">${p ? 'Pausa' : live('clock', 728)}</span></button>`,
+						minimal: `<div class="isl other" aria-hidden="true"><span>Timer</span><span>4:12</span></div><div class="isl-min" data-n="isl">${p ? '<span class="dot" style="--c:#8b9099"></span>' : '<span class="dot" style="--c:#ff5a47;width:10px;height:10px"></span>'}</div>`,
+						big: `<div class="isl big" data-n="isl">
+							<div class="la-top">${SYS_STATE[p ? 'pause' : 'rec'].tag}<span class="who" style="color:#a9aeb7;display:inline-flex;gap:6px;align-items:center">84%${ICON.batt(84)}</span></div>
+							<div class="la-mid" style="margin-top:8px"><div class="la-time${p ? ' still' : ''}" style="color:${p ? '#a9aeb7' : '#f1f2f4'}">${p ? '2:10' : live('clock', 728)}</div><span class="srv">${cfg.addr}, in linea</span></div>
+							<div class="acts">${laKey(p)}<button class="la-key" data-act="mark">${ICON.mark}Segna</button></div>
+						</div>`
+					}[v.k];
+					return `${statusBar(false)}${iconGrid}${body}`;
+				},
+				cc: (v) => {
+					const p = v.hs === 'pause';
+					return `${statusBar()}<div class="cc">
+						<div class="cc-grid">
+							<div class="cc-tile b22" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+							<div class="cc-tile b22" aria-hidden="true" style="display:block"></div>
+							<button class="cc-tile b21${p ? '' : ' on'}" data-act="pause" data-n="toggle"><span class="ic">${ICON.now}</span><span>Pendant<small>${p ? 'In pausa' : 'Registra'}</small></span></button>
+							<button class="cc-tile b21${v.flash ? ' flash' : ''}" data-act="mark" data-n="button"><span class="ic">${ICON.mark}</span><span>Segna<small>il momento</small></span></button>
+							<div class="cc-tile" aria-hidden="true"></div><div class="cc-tile" aria-hidden="true"></div><div class="cc-tile" aria-hidden="true"></div><div class="cc-tile" aria-hidden="true"></div>
+						</div>
+						<p class="cc-cap">${v.flash ? 'Segnato alle 17:42. Il ciondolo ha vibrato.' : 'I due controlli di Pendant. Il resto è il Centro di Controllo di chi usa il telefono.'}</p>
+					</div>`;
+				},
+				action: () => `<div class="homebar"></div>${iconGrid}<div class="isl fb" data-n="isl">${ICON.mark}<span>Momento segnato</span><span>17:42</span></div>`,
+				notif: () => `${statusBar()}${lockClock}<div class="banners" data-n="banners">
+					${[['Ciondolo scollegato da 2 minuti', 'adesso', 'L’ultima conversazione arriva fino alle 17:40. Riprende da sola quando il ciondolo torna vicino.'],
+						['Il server non risponde da 2 minuti', '17:17', 'L’audio aspetta sul telefono, fino a 30 minuti. Parte da solo quando nexus.esse.dev torna in linea.'],
+						['Batteria del ciondolo al 18%', '16:05', 'Mettilo in carica appena puoi.'],
+						['La firma dell’app scade fra 2 giorni', '09:00', 'Giovedì 3 dicembre Pendant smette di aprirsi. Reinstallala da Xcode prima di allora.']]
+						.map(([t, w, b]) => `<article class="banner"><span class="appicon">${ICON.now}</span><div><b>${t}<span>${w}</span></b><p>${b}</p></div></article>`).join('')}
+				</div>`
+			};
+			const renderSys = (v) => `<div class="sys">${SYS[v.k0 || v.sys](v)}</div>`;
+
+			const RENDER = { home: renderHome, today: renderToday, conv: renderConv, settings: renderSettings, page: renderPage, ob: renderOb, sys: renderSys };
+
+			// Sheets and alerts.
+			const ALERT = {
+				btperm: { sys: true, title: '“Pendant” vorrebbe usare il Bluetooth', text: 'Serve per ricevere l’audio dal ciondolo.', acts: [['Non consentire', 'ob:denied'], ['Consenti', 'ob:search', true]] },
+				notifperm: { sys: true, title: '“Pendant” vorrebbe inviarti delle notifiche', text: 'Le notifiche possono includere avvisi, suoni e badge sulle icone.', acts: [['Non consentire', 'ob:done'], ['Consenti', 'ob:done', true]] },
+				forget: { title: 'Dimenticare Omi?', text: 'L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi.', acts: [['Dimentica il ciondolo', 'ob:search', true], ['Annulla', 'close']] },
+				reset: { title: 'Riportare le impostazioni ai valori iniziali?', text: 'Gesti, note, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano.', acts: [['Riporta ai valori iniziali', 'close', true], ['Annulla', 'close']] }
+			};
+			const renderOver = (sh) => {
+				if (!sh) return '';
+				if (sh.type === 'alert') {
+					const a = ALERT[sh.id];
+					return `<div class="scrim" data-act="${a.sys ? '' : 'close'}"></div><div class="alert${a.sys ? '' : ' own'}" role="alertdialog" data-n="alert"><h2>${a.title}</h2><p>${a.text}</p><div class="acts">${a.acts.map(([l, act, main]) => `<button class="${main ? 'main' : ''}" data-act="${act}">${l}</button>`).join('')}</div></div>`;
+				}
+				if (sh.type === 'pick') {
+					const p = PICK[sh.key];
+					return `<div class="scrim" data-act="close"></div><section class="sheet" role="dialog" aria-label="${p.title}" data-n="sheet"><div class="grab"></div><header><h2>${p.title}</h2><button data-act="close">Fine</button></header>
+						<div class="rows">${p.opts.map(optOf).map(([val, label, sub]) => `<button class="row" data-opt="${val}"><span class="main">${label}${sub ? `<small>${sub}</small>` : ''}</span>${cfg[sh.key] === val ? ICON.check : ''}</button>`).join('')}</div>
+						${p.foot ? `<p class="foot">${p.foot}</p>` : ''}</section>`;
+				}
+				if (sh.type === 'text') {
+					const t = TEXT[sh.key];
+					return `<div class="scrim" data-act="close"></div><section class="sheet" role="dialog" aria-label="${t.title}" data-n="sheet"><div class="grab"></div><header><h2>${t.title}</h2><button data-act="savetext">Salva</button></header>
+						<input class="field" data-field="${sh.key}" value="${t.empty ? '' : cfg[sh.key]}" placeholder="${t.empty ? 'Incolla il token' : ''}" autocomplete="off" spellcheck="false" aria-label="${t.title}" />
+						<p class="foot">${t.foot}</p></section>`;
+				}
+				if (sh.type === 'share') {
+					return `<div class="scrim" data-act="close"></div><section class="sheet" role="dialog" aria-label="Esporta il log" data-n="sheet"><div class="grab"></div><header><h2>pendant-2026-11-26.log</h2><button data-act="close">Fine</button></header>
+						<div class="rows">${row('Salva su File', '', { act: 'close', nav: true })}${row('AirDrop', '', { act: 'close', nav: true })}${row('Copia', '', { act: 'close', nav: true })}</div>
+						<p class="foot">Testo, 184 KB: le ultime 24 ore. Nel log non ci sono né audio né token. Nell’app questo è il foglio di condivisione di iOS.</p></section>`;
+				}
+				return '';
+			};
+
+			// ANNOTAZIONI: what an implementer reads. [selector, title, text].
+			const A = {
+				tab: ['.tabbar', 'TabView, barra di iOS 26', 'Tre Tab: Adesso (waveform), Oggi (list.bullet), Impostazioni (slider.horizontal.3). La barra di vetro è quella di sistema, non si ridisegna. .tint(inchiostro): la scheda attiva non è mai rossa. Il contenuto scorre sotto la barra (ScrollView, fondo token Fondo).'],
+				back: ['.nav-btn', 'NavigationStack', 'Tasto indietro di sistema, di vetro su iOS 26, 44 pt. Titolo .inline in Archivo 17/22 semibold con ToolbarItem(.principal). Il contenuto parte a 112 dall’alto.'],
+				title: ['.set-title', 'Titolo', 'Archivo 34/40 semibold, tracking -0,02em, a 24 dal bordo. È un Text nel contenuto e scorre con lui: il largeTitle di sistema non prende Archivo senza UIAppearance.'],
+				rows: ['.rows', 'Cella', 'Raggio 20 continuo, fondo token Celle, margine 16 dallo schermo, padding orizzontale 16. Righe alte almeno 52, filo da 1 pt fra le righe (#dfe0dc chiaro, #2a2c31 scuro), 20 fra i gruppi. Etichetta 17/24, valore 17 grigio testo, chevron 8x14 grigio chiaro. Con List(.insetGrouped) servono .listRowBackground e .scrollContentBackground(.hidden); per i raggi da 20 conviene una VStack propria.'],
+				head: ['.grp h3', 'Intestazione di gruppo', '13/18 medium, grigio testo, a 32 dal bordo, 28 sopra e 8 sotto. Minuscolo normale, niente maiuscoletto.'],
+				foot: ['.foot', 'Piede', '13/18 grigio testo, a 8 dalla cella e a 32 dal bordo. Dice la conseguenza della scelta, non ripete l’etichetta.'],
+				toggle: ['.toggle', 'Toggle', 'Toggle di sistema con .tint: inchiostro #15171b nel chiaro, #7d8594 nello scuro. Mai rosso.'],
+				pick: ['[data-pick]', 'Selettore', 'Riga con valore e chevron: apre un foglio (.sheet con presentationDetents) con le scelte in lista. Non il Picker a menu: le scelte hanno una riga di spiegazione.'],
+				lcd: ['[data-n="lcd"]', 'Display', 'RoundedRectangle(28, .continuous), fill token Display. Sopra, due LinearGradient: diagonale bianco dal 9% a 0 (il riflesso) e verticale dal 5% bianco all’8% nero; strokeBorder bianco 7%. Cornice: 6 pt di token Cornice d’alluminio, raggio esterno 34. Padding interno 20, 20, 16. A 22 dai bordi dello schermo.'],
+				spia: ['.lcd-top .tag', 'Spia', 'Alta 28, raggio 8, padding 10, 15/20 semibold. Registra: fondo token Rosso, testo e punto (8 pt, fermo) bianchi. In pausa: contorno 1,5 in inchiostro del display. Problema: contorno 1,5 ambra #f0a840, da sola o accanto alla spia rossa. Si legge col tempo: "Registra da 12m08s".'],
+				batt: ['.lcd-batt', 'Batteria', '15/20 medium, inchiostro secondario del display, cifre tabellari. In carica: bolt.fill e "In carica". Sotto la soglia: ambra del display. Da scollegato sparisce. Con due spie resta solo l’icona, per stare nella riga.'],
+				time: ['.lcd-time', 'Tempo', 'Archivo 72/72 semibold, larghezza 112% (asse wdth), tracking -0,02em, monospacedDigit, a 28 dalla spia. Unità m e s: 28/28 medium a larghezza 100%, 3 pt dalla cifra, 8 dalla successiva. TimelineView(.periodic(by: 1)). Fermo: inchiostro secondario. Oltre 99 minuti: 1h42m.'],
+				meter: ['.meter', 'Livello', '36 tacche, spacing 3, alte 16, raggio 1, a 20 dal tempo. Accese #ff5a47, spente token Tacche spente. Dal PCM decodificato, circa 6 volte al secondo; fermo con Riduci movimento. Scala sotto a 6: 11/14 medium, da -40 a 0 dB. Un Canvas, oppure Gauge con uno stile su misura.'],
+				srv: ['.lcd-foot', 'Riga del server', 'Filo da 1 pt token Righe del display a 16 dalla scala, poi 12. 15/20: indirizzo in inchiostro del display; stato in secondario ("in linea") o ambra ("non risponde", "token rifiutato").'],
+				key: ['[data-n="key"]', 'Tasto incassato', 'Button con ButtonStyle su misura, a 18 dal display. Pozzetto: padding 6, raggio 34, token Cornice. Tasto: alto 56, raggio 28, 17/24 semibold bianco. Registra: fondo token Tasto Pausa, pause.fill da 18, "Pausa". Fermo: fondo token Rosso, punto bianco da 12, "Riprendi". Senza ciondolo: grigio pieno, disabilitato. Filo chiaro 14% in alto, scuro 25% in basso. Niente vetro.'],
+				hint: ['.sch-hint', 'Riga sotto il tasto', '13/18 grigio testo, centrata, a 10 dal tasto. Dice l’altra via (il doppio tocco) o perché il tasto è spento.'],
+				notice: ['[data-n="notice"]', 'Avviso', 'Cella raggio 20, token Celle, padding 14 e 16, a 16 dalla riga sopra. Anello vuoto da 12 con tratto 2,5 in token Avvisi, mai una striscia sul lato. Titolo 15/20 semibold, testo 15/20 grigio, azioni a capsula alte 36 (inchiostro all’8%, 15 medium). Uno alla volta: vince il più grave.'],
+				day: ['[data-n="day"]', 'La giornata', 'A 28 dall’elemento sopra, margine 24. "Oggi" 22/28 semibold, totale 15/20 grigio a destra. Striscia: 48 tacche da un quarto d’ora, dalle 8 alle 20, spacing 3, alte 24: registrate token Tratti registrati, adesso token Rosso, vuote #d2d3cf (scuro #2a2c30). Asse 13/18. Righe alte 48 col filo sopra: ora 17, durata 15 grigio.'],
+				days: ['[data-n="days"]', 'Cambio giorno', 'ToolbarItemGroup(placement: .topBarTrailing) con chevron.left e chevron.right: su iOS 26 il sistema li unisce in una capsula di vetro. Avanti è spento su oggi. In più lo scorrimento orizzontale fra i giorni.'],
+				strip: ['[data-n="strip"]', 'Striscia del giorno', 'Come in Adesso, alta 32. Sopra, i momenti segnati: triangoli 8x7 in inchiostro, al minuto esatto (x = minuti dalle 8 diviso 720). Totale 22/28 semibold, conteggio 15/20 grigio. Legenda 13/18 sotto.'],
+				convs: ['[data-n="convs"]', 'Conversazioni', 'Cella raggio 20; riga alta 60, NavigationLink. Ora 17/24 semibold tabellare in una colonna da 56; durata 17 e sotto "fino alle" 13/18 grigio; stato 15/20 con segno da 14. Stati: Inviata (checkmark, grigio), In coda (anello ambra), Interrotta (grigio), Registra (punto rosso, solo quella in corso). Dalla più recente.'],
+				empty: ['[data-n="empty"]', 'Stato vuoto', 'Una frase che dice cosa fare, mai solo "nessun dato". Su un giorno passato c’è il tasto Torna a oggi.'],
+				card: ['[data-n="card"]', 'Display piccolo', 'Lo stesso materiale del display: raggio 20 nella cornice da 6 (26 fuori), padding 16, a 22 dai bordi. Orari 22/28 semibold, data 15 medium secondario. Durata 34/40 semibold a larghezza 112%, unità 17. Striscia: 48 tacche alte 12 in secondario; un segnalibro è una tacca alta 24 in inchiostro del display.'],
+				marks: ['[data-n="marks"]', 'Momenti segnati', 'Righe alte 52: ora tabellare 17, a destra la distanza dall’inizio in grigio. Vuota: una frase 15/20 che dice da dove si segnano.'],
+				device: ['[data-n="device"]', 'Cella del ciondolo', 'Display piccolo: raggio 20, cornice 6, padding 16. Nome 22/28 semibold, batteria 15 medium secondario, stato 15/20 secondario. Nella radice è un NavigationLink, con filo e riga "Spia, microfono, vibrazione".'],
+				ruler: ['.lcd .ruler', 'Regolo a tacche', 'Un componente, TickRuler(value, steps): qui 33 tacche per 0-100, spacing 3, alte 12; quella del valore alta 24 in inchiostro del display, le precedenti in secondario. DragGesture agganciato alla tacca, accessibilityAdjustableAction. Spento con spia "sempre spenta" o ciondolo scollegato. Scrive 19B10011.'],
+				gain: ['[data-n="gain"]', 'Guadagno', 'Lo stesso TickRuler con 9 tacche (0-8) sui colori delle celle: larghe 4, distribuite su tutta la riga, alte 14 e 28, valore in inchiostro, precedenti token Tratti registrati. Scrive 19B10012, che il ciondolo salva.'],
+				forget: ['.forget', 'Dimentica il ciondolo', 'Riga in inchiostro: il rosso resta alla registrazione. Apre un confirmationDialog senza ruolo distruttivo.'],
+				test: ['[data-n="test"]', 'Prova la connessione', 'Apre il WebSocket col token nell’intestazione Authorization e lo chiude. Il tasto è una capsula alta 36; durante la prova dice "Provo" ed è disabilitato.'],
+				result: ['[data-n="result"]', 'Esito della prova', 'Sotto il modulo, 15/20. Riuscita: checkmark in inchiostro e "Collegato". Tre errori distinti, ognuno con anello ambra, titolo in token Avvisi e una frase che dice cosa controllare: indirizzo irraggiungibile (errore di rete o timeout), token rifiutato (401 o 403), protocollo diverso (risposta che non è l’upgrade atteso). In corso: 36 tacche che scorrono.'],
+				creds: ['[data-n="creds"]', 'Indirizzo e token', 'Tutti e due nel portachiavi (Keychain, kSecClassGenericPassword). Il token si mostra sempre mascherato con le ultime 4 cifre; non si può rileggere, solo sostituire. Ogni riga apre un foglio con un TextField.'],
+				ill: ['[data-n="ill"]', 'Figura del tasto Azione', 'Cella raggio 20 alta 150. Dentro, la pagina Tasto Azione di iOS in piccolo: scocca con il tasto in inchiostro, cerchio da 40 con bookmark, "Controlli" 15 semibold, capsula col nome del controllo. È un disegno fisso (asset o shape), non una schermata vera.'],
+				steps3: ['.steps3', 'Passi', 'Elenco numerato in una cella: numero 15 semibold grigio in una colonna da 24, testo 15/20, filo fra i passi. I numeri ci sono perché l’ordine conta.'],
+				live: ['[data-n="live"]', 'Attività in tempo reale', 'Toggle che accende ActivityKit: Activity.request all’inizio della registrazione, update a ogni cambio di stato, end alla pausa lunga. Aggiornamenti locali, senza push.'],
+				queue: ['[data-n="queue"]', 'Coda', 'Coda su disco in Opus, circa 4 KB al secondo. "Occupata ora" si aggiorna dal vivo.'],
+				sign: ['[data-n="sign"]', 'Firma', 'La scadenza si legge da embedded.mobileprovision (ExpirationDate). Valore in token Avvisi negli ultimi 3 giorni, grigio prima.'],
+				lic: ['[data-n="lic"]', 'Testo della licenza', 'Monospazio di sistema 13/18 in una cella raggio 20, padding 16. Il testo MIT va riportato intero, con la nota di copyright del repo Omi.'],
+				obsteps: ['[data-n="steps"]', 'Passi del primo avvio', 'fullScreenCover con una NavigationStack senza barra. Sei tacche 28x4, raggio 2, spacing 4, a 70 dall’alto: passate token Tratti registrati, attuale inchiostro, future #d2d3cf.'],
+				obh1: ['.ob h1', 'Titolo', 'Archivo 34/40 semibold, tracking -0,02em, a 32 dai passi (36 dopo una figura), margini 24. Due righe al massimo.'],
+				oblead: ['.ob .lead', 'Testo', '17/24 grigio testo, a 12 dal titolo.'],
+				obacts: ['[data-n="acts"]', 'Azioni', 'In fondo, a 24 dai lati e 38 dal bordo (safeAreaInset). Principale: alto 56, raggio 28, fondo token Tasto Pausa, 17/24 semibold bianco; disabilitato: #d2d3cf con testo grigio. Secondario: solo testo 17 medium, alto 48. Non è il tasto incassato, che resta solo alla pausa.'],
+				sheet: ['[data-n="sheet"]', 'Foglio', '.sheet con presentationDetents([.height(contenuto)]) e presentationDragIndicator(.visible). Su iOS 26 il foglio parziale è di vetro e staccato dai bordi: 8 dai lati, raggi 38 in alto e 47 in basso (55 dello schermo meno 8). Titolo 17/22 semibold, "Fine" a capsula alta 36. Scelte in una cella raggio 20; la scelta attiva ha un checkmark in inchiostro e chiude il foglio.'],
+				alert: ['[data-n="alert"]', 'Avviso', 'Quello di iOS non si disegna: è la richiesta di sistema. Quello dell’app è un confirmationDialog o un .alert: titolo 17 semibold, testo 15/20 grigio, azione principale piena in inchiostro, Annulla sotto.']
+			};
+			const OB_ART = {
+				welcome: 'Il display vero dell’app, non interattivo, col tempo che parte da zero: è la prima cosa che si vede e la stessa che si ritrova in Adesso.',
+				bt: 'Anteprima della richiesta di iOS, con Consenti evidenziato in inchiostro: una cella raggio 28, testo di sistema. Dice quale tasto toccare prima che la richiesta arrivi.',
+				denied: 'Tre passi numerati in una cella. Il tasto apre UIApplication.openSettingsURLString; al ritorno in primo piano l’app ricontrolla CBManager.authorization da sola.',
+				search: 'Il render del ciondolo (asset PNG con alfa) in una cella raggio 28 alta 236: grigio e al 35% mentre cerca, a colori quando lo trova. Sotto, 36 tacche che scorrono finché cerca. La riga del ciondolo compare quando CBCentralManager lo scopre (servizio 19B10000).',
+				none: 'Dopo 30 secondi senza risultati: tre cause in ordine di probabilità, ognuna con cosa fare. Titolo 17/24 semibold, testo 15/20 grigio.',
+				server: 'Due TextField in una cella: etichetta in una colonna da 84, campo 17. Tastiera .URL per l’indirizzo, SecureField per il token dopo l’incolla. "Continua" compare solo a prova riuscita.',
+				notif: 'Anteprima di una notifica vera dell’app sui colori delle celle. Il tasto chiede UNUserNotificationCenter.requestAuthorization.',
+				done: 'Riepilogo in tre righe chiave e valore. Il tasto chiude il fullScreenCover.'
+			};
+			const notesFor = (v, sh) => {
+				const out = [];
+				if (sh) out.push(sh.type === 'alert' ? A.alert : A.sheet);
+				if (v.s === 'home') out.push(A.lcd, A.spia, A.batt, A.time, A.meter, A.srv, A.key, A.hint, A.notice, A.day, A.tab);
+				if (v.s === 'today') out.push(A.title, A.days, A.strip, A.convs, A.empty, A.tab);
+				if (v.s === 'conv') out.push(A.back, A.card, A.marks, ['.grp:last-child .rows', 'Invio', 'Righe chiave e valore (LabeledContent). Lo stato è in ambra solo se c’è audio in coda. Il piede dice dove sta l’audio adesso.']);
+				if (v.s === 'settings') out.push(A.title, A.device, A.rows, A.foot, A.tab);
+				if (v.s === 'page') {
+					const P = { ciondolo: [A.device, A.ruler, A.pick, A.gain, A.forget], gesti: [A.pick, A.toggle, A.foot], note: [A.pick, A.toggle, A.foot], offline: [A.pick, A.head, A.rows], notifiche: [A.head, A.toggle, A.pick], server: [A.creds, A.pick, A.test, A.result, A.foot], comandi: [A.ill, A.steps3, A.live, A.toggle], avanzate: [A.pick, A.queue, A.sign, A.head], info: [A.rows, A.foot], licenze: [A.head, A.lic] };
+					out.push(A.back, ...P[v.p]);
+				}
+				if (v.s === 'ob') out.push(A.obsteps, A.obh1, A.oblead, ['[data-n="art"]', 'Figura', OB_ART[v.step === 'search' && v.st === 'none' ? 'none' : v.step]], ['[data-n="form"]', 'Modulo', OB_ART.server], A.result, ['[data-n="dev"]', 'Ciondolo trovato', 'Cella con una riga: nome 17, sotto il segnale 13/18 grigio, a destra la capsula "Collega" alta 36. Dopo il collegamento mostra batteria e firmware.'], A.obacts);
+				if (v.s === 'sys') {
+					const Y = {
+						lock: [['[data-n="la"]', 'Attività in tempo reale, blocco schermo', 'ActivityKit, ActivityConfiguration con la vista del blocco schermo: un display piccolo. .activityBackgroundTint(token Display), raggio di sistema, padding 16. Riga 1: spia (alta 28, come nell’app) e nome dell’app 13 secondario. Riga 3: filo, indirizzo e stato del server 13/18. Aggiornamenti locali a ogni cambio di stato.'], ['[data-n="timer"]', 'Tempo', 'Text(timerInterval: inizio...Date.distantFuture, countsDown: false): avanza da solo senza aggiornamenti. Archivo 34/40 semibold a larghezza 112%, monospacedDigit. In pausa: il tempo della pausa, in secondario.'], ['.la-key', 'Tasto Pausa', 'Button(intent: PauseResumeIntent()), che adotta LiveActivityIntent e gira nel processo dell’app. Capsula alta 44, 15/20 semibold: fondo token Tacche spente e pause.fill mentre registra, fondo Rosso e punto bianco quando è fermo.'], ['[data-n="ctl"]', 'Controlli sul blocco schermo', 'I due ControlWidget al posto di torcia e fotocamera: li mette chi usa il telefono. A sinistra il ControlWidgetToggle (acceso con tinta rossa mentre registra), a destra il ControlWidgetButton del segnalibro.']],
+						island: { compact: [['[data-n="isl"]', 'Dynamic Island compatta', 'DynamicIsland: compactLeading con cinque barre rosse #ff5a47 (waveform; grigie e piatte in pausa), compactTrailing con Text(timerInterval:) 15 semibold monospacedDigit. Un tocco apre l’app, tenere premuto la estende.']], minimal: [['[data-n="isl"]', 'Dynamic Island minima', 'Quando un’altra attività occupa l’isola: minimal è un punto rosso da 10 (grigio in pausa). Nient’altro ci sta.']], big: [['[data-n="isl"]', 'Dynamic Island estesa', 'DynamicIslandExpandedRegion: leading la spia, trailing la batteria del ciondolo, center il tempo 34 semibold e lo stato del server 13, bottom due tasti alti 44: Pausa (Button(intent:)) e Segna. Fondo nero di sistema, padding 18 e 20.']] }[v.k],
+						cc: [['[data-n="toggle"]', 'Pausa e ripresa', 'ControlWidgetToggle in un’estensione WidgetKit: isOn = registra, letto dall’App Group. Label "Pendant", valore "Registra" o "In pausa", simbolo waveform, .tint(rosso). L’azione è un SetValueIntent che adotta LiveActivityIntent.'], ['[data-n="button"]', 'Segna questo momento', 'ControlWidgetButton, simbolo bookmark. L’intent manda {"type":"Mark","at":...} sul WebSocket e fa vibrare il ciondolo (breve). Per il tasto Azione il testo inizia con "Tieni premuto per".']],
+						action: [['[data-n="isl"]', 'Conferma del tasto Azione', 'La mostra iOS quando parte il controllo: simbolo e titolo del ControlWidgetButton nella Dynamic Island. Non si disegna: si scelgono simbolo (bookmark.fill) e testo ("Momento segnato"). La conferma vera è la vibrazione breve del ciondolo.'], ['.abtn', 'Tasto Azione', 'Tenuto premuto, non toccato: in tasca non parte.']],
+						notif: [['[data-n="banners"]', 'Notifiche locali', 'UNUserNotificationCenter, senza push. Titolo: cosa è successo, con il numero. Testo: cosa succede adesso e cosa fare. Una per tipo (stesso identifier: la nuova sostituisce la vecchia), tolta quando il problema rientra. interruptionLevel .timeSensitive solo per ciondolo scollegato e server.']]
+					};
+					out.push(...Y[v.sys]);
+				}
+				return out;
+			};
+
+			// INDICE.
+			const ob = (step, x = {}) => ({ s: 'ob', step, ...x });
+			const home = (hs) => ({ s: 'home', hs });
+			const page = (p, x = {}) => ({ s: 'page', p, ...x });
+			const sys = (k, x = {}) => ({ s: 'sys', sys: k, hs: 'rec', ...x });
+			const SCENES = [
+				['Primo avvio'],
+				['avvio-benvenuto', 'Benvenuto', ob('welcome')],
+				['avvio-bluetooth', 'Bluetooth, spiegazione', ob('bt')],
+				['avvio-bluetooth-richiesta', 'Bluetooth, richiesta di iOS', ob('bt'), { type: 'alert', id: 'btperm' }],
+				['avvio-ricerca', 'Ricerca, cerca', ob('search', { st: 'scan' })],
+				['avvio-ricerca-trovato', 'Ricerca, trovato', ob('search', { st: 'found' })],
+				['avvio-ricerca-collegamento', 'Ricerca, si collega', ob('search', { st: 'linking' })],
+				['avvio-ricerca-collegato', 'Ricerca, collegato', ob('search', { st: 'linked' })],
+				['avvio-ricerca-niente', 'Ricerca, non trovato', ob('search', { st: 'none' })],
+				['avvio-server', 'Server, da compilare', ob('server', { srv: 'empty' })],
+				['avvio-server-pronto', 'Server, compilato', ob('server', { srv: 'idle' })],
+				['avvio-server-prova', 'Server, prova in corso', ob('server', { srv: 'testing' })],
+				['avvio-server-ok', 'Server, prova riuscita', ob('server', { srv: 'ok' })],
+				['avvio-server-irraggiungibile', 'Server, non risponde', ob('server', { srv: 'unreach' })],
+				['avvio-server-token', 'Server, token rifiutato', ob('server', { srv: 'token' })],
+				['avvio-server-protocollo', 'Server, protocollo diverso', ob('server', { srv: 'proto' })],
+				['avvio-notifiche', 'Notifiche', ob('notif')],
+				['avvio-notifiche-richiesta', 'Notifiche, richiesta di iOS', ob('notif'), { type: 'alert', id: 'notifperm' }],
+				['avvio-fine', 'Fine', ob('done')],
+				['Adesso'],
+				['adesso-registra', 'Registra', home('rec')],
+				['adesso-pausa', 'In pausa', home('pause')],
+				['adesso-scollegato', 'Ciondolo scollegato', home('off')],
+				['adesso-coda', 'Server irraggiungibile, coda', home('queue')],
+				['adesso-carica', 'Ciondolo in carica', home('charge')],
+				['adesso-batteria', 'Batteria bassa', home('low')],
+				['adesso-bluetooth-spento', 'Bluetooth spento', home('btoff')],
+				['adesso-accensione', 'Accensione inattesa', home('poweron')],
+				['adesso-primo-uso', 'Primo uso, nessuna conversazione', home('first')],
+				['Oggi'],
+				['oggi', 'Oggi', { s: 'today', day: 'oggi', hs: 'rec' }],
+				['oggi-coda', 'Oggi, con audio in coda', { s: 'today', day: 'oggi', hs: 'queue' }],
+				['oggi-vuoto', 'Oggi, niente di chiuso', { s: 'today', day: 'oggi', hs: 'rec', first: true }],
+				['oggi-ieri', 'Ieri, con una interrotta', { s: 'today', day: 'ieri' }],
+				['oggi-giorno-vuoto', 'Giorno senza conversazioni', { s: 'today', day: 'vuoto' }],
+				['conversazione', 'Conversazione inviata', { s: 'conv', id: 'c1130' }],
+				['conversazione-corta', 'Conversazione senza segnalibri', { s: 'conv', id: 'c1721' }],
+				['conversazione-in-corso', 'Conversazione in corso', { s: 'conv', id: 'live', hs: 'rec' }],
+				['conversazione-interrotta', 'Conversazione interrotta', { s: 'conv', id: 'y1512' }],
+				['Impostazioni'],
+				['impostazioni', 'Radice', { s: 'settings' }],
+				['imp-ciondolo', 'Ciondolo', page('ciondolo')],
+				['imp-ciondolo-scollegato', 'Ciondolo, scollegato', page('ciondolo', { off: true })],
+				['imp-ciondolo-spia', 'Ciondolo, foglio della spia', page('ciondolo'), { type: 'pick', key: 'led' }],
+				['imp-ciondolo-dimentica', 'Ciondolo, conferma Dimentica', page('ciondolo'), { type: 'alert', id: 'forget' }],
+				['imp-gesti', 'Gesti', page('gesti')],
+				['imp-gesti-foglio', 'Gesti, foglio del doppio tocco', page('gesti'), { type: 'pick', key: 'dbl' }],
+				['imp-note', 'Note', page('note')],
+				['imp-offline', 'Audio offline', page('offline')],
+				['imp-offline-foglio', 'Audio offline, foglio', page('offline'), { type: 'pick', key: 'offline' }],
+				['imp-notifiche', 'Notifiche', page('notifiche')],
+				['imp-server', 'Server', page('server')],
+				['imp-server-ok', 'Server, prova riuscita', page('server', { srv: 'ok' })],
+				['imp-server-irraggiungibile', 'Server, non risponde', page('server', { srv: 'unreach' })],
+				['imp-server-protocollo', 'Server, protocollo diverso', page('server', { srv: 'proto' })],
+				['imp-server-token-nuovo', 'Server, foglio del token', page('server'), { type: 'text', key: 'token' }],
+				['imp-comandi', 'Comandi di sistema', page('comandi')],
+				['imp-avanzate', 'Avanzate', page('avanzate')],
+				['imp-avanzate-log', 'Avanzate, esporta il log', page('avanzate'), { type: 'share' }],
+				['imp-info', 'Informazioni', page('info')],
+				['imp-licenze', 'Licenze', page('licenze')],
+				['Sistema'],
+				['sis-blocco', 'Blocco schermo, registra', sys('lock')],
+				['sis-blocco-pausa', 'Blocco schermo, in pausa', sys('lock', { hs: 'pause' })],
+				['sis-blocco-coda', 'Blocco schermo, in coda', sys('lock', { hs: 'queue' })],
+				['sis-isola-compatta', 'Dynamic Island compatta', sys('island', { k: 'compact' })],
+				['sis-isola-minima', 'Dynamic Island minima', sys('island', { k: 'minimal' })],
+				['sis-isola-estesa', 'Dynamic Island estesa', sys('island', { k: 'big' })],
+				['sis-centro', 'Centro di Controllo', sys('cc')],
+				['sis-azione', 'Tasto Azione, conferma', sys('action')],
+				['sis-notifiche', 'Notifiche locali', sys('notif')],
+				['Errori e casi limite'],
+				['err-bluetooth-negato', 'Bluetooth negato, primo avvio', ob('denied')],
+				['err-bluetooth-tolto', 'Bluetooth negato, dopo', home('denied')],
+				['err-token', 'Token rifiutato mentre registra', home('token')],
+				['err-token-server', 'Token rifiutato, pagina Server', page('server', { srv: 'token' })],
+				['err-coda-piena', 'Coda quasi piena', home('full')],
+				['err-firmware', 'Firmware non supportato', home('fw')]
+			];
+			const SC = SCENES.filter((s) => s.length > 1);
+			const keyOf = (v, sh) => [v.s, v.sys, v.step, v.st, v.srv, v.hs, v.p, v.id, v.day, v.k, v.off && 'off', v.first && 'first', sh && `${sh.type}:${sh.id || sh.key || ''}`].filter(Boolean).join('/');
+			const norm = (v) => {
+				const c = { ...v };
+				if (c.s === 'page' && c.srv === 'idle') delete c.srv;
+				if (c.s === 'page' && c.p !== 'server') delete c.srv;
+				if (c.s === 'today' && c.day !== 'oggi') delete c.hs;
+				if (c.s === 'conv' && c.id !== 'live') delete c.hs;
+				if (c.s === 'sys' && (c.sys === 'action' || c.sys === 'notif')) c.hs = 'rec';
+				delete c.flash;
+				return c;
+			};
+			$('[data-index]').innerHTML = SCENES.map((s) => (s.length === 1 ? `<h2>${s[0]}</h2>` : `<button data-scene="${s[0]}">${s[1]}</button>`)).join('');
+
+			// STATO E NAVIGAZIONE.
+			let view = home('rec');
+			let stack = [];
+			let sheet = null;
+			let timers = [];
+			let lastHs = 'rec';
+			let note = '';
+			const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+			const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+			const screen = $('.screen');
+			let overKey = null;
+			const draw = (dir) => {
+				const el = $('#view');
+				const base = keyOf({ ...view, hs: null, srv: null, st: null }, null);
+				const sc = $('[data-scroll]', el);
+				const keep = sc && el.dataset.key === base ? sc.scrollTop : 0;
+				srv = view.srv || 'idle';
+				el.innerHTML = RENDER[view.s](view);
+				el.dataset.key = base;
+				const now = $('[data-scroll]', el);
+				if (now) now.scrollTop = keep;
+				const mover = $('[data-scroll], .ob', el);
+				if (mover && dir) mover.classList.add(dir === 'push' ? 'page-in' : 'page-back');
+				const ok = keyOf({}, sheet) + (sheet?.type === 'pick' ? cfg[sheet.key] : '');
+				if (ok !== overKey) { $('#over').innerHTML = renderOver(sheet); overKey = ok; }
+				$('[data-phone]').classList.toggle('hold', view.s === 'sys' && view.sys === 'action');
+				if (view.s === 'home') lastHs = view.hs;
+				const k = keyOf(norm(view), sheet);
+				const cur = SC.find((s) => keyOf(norm(s[2]), s[3]) === k);
+				$$('[data-scene]').forEach((b) => b.setAttribute('aria-current', String(!!cur && b.dataset.scene === cur[0])));
+				if (cur) {
+					history.replaceState(null, '', `${location.pathname}${location.search}#${cur[0]}`);
+					const group = SCENES.slice(0, SCENES.indexOf(cur)).filter((s) => s.length === 1).pop()[0];
+					$('[data-caption]').textContent = note || `${group}: ${cur[1]}`;
+					const b = $('[data-scene][aria-current="true"]');
+					const idx = $('[data-index]');
+					const y = b.offsetTop;
+					if (y < idx.scrollTop) idx.scrollTop = y - 8; else if (y + b.offsetHeight > idx.scrollTop + idx.clientHeight) idx.scrollTop = y + b.offsetHeight - idx.clientHeight + 8;
+				} else $('[data-caption]').textContent = note || 'Stato raggiunto usando il telefono, non in indice';
+				annotate();
+				setTimeout(annotate, 320);
+			};
+			const say = (text) => { note = text; draw(); clearTimeout(say.t); say.t = setTimeout(() => { note = ''; draw(); }, 2600); };
+			const open = (v, o = {}) => {
+				clearTimers();
+				if (o.push) stack.push(view); else if (!o.keep) stack = [];
+				sheet = o.sheet || null;
+				view = v;
+				draw(o.push ? 'push' : o.dir);
+			};
+			const goScene = (id) => {
+				const s = SC.find((x) => x[0] === id);
+				if (!s) return false;
+				note = '';
+				open({ ...s[2] }, { sheet: s[3] ? { ...s[3] } : null });
+				return true;
+			};
+			const parent = (v) => {
+				if (v.s === 'page') return v.p === 'licenze' ? page('info') : { s: 'settings' };
+				if (v.s === 'conv') return { s: 'today', day: CONV[v.id].day, hs: v.hs || 'rec' };
+				return null;
+			};
+			const back = () => {
+				if (sheet) { if (sheet.type === 'alert' && ALERT[sheet.id].sys) return; sheet = null; draw(); return; }
+				const to = stack.length ? stack.pop() : parent(view);
+				if (!to) return;
+				clearTimers();
+				view = to;
+				draw('pop');
+			};
+			const obGo = (step) => {
+				if (step === 'search') { open(ob('search', { st: 'scan' }), { dir: 'push' }); later(1900, () => { view.st = 'found'; draw(); }); }
+				else if (step === 'linking') { view.st = 'linking'; draw(); later(1500, () => { view.st = 'linked'; draw(); }); }
+				else if (step === 'server') open(ob('server', { srv: 'empty' }), { dir: 'push' });
+				else open(ob(step), { dir: 'push' });
+			};
+			const act = (name, el) => {
+				if (!name) return;
+				const [a, b] = name.split(':');
+				if (a === 'close') { sheet = null; draw(); }
+				else if (a === 'pause') {
+					if (view.s === 'home') { const k = HOME[view.hs].key; if (k !== 'dis') { view.hs = k === 'resume' ? 'rec' : 'pause'; draw(); } }
+					else { view.hs = view.hs === 'pause' ? 'rec' : 'pause'; draw(); }
+				}
+				else if (a === 'dismiss') { view.hs = 'rec'; draw(); }
+				else if (a === 'ios') say('Nell’app questo tasto apre le Impostazioni di iOS, o l’app Omi.');
+				else if (a === 'go') open(page(b), { push: true });
+				else if (a === 'pick') { sheet = { type: 'pick', key: b }; draw(); }
+				else if (a === 'ask') { sheet = { type: 'alert', id: b }; draw(); }
+				else if (a === 'ob') { sheet = null; obGo(b); }
+				else if (a === 'home') open(home(b), { dir: 'push' });
+				else if (a === 'obtest' || a === 'test') {
+					if (a === 'obtest') { const f = $('#f-addr'); if (f && f.value.trim()) cfg.addr = f.value.trim(); }
+					view.srv = 'testing'; draw(); later(1400, () => { view.srv = 'ok'; draw(); });
+				}
+				else if (a === 'vibrate') { el.textContent = 'Vibra'; el.disabled = true; later(500, () => draw()); say('Il ciondolo vibra per 300 ms.'); }
+				else if (a === 'drain') say('Legge la memoria del ciondolo e la tratta secondo la scelta qui sopra.');
+				else if (a === 'forget' || a === 'reset') { sheet = { type: 'alert', id: a }; draw(); }
+				else if (a === 'export') { sheet = { type: 'share' }; draw(); }
+				else if (a === 'savetext') {
+					const f = $('[data-field]');
+					const val = f.value.trim();
+					if (val) cfg[f.dataset.field] = f.dataset.field === 'token' ? `••••••••••••${val.slice(-4)}` : val;
+					sheet = null; draw();
+				}
+				else if (a === 'mark') {
+					if (view.sys === 'cc') { view.flash = true; draw(); later(1800, () => { view.flash = false; draw(); }); }
+					else say('Segnato alle 17:42: il ciondolo vibra, il segnalibro entra nella conversazione in corso.');
+				}
+				else if (a === 'isl') { view.k = b; draw(); }
+			};
+			screen.addEventListener('click', (e) => {
+				const t = e.target;
+				let el;
+				if ((el = t.closest('[data-toggle]'))) { cfg[el.dataset.toggle] = !cfg[el.dataset.toggle]; draw(); }
+				else if ((el = t.closest('[data-opt]'))) { cfg[sheet.key] = el.dataset.opt; sheet = null; draw(); }
+				else if ((el = t.closest('[data-act]'))) { if (!el.disabled) act(el.dataset.act, el); }
+				else if ((el = t.closest('[data-pick]'))) { sheet = { type: 'pick', key: el.dataset.pick }; draw(); }
+				else if ((el = t.closest('[data-text]'))) { sheet = { type: 'text', key: el.dataset.text }; draw(); $('[data-field]')?.focus(); }
+				else if ((el = t.closest('[data-go]'))) {
+					const [a, b] = el.dataset.go.split(':');
+					open(a === 'conv' ? { s: 'conv', id: b, hs: view.hs } : page(a), { push: true });
+				}
+				else if (t.closest('[data-back]')) back();
+				else if ((el = t.closest('[data-tab]'))) open(el.dataset.tab === 'home' ? home(lastHs) : el.dataset.tab === 'today' ? { s: 'today', day: 'oggi', hs: lastHs === 'queue' ? 'queue' : 'rec' } : { s: 'settings' });
+				else if ((el = t.closest('[data-day]')) && !el.disabled) {
+					const d = Number(el.dataset.day);
+					const i = d === 2 ? 2 : DAY_ORDER.indexOf(view.day) + d;
+					open({ s: 'today', day: DAY_ORDER[i], hs: 'rec' }, { dir: d < 0 ? 'pop' : 'push' });
+				}
+			});
+
+			// First launch: the test button wakes up when both fields are filled.
+			screen.addEventListener('input', (e) => {
+				if (!e.target.closest('.form')) return;
+				const b = $('[data-act="obtest"]');
+				if (b) b.disabled = !($('#f-addr').value.trim() && $('#f-token').value.trim());
+			});
+
+			// The tick ruler: drag or arrows.
+			let drag = null;
+			const setRuler = (key, x) => {
+				const el = $(`[data-ruler="${key}"]`);
+				if (!el) return;
+				const r = el.getBoundingClientRect();
+				const n = el.children.length - 1;
+				const i = Math.max(0, Math.min(n, Math.round(((x - r.left) / r.width) * n)));
+				const val = Math.round((i / n) * Number(el.dataset.max));
+				if (val !== cfg[key]) { cfg[key] = val; draw(); }
+			};
+			screen.addEventListener('pointerdown', (e) => {
+				const el = e.target.closest('[data-ruler]');
+				if (!el) return;
+				drag = el.dataset.ruler;
+				setRuler(drag, e.clientX);
+				e.preventDefault();
+			});
+			addEventListener('pointermove', (e) => { if (drag) setRuler(drag, e.clientX); });
+			addEventListener('pointerup', () => { drag = null; });
+			screen.addEventListener('keydown', (e) => {
+				const el = e.target.closest?.('[data-ruler]');
+				if (!el || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+				const key = el.dataset.ruler;
+				const max = Number(el.dataset.max);
+				const step = max / (el.children.length - 1);
+				cfg[key] = Math.round(Math.max(0, Math.min(max, cfg[key] + (e.key === 'ArrowRight' ? step : -step))));
+				draw();
+				$(`[data-ruler="${key}"]`)?.focus();
+				e.preventDefault();
+				e.stopPropagation();
+			});
+
+			// Annotations.
+			function annotate() {
+				const layer = $('[data-anno-layer]');
+				const list = $('[data-notes]');
+				if (document.body.dataset.anno !== 'on') { layer.innerHTML = ''; return; }
+				const sr = screen.getBoundingClientRect();
+				let n = 0;
+				let boxes = '';
+				let items = '';
+				for (const [q, title, text] of notesFor(view, sheet)) {
+					const el = $(q, screen);
+					if (!el) continue;
+					const r = el.getBoundingClientRect();
+					if (!r.width || !r.height) continue;
+					n += 1;
+					const top = Math.max(r.top - sr.top, 2);
+					const bottom = Math.min(r.bottom - sr.top, 842);
+					if (bottom - top > 4) boxes += `<div data-box="${n}" style="left:${r.left - sr.left - 3}px;top:${top - 3}px;width:${r.width + 6}px;height:${bottom - top + 6}px"><b>${n}</b></div>`;
+					items += `<li data-item="${n}"><b>${n}</b><div><strong>${title}</strong>${text}</div></li>`;
+				}
+				layer.innerHTML = boxes;
+				const dark = root.dataset.theme === 'dark';
+				const TOK = [['Fondo', '#e4e5e2', '#141518'], ['Celle', '#f1f1ef', '#1d1f23'], ['Inchiostro', '#15171b', '#ecedef'], ['Grigio testo', '#5b6068', '#9a9ea6'], ['Grigio chiaro (chevron, disabilitato)', '#a5a9b0', '#555961'], ['Filo', '#dfe0dc', '#2a2c31'], ['Spento (tacche vuote, toggle)', '#d2d3cf', '#2a2c30'], ['Display', '#2b2e34', '#23262b'], ['Inchiostro del display', '#f1f2f4', '#eceef1'], ['Secondario del display', '#a9aeb7', '#9ba0a9'], ['Tacche spente del display', '#3d4149', '#34383f'], ['Righe del display', '#464a53', '#3a3e45'], ['Cornice d’alluminio', '#cfd0cc', '#2c2f34'], ['Tasto Pausa', '#2b2e34', '#3a3e46'], ['Rosso', '#e5402f', '#ff5a47'], ['Livello acceso', '#ff5a47', '#ff5a47'], ['Tratti registrati', '#7c818a', '#6f757f'], ['Avvisi', '#9a5600', '#f0a840'], ['Avvisi sul display', '#f0a840', '#f0a840'], ['Toggle acceso', '#15171b', '#7d8594']];
+				list.innerHTML = `<h2>Annotazioni</h2><ol>${items}</ol>
+					<details><summary>Token di colore, tema ${dark ? 'scuro' : 'chiaro'}</summary><table>${TOK.map(([name, l, d]) => `<tr><td><i style="background:${dark ? d : l}"></i>${name}</td><td><code>${dark ? d : l}</code></td></tr>`).join('')}</table></details>
+					<details><summary>Scala e misure</summary><table>
+						<tr><td>Testo</td><td>11, 13, 15, 17, 22, 34, 72 (unità 28)</td></tr><tr><td>Pesi</td><td>400, 500, 600</td></tr><tr><td>Larghezza</td><td>112% sulle cifre del display, 100% altrove</td></tr>
+						<tr><td>Spazi</td><td>multipli di 4: 4, 8, 12, 16, 20, 24, 28, 32</td></tr><tr><td>Margini</td><td>16 celle, 24 titoli, 32 intestazioni e piedi</td></tr>
+						<tr><td>Raggi</td><td>schermo 55; display 28 più cornice 6; tasto 28; celle 20; foglio 38 e 47; capsule piene</td></tr><tr><td>Bersagli</td><td>almeno 44 (le capsule alte 36 allargano l’area con contentShape); righe 52; tasto 56</td></tr></table></details>`;
+			}
+			screen.addEventListener('scroll', () => annotate(), true);
+			addEventListener('resize', () => annotate());
+			$('[data-notes]').addEventListener('mouseover', (e) => {
+				const li = e.target.closest('[data-item]');
+				$$('[data-box]').forEach((b) => b.classList.toggle('hot', !!li && b.dataset.box === li.dataset.item));
+			});
+
+			// Chrome.
+			const KEY = `concept:${location.pathname}`;
+			const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
+			const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify({ ...load(), ...s })); } catch { /* storage is a convenience */ } };
+			const setTheme = (t) => { root.dataset.theme = t; save({ theme: t }); annotate(); };
+			const setAnno = (on) => { document.body.dataset.anno = on ? 'on' : 'off'; $('[data-anno-toggle]').setAttribute('aria-pressed', String(on)); save({ anno: on }); annotate(); };
+			const toggleChrome = () => { document.body.dataset.chrome = document.body.dataset.chrome === 'off' ? 'on' : 'off'; annotate(); };
+			$('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+			$('[data-anno-toggle]').addEventListener('click', () => setAnno(document.body.dataset.anno !== 'on'));
+			$('[data-chrome-toggle]').addEventListener('click', toggleChrome);
+			$('[data-index]').addEventListener('click', (e) => { const b = e.target.closest('[data-scene]'); if (b) goScene(b.dataset.scene); });
+			const step = (d) => {
+				const cur = $('[data-scene][aria-current="true"]');
+				const i = cur ? SC.findIndex((s) => s[0] === cur.dataset.scene) : -1;
+				goScene(SC[(i + d + SC.length) % SC.length][0]);
+			};
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select')) return;
+				const k = e.key.toLowerCase();
+				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (k === 'i') setAnno(document.body.dataset.anno !== 'on');
+				else if (k === 'p') toggleChrome();
+				else if (k === 'escape') back();
+				else if (k === 'arrowdown' || k === 'arrowright') { step(1); e.preventDefault(); }
+				else if (k === 'arrowup' || k === 'arrowleft') { step(-1); e.preventDefault(); }
+			});
+			addEventListener('hashchange', () => { const id = location.hash.slice(1); if ($('[data-scene][aria-current="true"]')?.dataset.scene !== id) goScene(id); });
+
+			// The clock runs while recording: it is the content, so it runs with reduced motion too.
+			setInterval(() => {
+				tick += 1;
+				$$('[data-fmt]').forEach((el) => { el.innerHTML = FMT[el.dataset.fmt](Number(el.dataset.base) + tick); });
+			}, 1000);
+			// The level follows the voice; still with reduced motion.
+			let level = 21;
+			setInterval(() => {
+				if (still.matches) return;
+				level = Math.max(6, Math.min(33, level + Math.round((Math.random() - 0.5) * 12)));
+				$$('[data-meter]').forEach((m) => [...m.children].forEach((el, i) => el.classList.toggle('on', i < level)));
+			}, 160);
+
+			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			document.body.dataset.anno = load().anno ? 'on' : 'off';
+			$('[data-anno-toggle]').setAttribute('aria-pressed', String(!!load().anno));
+			if (!goScene(location.hash.slice(1))) goScene('adesso-registra');
+		</script>
+	</body>
+</html>

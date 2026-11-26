@@ -204,7 +204,7 @@ Ogni copia si cancella solo quando la successiva è confermata. Nessuna eccezion
 | Dove | Si libera quando |
 |---|---|
 | Memoria del ciondolo | Nexus ha confermato il pezzo offline: l'app manda l'avanzamento fino a quel `seq` |
-| Coda su disco dell'app | Il frame è stato spedito sulla connessione a Nexus |
+| Coda dell'app | Il frame è stato spedito sulla connessione al server. Oltre la capacità configurata (30 minuti di default) si perde l'audio più vecchio, e l'app lo segnala |
 | Pezzo in memoria su Nexus | Ogni 30 s va in media (comportamento di `audio_stream`) |
 
 L'inoltro dal vivo non ha una conferma per pezzo: un crash di Nexus perde al massimo gli ultimi
