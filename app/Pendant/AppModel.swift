@@ -1,0 +1,485 @@
+import ActivityKit
+import Foundation
+import Observation
+import PendantKit
+import UIKit
+import UserNotifications
+import WidgetKit
+
+/// The app's state for the screens and the system controls: the live objects (Bluetooth link,
+/// capture, uplink), the settings saved on the phone, and what the screens derive from them.
+///
+/// One instance for the app's life, shared with the intents of the system controls. In demo
+/// mode (`-demo <scene>`, for simulator screenshots) the live objects stay idle and the screens
+/// read the scene instead.
+@MainActor @Observable
+final class AppModel {
+  /// The app's model.
+  static let shared = AppModel()
+
+  /// The tabs.
+  enum Tab: Hashable { case now, today, settings }
+
+  /// Pages of Settings, pushed on its stack.
+  enum Page: Hashable {
+    case pendant, gestures, offline, notifications, server, systemControls, advanced, info
+    case licenses
+  }
+
+  /// Steps of the first launch.
+  enum OnboardingStep: Hashable {
+    case welcome, bluetooth, denied, search, server, notifications, done
+  }
+
+  /// What the home display shows: the state, since when, and the server line.
+  struct Snapshot: Equatable {
+    enum Mode: Equatable { case recording, paused, disconnected, bluetoothOff, denied, unpaired }
+    enum ServerState: Equatable {
+      case online, unreachable, tokenRejected, protocolMismatch, notSet
+    }
+
+    var mode: Mode
+    var since: Date
+    var battery: Int?
+    var charging = false
+    var queuedSeconds: Double = 0
+    var serverHost: String
+    var serverState: ServerState
+    /// Since when the server fails, for the notices.
+    var serverFailingSince: Date?
+    var level: Double = LevelMeter.floor
+    var notice: HomeNotice?
+    var firmware: String?
+  }
+
+  /// What the pendant pages show.
+  struct Device: Equatable {
+    var connected: Bool
+    var battery: Int?
+    var charging = false
+    var firmware: String?
+    var micGain: UInt8?
+    var lastSeen: Date?
+    var pendingPackets: UInt64?
+  }
+
+  let log: ProbeLog
+  let link: DeviceLink
+  let capture: CaptureCoordinator
+  let notifier = Notifier()
+  /// The demo scene, nil in normal use.
+  let demo: DemoScene?
+
+  var tab: Tab = .now
+  var settingsPath: [Page] = []
+  var todayPath: [UUID] = []
+  /// The first launch, or a pendant to pair again; nil when not shown.
+  var onboarding: OnboardingStep?
+
+  /// The settings, saved on the phone at every change.
+  var config: Configuration {
+    didSet {
+      guard config != oldValue else { return }
+      saveConfig()
+      capture.config = config
+      scheduleSignatureNotice()
+    }
+  }
+  private(set) var credentials: Credentials?
+  private(set) var probeOutcome: ServerProbeOutcome?
+  private(set) var probing = false
+  private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
+  /// When the pendant turned itself on, until the notice is dismissed.
+  private(set) var powerOnAt: Date?
+  /// When the app's signature expires, read from its provisioning profile.
+  private(set) var signatureExpiry: Date?
+
+  private let probe = ServerProbe()
+  private let activities = LiveActivityController()
+  private var batteryWarned = false
+  private var clearedRingThisConnection = false
+  private var published: SharedState?
+
+  private static let configKey = "pendant.configuration"
+  private static let onboardedKey = "pendant.onboarded"
+  private static let firmwareDismissedKey = "pendant.firmwareNoticeDismissed"
+
+  private init() {
+    let arguments = ProcessInfo.processInfo.arguments
+    let demo = arguments.firstIndex(of: "-demo").flatMap { i in
+      arguments.indices.contains(i + 1) ? DemoScene(rawValue: arguments[i + 1]) : nil
+    }
+    self.demo = demo
+    let config =
+      demo?.config
+      ?? UserDefaults.standard.data(forKey: Self.configKey).flatMap {
+        try? JSONDecoder().decode(Configuration.self, from: $0)
+      } ?? .defaults
+    self.config = config
+    let log = ProbeLog(screenLimit: config.logScreenEntries)
+    self.log = log
+    log.record(
+      "launch",
+      "version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")"
+        + (demo.map { ", demo \($0.rawValue)" } ?? ""))
+    let link = DeviceLink(log: log, config: config)
+    self.link = link
+    capture = CaptureCoordinator(link: link, config: config, log: log, notifier: notifier)
+    if let demo {
+      credentials = demo.credentials
+      onboarding = demo.onboarding
+      tab = demo.tab
+      settingsPath = demo.settingsPath
+      todayPath = demo.todayPath
+      powerOnAt = demo.powerOnAt
+      notificationStatus = .authorized
+      signatureExpiry = Calendar.current.date(
+        from: DateComponents(year: 2026, month: 12, day: 3, hour: 9))
+      if demo == .obServer {
+        ServerForm.shared.address = "nexus.esse.dev"
+        ServerForm.shared.token = "demo-token-7f3a"
+        probeOutcome = .ok
+      }
+      return
+    }
+    if let outcome = Credentials.importBootstrap() { log.record("credentials", outcome) }
+    credentials = Credentials.load()
+    // An install from before the first-launch flow has a pendant and a server already.
+    if !UserDefaults.standard.bool(forKey: Self.onboardedKey) {
+      if link.hasSavedPendant && credentials != nil {
+        UserDefaults.standard.set(true, forKey: Self.onboardedKey)
+      } else {
+        onboarding = .welcome
+      }
+    }
+    signatureExpiry = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision")
+      .flatMap { try? Data(contentsOf: $0) }.flatMap(SignatureExpiry.date(fromProfile:))
+    wireCallbacks()
+    registerActions()
+    if onboarding == nil || DeviceLink.authorization != .notDetermined { link.start() }
+    scheduleSignatureNotice()
+    Task { await refreshNotificationStatus() }
+    startPublishing()
+  }
+
+  // MARK: Derived state
+
+  /// What the home display shows now.
+  var snapshot: Snapshot {
+    if let demo { return demo.snapshot }
+    let uplink = capture.uplink
+    let host = credentials?.host ?? "Nessun server"
+    var s = Snapshot(
+      mode: .recording, since: Date(), serverHost: host, serverState: serverState,
+      serverFailingSince: uplink.unreachableSince)
+    switch link.phase {
+    case .unauthorized:
+      s.mode = .denied
+      s.since = link.phaseSince
+    case .bluetoothOff:
+      s.mode = .bluetoothOff
+      s.since = link.phaseSince
+    default:
+      if !link.ready {
+        s.mode = link.hasSavedPendant ? .disconnected : .unpaired
+        s.since = link.lastSeen ?? link.phaseSince
+      } else if capture.controller.paused {
+        s.mode = .paused
+        s.since = capture.pausedSince ?? Date()
+      } else {
+        s.mode = .recording
+        s.since = capture.conversations.live?.start ?? Date()
+      }
+    }
+    if link.ready {
+      s.battery = link.battery
+      s.charging = link.charging ?? false
+      s.firmware = link.firmware
+    }
+    s.queuedSeconds = uplink.spooledSeconds
+    s.level = capture.level
+    s.notice = HomeNotice.top(noticeInputs(s))
+    return s
+  }
+
+  /// What the pendant pages show now.
+  var device: Device {
+    if let demo { return demo.device }
+    return Device(
+      connected: link.ready, battery: link.battery, charging: link.charging ?? false,
+      firmware: link.firmware, micGain: link.micGain, lastSeen: link.lastSeen,
+      pendingPackets: link.ringInfo?.pendingPackets)
+  }
+
+  /// The conversations to show.
+  var conversations: ConversationLog { demo?.conversations ?? capture.conversations }
+
+  /// "Now" for the screens: fixed in a demo, so screenshots are stable.
+  var now: Date { demo?.now ?? Date() }
+
+  /// Whether the recording runs now.
+  var recording: Bool {
+    demo.map { $0.snapshot.mode == .recording } ?? capture.controller.recording
+  }
+
+  private var serverState: Snapshot.ServerState {
+    guard credentials != nil else { return .notSet }
+    switch capture.uplink.health {
+    case .unknown, .online: return .online
+    case .failing(.tokenRejected): return .tokenRejected
+    case .failing(.protocolMismatch): return .protocolMismatch
+    case .failing: return .unreachable
+    }
+  }
+
+  private func noticeInputs(_ s: Snapshot) -> HomeNotice.Inputs {
+    var i = HomeNotice.Inputs()
+    i.bluetoothDenied = s.mode == .denied
+    i.bluetoothOff = s.mode == .bluetoothOff
+    i.tokenRejected = s.serverState == .tokenRejected
+    i.queueFill = s.queuedSeconds / config.spoolSeconds
+    i.batteryPercent = s.charging ? nil : s.battery
+    i.batteryThreshold = config.batteryThreshold
+    if let firmware = s.firmware {
+      i.firmwareSupported =
+        SupportedFirmware.isSupported(firmware)
+        || UserDefaults.standard.string(forKey: Self.firmwareDismissedKey) == firmware
+    }
+    i.unexpectedPowerOn = powerOnAt != nil
+    return i
+  }
+
+  // MARK: Actions
+
+  /// Pauses or resumes.
+  func setPaused(_ paused: Bool) {
+    guard demo == nil else { return }
+    capture.setPaused(paused)
+    if paused { powerOnAt = nil }
+  }
+
+  /// Dismisses the notice shown now, where it can be dismissed.
+  func dismiss(_ notice: HomeNotice) {
+    switch notice {
+    case .unexpectedPowerOn: powerOnAt = nil
+    case .firmwareUnsupported:
+      UserDefaults.standard.set(link.firmware, forKey: Self.firmwareDismissedKey)
+    default: break
+    }
+  }
+
+  /// Starts Bluetooth, which asks the permission the first time.
+  func startBluetooth() {
+    guard demo == nil else { return }
+    link.start()
+  }
+
+  /// Saves new server credentials from what the user typed; false when the address is not one.
+  @discardableResult
+  func saveServer(address: String, token: String?) -> Bool {
+    let newToken = token ?? credentials?.token ?? ""
+    guard let url = Credentials.url(fromAddress: address), !newToken.isEmpty else { return false }
+    let new = Credentials(url: url, token: newToken)
+    guard demo == nil else {
+      credentials = new
+      return true
+    }
+    do {
+      try new.save()
+      credentials = new
+      probeOutcome = nil
+      capture.uplink.credentialsChanged()
+      log.record("credentials", "saved for \(new.host)")
+      return true
+    } catch {
+      log.record("credentials", "save failed: \(error.localizedDescription)")
+      return false
+    }
+  }
+
+  /// Tries the saved server, or the given address and token before saving them.
+  func testServer(address: String? = nil, token: String? = nil) async {
+    let target: Credentials?
+    if let address, let token, let url = Credentials.url(fromAddress: address) {
+      target = Credentials(url: url, token: token)
+    } else {
+      target = credentials
+    }
+    guard let target else {
+      probeOutcome = .unreachable
+      return
+    }
+    probing = true
+    defer { probing = false }
+    if let demo {
+      try? await Task.sleep(for: .seconds(1.2))
+      probeOutcome = demo.probeOutcome
+      return
+    }
+    // The open conversation is the proof: a second connection would take its session.
+    if target == credentials, [.open, .closing].contains(capture.uplink.phase) {
+      probeOutcome = .ok
+      return
+    }
+    probeOutcome = await probe.run(target, language: config.language)
+    log.record("probe", "\(probeOutcome.map { "\($0)" } ?? "?") for \(target.host)")
+  }
+
+  /// Forgets the last probe result, when the form changes.
+  func clearProbe() { probeOutcome = nil }
+
+  /// Asks the notification permission.
+  func requestNotifications() async {
+    await notifier.requestPermission()
+    await refreshNotificationStatus()
+  }
+
+  /// Reads the notification permission again, after a trip to iOS Settings.
+  func refreshNotificationStatus() async {
+    guard demo == nil else { return }
+    notificationStatus = await notifier.authorization()
+  }
+
+  /// Ends the first launch.
+  func finishOnboarding() {
+    onboarding = nil
+    if demo == nil { UserDefaults.standard.set(true, forKey: Self.onboardedKey) }
+  }
+
+  /// Forgets the pendant and goes back to the search.
+  func forgetPendant() {
+    guard demo == nil else {
+      onboarding = .search
+      return
+    }
+    link.forget()
+    onboarding = .search
+  }
+
+  /// Settings back to the defaults; the server credentials stay.
+  func resetSettings() {
+    var fresh = Configuration.defaults
+    fresh.pendantName = config.pendantName
+    config = fresh
+  }
+
+  /// Opens the app's page in iOS Settings.
+  func openSystemSettings() {
+    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+    UIApplication.shared.open(url)
+  }
+
+  /// The log file, for sharing.
+  var logFile: URL { log.fileURL }
+
+  // MARK: Wiring
+
+  private func wireCallbacks() {
+    link.onFirstAudio = { [weak self] counter in self?.firstAudio(counter) }
+    link.onBattery = { [weak self] level in self?.battery(level) }
+    link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
+  }
+
+  private func registerActions() {
+    PendantActions.setRecording = { [weak self] on in self?.setPaused(!on) }
+    PendantActions.bookmark = { [weak self] in self?.capture.bookmark() }
+    PendantActions.isRecording = { [weak self] in self?.capture.controller.recording ?? false }
+  }
+
+  private func firstAudio(_ counter: UInt16) {
+    clearedRingThisConnection = false
+    // Only a boot after the pendant had been away counts: the first pairing is expected.
+    guard link.lastSeen != nil, BootDetector.justBooted(firstCounter: counter) else { return }
+    powerOnAt = Date()
+    log.record("powerOn", "counter \(counter)")
+    guard config.notifyPowerOn else { return }
+    let at = Date().formatted(date: .omitted, time: .shortened)
+    notifier.schedule(
+      .powerOn, after: 1, title: "Il ciondolo si è acceso da solo alle \(at)",
+      body: "Forse un tocco in tasca. Da allora registra. Per spegnerlo tienilo premuto 3 secondi.")
+  }
+
+  private func battery(_ level: Int) {
+    if level >= config.batteryThreshold + 5 || link.charging == true {
+      batteryWarned = false
+      notifier.cancel(.batteryLow)
+      return
+    }
+    guard level < config.batteryThreshold, config.notifyBattery, !batteryWarned else { return }
+    batteryWarned = true
+    notifier.schedule(
+      .batteryLow, after: 1, title: "Batteria del ciondolo al \(level)%",
+      body: "Mettilo in carica appena puoi.")
+  }
+
+  private func ringInfo(_ info: Storage.Info) {
+    guard config.offlinePolicy == .clear, info.pendingPackets > 0, !clearedRingThisConnection else {
+      return
+    }
+    clearedRingThisConnection = true
+    link.clearStorage()
+  }
+
+  private func saveConfig() {
+    guard demo == nil, let data = try? JSONEncoder().encode(config) else { return }
+    UserDefaults.standard.set(data, forKey: Self.configKey)
+  }
+
+  private func scheduleSignatureNotice() {
+    guard demo == nil else { return }
+    notifier.cancel(.signatureExpiring)
+    guard config.notifySignature, let expiry = signatureExpiry,
+      let day = Calendar.current.date(
+        byAdding: .day, value: -config.signatureDaysBefore, to: expiry),
+      let at = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: day)
+    else { return }
+    let days = config.signatureDaysBefore
+    let date = expiry.formatted(.dateTime.weekday(.wide).day().month(.wide))
+    notifier.schedule(
+      .signatureExpiring, at: at,
+      title: days == 1
+        ? "La firma dell’app scade domani" : "La firma dell’app scade fra \(days) giorni",
+      body: "\(date.prefix(1).uppercased() + date.dropFirst()) Pendant smette di aprirsi. "
+        + "Reinstallala da Xcode prima di allora.")
+  }
+
+  /// Publishes the recording state to the controls and the Live Activity, once a second.
+  ///
+  /// A loop instead of observation: the queue changes with every frame, and only whole changes
+  /// of state matter to the system surfaces.
+  private func startPublishing() {
+    Task { [weak self] in
+      while !Task.isCancelled {
+        self?.publish()
+        try? await Task.sleep(for: .seconds(1))
+      }
+    }
+  }
+
+  private func publish() {
+    let s = snapshot
+    let state = SharedState(
+      recording: s.mode == .recording, paused: capture.controller.paused,
+      pendantConnected: link.ready, since: s.since)
+    if state != published {
+      published = state
+      state.save()
+      ControlCenter.shared.reloadControls(ofKind: ControlKind.recording)
+    }
+    let serverWords: String =
+      switch s.serverState {
+      case .online: "in linea"
+      case .unreachable: "non risponde"
+      case .tokenRejected: "token rifiutato"
+      case .protocolMismatch: "protocollo diverso"
+      case .notSet: "non impostato"
+      }
+    let content = RecordingAttributes.ContentState(
+      recording: s.mode == .recording, since: s.since,
+      queuedSeconds: s.serverState == .online ? 0 : Int(s.queuedSeconds),
+      serverState: serverWords, serverWarning: s.serverState != .online, battery: s.battery)
+    let show = config.liveActivity && (s.mode == .recording || s.mode == .paused)
+    activities.show(
+      content, server: s.serverHost, enabled: show, endAfterPause: config.liveActivityPauseEnd)
+  }
+}

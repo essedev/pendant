@@ -22,3 +22,7 @@ app/Pendant/Info.plist
 
 # Design inspiration downloaded from Dribbble: other people's work, never committed
 docs/concepts/inspo/
+app/.screens/
+app/PendantWidgets/Info.plist
+app/Pendant/Pendant.entitlements
+app/PendantWidgets/PendantWidgets.entitlements

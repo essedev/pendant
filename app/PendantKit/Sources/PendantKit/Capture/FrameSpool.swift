@@ -8,7 +8,7 @@ import Foundation
 public struct FrameSpool: Sendable {
   private var frames: [Data] = []
   private var head = 0
-  private let capacity: Int
+  private var capacity: Int
 
   /// Frames dropped for lack of space since creation.
   public private(set) var dropped = 0
@@ -47,6 +47,16 @@ public struct FrameSpool: Sendable {
       head += 1
       dropped += 1
     }
+  }
+
+  /// Changes the capacity; when it shrinks below what waits, the oldest frames are dropped.
+  public mutating func setCapacity(_ newValue: Int) {
+    capacity = max(1, newValue)
+    while count > capacity {
+      head += 1
+      dropped += 1
+    }
+    compactIfNeeded()
   }
 
   /// Drops every waiting frame.

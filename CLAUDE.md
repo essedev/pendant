@@ -32,8 +32,11 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   collegato), `make test`, `make check` prima di ogni commit che tocca l'app, `make help` per
   il resto. Primo setup: `brew install xcodegen`, Apple ID in Xcode, `DEVELOPMENT_TEAM` in
   `app/Local.xcconfig` (il Team ID è l'OU del certificato "Apple Development" nel portachiavi),
-  poi `make credentials TOKEN_FILE=<file col token di audio_stream>`. `make logs` scarica il
-  log dell'app in `app/.logs/`.
+  poi `make credentials TOKEN_FILE=<file col token di audio_stream>` (oppure si scrivono nel
+  primo avvio). `make logs` scarica il log dell'app in `app/.logs/`.
+- Simulatore, da `app/`: `make sim SCENE=<scena>` avvia l'app in una scena demo (elenco in
+  `Pendant/Demo.swift`, argomento `-demo`), `make screens` fotografa tutte le scene in chiaro e
+  scuro in `app/.screens/`. Per guardare una UI si confronta col mock `concept-b-app.html`.
 - Prototipo: `PROBE_TOKEN=<token> uv run prototype/omi_stt_probe.py` (ascolta su
   127.0.0.1:8765, scrive WAV ed `events.jsonl` in `prototype/recordings/`).
 - Esposizione per l'iPhone: `cloudflared tunnel --url http://localhost:8765`, poi nell'app
@@ -52,7 +55,8 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   gesti e manda a Nexus una seconda registrazione. Va tenuta col ciondolo dimenticato.
 - **Nessun valore di comportamento nel codice dell'app**: va nello schema della configurazione
   (`ARCHITECTURE.md #Configurazione`).
-- **L'iPhone vero serve**: il simulatore non ha Bluetooth. L'app firmata col Personal Team
+- **L'iPhone vero serve per il ciondolo**: il simulatore non ha Bluetooth, le schermate si
+  provano con le scene demo. L'app firmata col Personal Team
   scade dopo 7 giorni.
 - L'app Omi accetta solo URL `wss://`. Tailscale con il nome MagicDNS non ha funzionato
   dall'iPhone: usare il tunnel Cloudflare.

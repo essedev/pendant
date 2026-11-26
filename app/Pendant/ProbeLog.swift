@@ -11,7 +11,8 @@ final class ProbeLog {
   private(set) var entries: [ProbeEvent] = []
 
   private let screenLimit: Int
-  private let fileURL: URL
+  /// The log file in Documents.
+  let fileURL: URL
   private let logger = Logger(subsystem: "dev.esse.pendant", category: "probe")
 
   /// A log keeping `screenLimit` entries in memory.

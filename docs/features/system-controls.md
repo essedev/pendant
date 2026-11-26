@@ -1,8 +1,8 @@
 # Comandi di sistema: tasto Azione, Centro di Controllo, blocco schermo
 
-**Stato: proposta** (26/11/2026), parte della milestone M7 (`ROADMAP.md`). Fattibilità
-verificata sulla documentazione Apple e sui forum sviluppatori; due punti si confermano solo
-sull'iPhone (sezione Da provare).
+**Stato: fatta** (27/11/2026, M7): intent in `app/Shared/PendantIntents.swift`, controlli e
+attività in tempo reale nell'estensione `app/PendantWidgets/`. Firmata e installata; il
+comportamento sull'iPhone resta da provare (sezione Da provare).
 
 ## Perché
 
@@ -46,10 +46,9 @@ l'app è già attiva in background per il Bluetooth.
 
 ## Da provare sull'iPhone
 
-- **App Group con l'account gratuito.** Secondo la tabella delle funzioni di Apple riportata da
-  fonti terze è disponibile anche al Personal Team; non c'è una pagina Apple che lo dica per le
-  estensioni widget ([Expo, free vs paid](https://expo.dev/blog/apple-developer-program-explained-free-vs-paid)).
-  Se non lo è, il controllo mostra uno stato generico invece di registra o in pausa.
+- **App Group con l'account gratuito: verificato il 27/11/2026.** Xcode firma app ed estensione
+  col Personal Team e il gruppo `group.dev.esse.pendant` è negli entitlement di tutte e due.
+  Resta da vedere sull'iPhone che il controllo legga lo stato.
 - **`perform` che non parte.** Più sviluppatori segnalano controlli e attività in tempo reale il
   cui intent non viene eseguito su iOS 18, risolto adottando `LiveActivityIntent` e mettendo
   l'intent in entrambi i target ([forum 789371](https://developer.apple.com/forums/thread/789371),

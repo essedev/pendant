@@ -1,13 +1,5 @@
 import Foundation
 
-/// What a gesture on the pendant does, mapped in the configuration.
-public enum GestureAction: String, Codable, Sendable, CaseIterable {
-  /// Nothing.
-  case none
-  /// Pause or resume the continuous recording.
-  case toggleRecording
-}
-
 /// The recording state machine: when a conversation stream opens and closes.
 ///
 /// A connection to Nexus is a conversation (ARCHITECTURE, "Flusso"). Pausing closes it with
@@ -25,6 +17,8 @@ public struct CaptureController: Equatable, Sendable {
     case vibrate(Vibration)
     /// Save the pause flag.
     case persistPaused(Bool)
+    /// Mark this moment in the conversation in progress.
+    case bookmark
   }
 
   /// Whether the user paused the recording.
@@ -56,7 +50,14 @@ public struct CaptureController: Equatable, Sendable {
     switch action {
     case .none: return []
     case .toggleRecording: return setPaused(!paused, config: config)
+    case .bookmark: return bookmark(config: config)
     }
+  }
+
+  /// Marks this moment, when a conversation is in progress.
+  public func bookmark(config: Configuration) -> [Effect] {
+    guard recording else { return [] }
+    return config.vibrationConfirm ? [.bookmark, .vibrate(.short)] : [.bookmark]
   }
 
   /// Pauses or resumes, from a gesture or from the screen.
@@ -67,7 +68,7 @@ public struct CaptureController: Equatable, Sendable {
     var effects: [Effect] = [.persistPaused(newValue)]
     if wasRecording && !recording { effects.append(.closeStream(graceful: true)) }
     if !wasRecording && recording { effects.append(.openStream) }
-    if deviceConnected {
+    if deviceConnected && config.vibrationConfirm {
       effects.append(.vibrate(newValue ? config.pauseVibration : config.resumeVibration))
     }
     return effects

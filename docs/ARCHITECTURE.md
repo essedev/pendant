@@ -179,12 +179,13 @@ che su iOS ha sostituito il plugin Flutter.
 | Collegamento | CoreBluetooth in background, ripristino dello stato dopo che iOS chiude l'app, riconnessione con backoff, lettura di versione e funzioni, scrittura dell'ora |
 | Audio | Ricomposizione dei frame, conteggio dei pacchetti persi, decodifica Opus in PCM |
 | Inoltro | WebSocket verso `audio_stream`, una connessione per conversazione, coda su disco quando la rete manca |
-| Memoria | Lettura dell'offline alla connessione, invio a Nexus, avanzamento dopo la conferma |
+| Memoria | Per ora tiene o svuota l'offline secondo la politica; lettura, invio al server e avanzamento dopo la conferma arrivano con M9 |
 | Gesti | Riconoscimento dei gesti dagli eventi del firmware, mappa gesto-azione dalla configurazione |
-| Note | Ritaglio dell'audio fra apertura e chiusura, controllo che ci sia voce, invio a Nexus |
+| Conversazioni | Registro sul telefono delle conversazioni passate da qui (inizio, fine, stato, segnalibri), 30 giorni, senza audio |
+| Note | Ritaglio dell'audio fra apertura e chiusura, controllo che ci sia voce, invio al server (M10) |
 | Stato | Eventi del ciondolo e segnale periodico verso Nexus, notifiche locali |
 | Configurazione | Impostazioni sul telefono, validate contro lo schema con default e limiti |
-| Comandi di sistema | Controlli per tasto Azione, Centro di Controllo e blocco schermo, attività in tempo reale (`docs/features/system-controls.md`) |
+| Comandi di sistema | Controlli per tasto Azione, Centro di Controllo e blocco schermo, attività in tempo reale, nell'estensione `PendantWidgets`; lo stato passa dall'App Group (`docs/features/system-controls.md`) |
 
 ### Ciclo di una connessione
 
@@ -217,7 +218,7 @@ Il firmware dà due gesti (sezione Pulsante). La mappa gesto-azione sta nella co
 | Gesto | Azione di default |
 |---|---|
 | Doppio tocco | Pausa e ripresa della registrazione continua |
-| Tocco singolo | Apre la nota, il successivo la chiude |
+| Tocco singolo | Segna questo momento; con le note (M10) potrà aprire e chiudere una nota |
 
 Sequenze di gesti (tocco seguito da doppio tocco entro un tempo dato) le può riconoscere l'app,
 se due azioni non bastano: è una scelta della configurazione, non del firmware.
@@ -259,13 +260,15 @@ Nexus, che lo parla come l'app Omi. Contratto completo nel repo `nexus`,
 
 | Punto | Valore |
 |---|---|
-| Endpoint | `GET /api/audio-stream/ws`, `wss://` |
+| Endpoint | `GET /api/audio-stream/ws`, `wss://`. Nell'app si scrive solo il nome del server: il percorso fa parte del protocollo |
 | Autenticazione | Token dedicato in `?token=` o `Authorization: Bearer` |
 | Audio | Frame binari PCM s16le, mono, 16 kHz |
 | Chiusura | `{"type":"CloseStream"}` chiude la conversazione |
 | Interruzione | Senza `CloseStream` la sessione resta `interrupted` 120 s e si riprende |
 | Ping | Ogni 20 s nel silenzio: Cloudflare chiude dopo circa 100 s senza traffico |
 | Sessione vuota | Sotto 2 s d'audio non diventa una trascrizione |
+| Prova della connessione | Apre e chiude senza `CloseStream`, e mai mentre una conversazione è aperta: aprire riprende la sessione interrotta entro la grazia, e `CloseStream` la chiuderebbe |
+| Errori dell'handshake | 401 o 403 token rifiutato, nessuna risposta o 5xx server irraggiungibile, il resto protocollo diverso |
 
 Da aggiungere in Nexus, in proposta, uno alla volta quando la milestone li richiede:
 
@@ -300,9 +303,15 @@ Colori, presi dal mock (coppia Grafite e rosso con la seconda tinta):
 | Tacche spente e righe del display | `#3d4149`, `#464a53` | `#34383f`, `#3a3e45` |
 | Cornice d'alluminio | `#cfd0cc` | `#2c2f34` |
 | Tasto Pausa | `#2b2e34` | `#3a3e46` |
-| Rosso (spia, livello, Riprendi, adesso) | `#e5402f`, livello `#ff5a47` | `#ff5a47` |
+| Rosso dei fondi pieni (spia, Riprendi, adesso) | `#d93a2b` | `#d93a2b` |
+| Rosso acceso (livello, punto della Dynamic Island) | `#ff5a47` | `#ff5a47` |
 | Tratti registrati della giornata | `#7c818a` | `#6f757f` |
 | Avvisi | `#9a5600`, sul display `#f0a840` | `#f0a840` |
+
+Il rosso dei fondi pieni sta sotto il bianco a 4,6:1 in tutti e due i temi; `#e5402f` del mock
+si fermava a 4,1:1. Il mock completo `docs/concepts/concept-b-app.html` è la specifica di testi,
+stati e misure: l'app lo riproduce con le viste in `app/Pendant/Views/`, e `make screens`
+fotografa nel simulatore ogni sua scena (`app/Pendant/Demo.swift`) in chiaro e scuro.
 
 ## Distribuzione
 
@@ -311,13 +320,15 @@ Colori, presi dal mock (coppia Grafite e rosso con la seconda tinta):
   da solo quando Mac e iPhone sono sulla stessa rete.
 - **Limiti**: niente notifiche push (bastano le locali e Telegram per quelle da Nexus), al
   massimo 3 app firmate così. Il Bluetooth in background va verificato col primo build.
+  L'App Group fra app ed estensione funziona anche col Personal Team (firma del 27/11/2026).
 - **Se l'app passa la prova**: account sviluppatore a 99 $ l'anno, il certificato dura un anno.
 - **App Omi**: resta installata, col ciondolo dimenticato e le azioni al tocco spente. Per un
   aggiornamento del firmware si ricollega, mettendo in pausa l'app nostra, e la si scollega
   di nuovo alla fine.
-- **Credenziali**: `make credentials TOKEN_FILE=<file>` copia URL e token nei Documenti
-  dell'app, che al primo avvio li sposta nel portachiavi e cancella il file. Il token viaggia
-  verso Nexus nell'header `Authorization`, non nell'URL.
+- **Credenziali**: si scrivono nel primo avvio o nella pagina Server. In sviluppo
+  `make credentials TOKEN_FILE=<file>` copia URL e token nei Documenti dell'app, che al primo
+  avvio li sposta nel portachiavi e cancella il file. Il token viaggia nell'header
+  `Authorization`, non nell'URL.
 
 ## Trasporto precedente: app Omi e STT personalizzato
 

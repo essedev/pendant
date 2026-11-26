@@ -2,18 +2,18 @@ import Foundation
 import Observation
 import PendantKit
 
-/// The WebSocket to Nexus `audio_stream` for one conversation at a time.
+/// The WebSocket to the server's `audio_stream` for one conversation at a time.
 ///
-/// Speaks the contract of the Omi app (ARCHITECTURE, "Contratto con Nexus"): PCM frames,
+/// Speaks the contract of the Omi app (ARCHITECTURE, "Contratto col server"): PCM frames,
 /// `CloseStream` to end a conversation, a ping to keep Cloudflare from closing an idle
 /// connection. Audio waits as Opus in a spool and is decoded only when sent, so a network
 /// outage loses nothing until the spool is full.
 ///
 /// Closing always drains the spool first. A pause (graceful) keeps retrying until the audio and
 /// `CloseStream` are delivered. A Bluetooth disconnection (not graceful) closes without
-/// `CloseStream`, so Nexus keeps the session `interrupted` and resumes it if the pendant comes
-/// back within its grace period; if Nexus is unreachable at that moment, the audio stays in the
-/// spool and leaves with the next conversation.
+/// `CloseStream`, so the server keeps the session `interrupted` and resumes it if the pendant
+/// comes back within its grace period; if the server is unreachable at that moment, the audio
+/// stays in the spool and leaves with the next conversation.
 @MainActor @Observable
 final class StreamUplink: NSObject {
   /// Where the connection stands.
@@ -21,17 +21,36 @@ final class StreamUplink: NSObject {
     case idle, connecting, open, closing, retrying
   }
 
+  /// The server as the last attempt saw it.
+  enum Health: Equatable {
+    /// No attempt yet in this run.
+    case unknown
+    /// The connection opened.
+    case online
+    /// The last attempt failed in a way the probe classifies.
+    case failing(ServerProbeOutcome)
+  }
+
   private(set) var phase: Phase = .idle
+  private(set) var health: Health = .unknown
+  /// When the server last accepted something from this app.
+  private(set) var lastContact: Date?
+  /// Called when a conversation closed and nothing is left to send.
+  var onDrained: (() -> Void)?
   /// Seconds of audio sent in this app run.
   private(set) var sentSeconds: Double = 0
   /// Frames waiting to be sent.
   var spooled: Int { spool.count }
   /// Frames dropped because the spool was full.
   var spoolDropped: Int { spool.dropped }
-  /// Since when Nexus has been unreachable while audio was waiting.
+  /// Seconds of audio waiting.
+  var spooledSeconds: Double { Double(spool.count) / 50 }
+  /// Since when the server has been unreachable while audio was waiting.
   private(set) var unreachableSince: Date?
 
-  private let config: Configuration
+  var config: Configuration {
+    didSet { spool.setCapacity(config.spoolFrames) }
+  }
   private let log: ProbeLog
   private let notifier: Notifier
   private var spool: FrameSpool
@@ -48,6 +67,8 @@ final class StreamUplink: NSObject {
   private var attempt = 0
   private var pingTask: Task<Void, Never>?
   private var retryTask: Task<Void, Never>?
+  /// Bookmarks made while the connection was not open, sent when it opens.
+  private var pendingMarks: [Date] = []
 
   /// Frames per WebSocket message: half a second of audio.
   private static let batchFrames = 25
@@ -92,9 +113,24 @@ final class StreamUplink: NSObject {
         draining = false
         retryTask?.cancel()
         teardown()
-        log.record("uplinkStop", "Nexus not connected, \(spool.count) frames kept")
+        log.record("uplinkStop", "server not connected, \(spool.count) frames kept")
       }
     }
+  }
+
+  /// Marks a moment of the conversation in progress.
+  func mark(at date: Date) {
+    pendingMarks.append(date)
+    sendMarks()
+  }
+
+  /// Tries again now after new credentials, instead of waiting for the next retry.
+  func credentialsChanged() {
+    health = .unknown
+    guard phase == .retrying else { return }
+    retryTask?.cancel()
+    attempt = 0
+    connect()
   }
 
   /// Adds one Opus frame of the current conversation.
@@ -107,16 +143,11 @@ final class StreamUplink: NSObject {
 
   private func connect() {
     guard let credentials = Credentials.load() else {
-      log.record("uplink", "no credentials: run make credentials")
+      log.record("uplink", "no credentials")
       phase = .idle
       return
     }
-    var components = URLComponents(url: credentials.url, resolvingAgainstBaseURL: false)
-    components?.queryItems = [URLQueryItem(name: "language", value: config.language)]
-    guard let url = components?.url else { return }
-    var request = URLRequest(url: url)
-    // The header keeps the token out of URLs, which proxies log.
-    request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
+    let request = credentials.request(language: config.language)
     decoder = OpusDecoder()
     if decoder == nil { log.record("uplink", "no Opus decoder on this system") }
     phase = .connecting
@@ -127,12 +158,13 @@ final class StreamUplink: NSObject {
   }
 
   private func receive(on watched: URLSessionWebSocketTask) {
-    // Nexus sends nothing: a receive completes only when the connection fails or closes.
+    // The server sends nothing: a receive completes only when the connection fails or closes.
     watched.receive { [weak self] result in
       guard case .failure(let error) = result else { return }
+      let status = (watched.response as? HTTPURLResponse)?.statusCode
       Task { @MainActor in
         guard let self, self.task === watched else { return }
-        self.connectionFailed(error.localizedDescription)
+        self.connectionFailed(error.localizedDescription, httpStatus: status)
       }
     }
   }
@@ -140,27 +172,44 @@ final class StreamUplink: NSObject {
   private func opened() {
     phase = draining ? .closing : .open
     attempt = 0
+    health = .online
+    lastContact = Date()
     if unreachableSince != nil {
       unreachableSince = nil
       notifier.cancel(.uplinkUnreachable)
     }
     log.record("uplinkOpen", "\(spool.count) frames waiting")
     startPinging()
+    sendMarks()
     pump()
   }
 
-  private func connectionFailed(_ reason: String) {
+  private func connectionFailed(_ reason: String, httpStatus: Int? = nil) {
+    // Before the upgrade a failure carries the HTTP answer; after it, the connection simply
+    // dropped, which reads as unreachable.
+    if phase == .connecting {
+      health = .failing(ServerProbeOutcome.classify(httpStatus: httpStatus))
+    } else {
+      health = .failing(.unreachable)
+    }
     teardown()
-    log.record("uplinkFailed", reason)
+    log.record("uplinkFailed", reason + (httpStatus.map { ", HTTP \($0)" } ?? ""))
     guard wanted || (draining && endWithCloseStream) else {
       draining = false
       return
     }
     if unreachableSince == nil {
       unreachableSince = Date()
-      notifier.schedule(
-        .uplinkUnreachable, after: config.uplinkNotifyAfter,
-        body: "Nexus non risponde: l'audio resta in coda sul telefono.")
+      if config.notifyUplink {
+        let host = Credentials.load()?.host ?? "il server"
+        notifier.schedule(
+          .uplinkUnreachable, after: config.uplinkNotifyAfter,
+          title: "Il server non risponde da \(DurationFormat.words(config.uplinkNotifyAfter))",
+          body:
+            "L’audio aspetta sul telefono, fino a \(DurationFormat.words(config.spoolSeconds)). "
+            + "Parte da solo quando \(host) torna in linea.",
+          timeSensitive: true)
+      }
     }
     phase = .retrying
     let delay = reconnectDelay(attempt: attempt, maximum: config.reconnectMaxDelay)
@@ -216,8 +265,22 @@ final class StreamUplink: NSObject {
           return
         }
         self.sentSeconds += Double(pcm.count) / 32000
+        self.lastContact = Date()
         self.pump()
       }
+    }
+  }
+
+  private func sendMarks() {
+    guard let task, phase == .open, !pendingMarks.isEmpty else { return }
+    let marks = pendingMarks
+    pendingMarks = []
+    for date in marks {
+      task.send(.string(UplinkMessage.mark(at: date))) { [weak self] error in
+        guard error != nil else { return }
+        Task { @MainActor in self?.pendingMarks.append(date) }
+      }
+      log.record("mark", ISO8601DateFormatter().string(from: date))
     }
   }
 
@@ -227,7 +290,11 @@ final class StreamUplink: NSObject {
       guard let self, self.task === closing else { return }
       self.draining = false
       self.teardown()
-      if self.wanted { self.connect() }
+      if self.wanted {
+        self.connect()
+      } else if self.spool.count == 0 {
+        self.onDrained?()
+      }
     }
     guard endWithCloseStream else {
       log.record("uplinkClosed", "interrupted, \(summary)")
@@ -235,7 +302,7 @@ final class StreamUplink: NSObject {
       return
     }
     sending = true
-    closing.send(.string(#"{"type":"CloseStream"}"#)) { [weak self] error in
+    closing.send(.string(UplinkMessage.closeStream)) { [weak self] error in
       Task { @MainActor in
         if let error {
           self?.sending = false
@@ -267,7 +334,7 @@ extension StreamUplink: URLSessionWebSocketDelegate {
   ) {
     MainActor.assumeIsolated {
       guard self.task === webSocketTask else { return }
-      connectionFailed("closed by Nexus, code \(closeCode.rawValue)")
+      connectionFailed("closed by the server, code \(closeCode.rawValue)")
     }
   }
 }

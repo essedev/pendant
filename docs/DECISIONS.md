@@ -248,11 +248,27 @@ pausa la slitta, i tasti a scatto, la spia toccabile, il tasto nel display, il t
 il tieni premuto. Il tieni premuto per registrare un pezzo è scartato anche nel merito: l'app
 si apre per controllare, non per registrare.
 
-## 2026-11-26 Comandi di sistema per la pausa e i segnalibri (proposta)
+## 2026-11-26 Comandi di sistema per la pausa e i segnalibri
 
-Pausa e ripresa e "segna questo momento" diventano controlli di sistema (tasto Azione, Centro
-di Controllo, blocco schermo) più un'attività in tempo reale, così dal telefono non serve
-aprire l'app; il segnalibro è un terzo gesto che il ciondolo non può dare. Gli intent adottano
-`LiveActivityIntent` per girare nel processo dell'app, dove ci sono Bluetooth e WebSocket.
+Pausa e ripresa e "segna questo momento" sono controlli di sistema (tasto Azione, Centro di
+Controllo, blocco schermo) più un'attività in tempo reale, così dal telefono non serve aprire
+l'app; il segnalibro è un terzo gesto che il ciondolo non può dare. Gli intent adottano
+`LiveActivityIntent` per girare nel processo dell'app, dove ci sono Bluetooth e WebSocket; lo
+stato per il Centro di Controllo passa dall'App Group. Fatti in M7 il 27/11.
 Dettagli e verifiche in `docs/features/system-controls.md`. Scartato `AudioRecordingIntent`:
 serve a chi registra col microfono del telefono e chiede di partire dall'app in primo piano.
+
+## 2026-11-27 Il tocco singolo segna il momento finché non ci sono le note
+
+Il tocco singolo, che nel progetto doveva aprire e chiudere una nota, fino alle note (M10) mette
+un segnalibro nella conversazione in corso, con una vibrazione breve. Scartato lasciarlo senza
+azione: è il gesto più comodo e il segnalibro serve già. "Apri e chiudi nota" non compare fra
+le scelte finché non esiste; quando arriva si decide se diventa il default.
+
+## 2026-11-27 La prova della connessione non chiude conversazioni
+
+"Prova la connessione" apre il WebSocket col token e lo chiude senza `CloseStream`, e mentre una
+conversazione è aperta non apre una seconda connessione: risponde con quella in corso. Su
+`audio_stream` aprire riprende la sessione interrotta da meno della grazia e toglie la sessione
+alla connessione che la tiene. Scartato chiudere con `CloseStream`: chiuderebbe proprio quella
+conversazione. La sessione vuota della prova il server la scarta da solo (sotto 2 s d'audio).

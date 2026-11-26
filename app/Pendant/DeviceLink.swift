@@ -3,20 +3,36 @@ import Foundation
 import Observation
 import PendantKit
 
-/// The Bluetooth link to the Omi pendant, for the M5 verification.
+/// The Bluetooth link to the Omi pendant.
 ///
 /// Connects in the background with state restoration, reads what the firmware exposes, follows
 /// audio, button, battery and storage notifications, and writes the time on every connection.
-/// Every observation goes to the probe log. Protocol details live in PendantKit.
+/// The central manager is created by `start()`, not at init, because creating it asks iOS for the
+/// Bluetooth permission: the first launch asks it at its own step. Without a saved pendant the
+/// link only lists what it finds, and connects to the one the user picks. Protocol details live
+/// in PendantKit.
 @MainActor @Observable
 final class DeviceLink: NSObject {
   /// Where the link stands.
   enum Phase: String {
-    case starting, bluetoothOff, unauthorized, scanning, connecting, connected
+    case idle, starting, bluetoothOff, unauthorized, scanning, connecting, connected
   }
 
-  private(set) var phase: Phase = .starting
+  /// A pendant found while scanning, not yet connected.
+  struct Candidate: Identifiable, Equatable {
+    let id: UUID
+    let name: String
+    let rssi: Int
+  }
+
+  private(set) var phase: Phase = .idle {
+    didSet { if phase != oldValue { phaseSince = Date() } }
+  }
+  /// Since when the link is in its phase.
+  private(set) var phaseSince = Date()
   private(set) var connectedSince: Date?
+  /// When the pendant last went away, for "visto l'ultima volta".
+  private(set) var lastSeen: Date?
   private(set) var firmware: String?
   private(set) var model: String?
   private(set) var features: DeviceFeatures?
@@ -24,21 +40,34 @@ final class DeviceLink: NSObject {
   private(set) var battery: Int?
   private(set) var charging: Bool?
   private(set) var micGain: UInt8?
+  private(set) var ledLevel: UInt8?
   private(set) var storageStatus: Storage.Status?
   private(set) var ringInfo: Storage.Info?
   private(set) var audio: AudioPacketTracker
-  private(set) var buttonCounts: [String: Int] = [:]
   private(set) var ringRead: RingRead?
-  /// The gain to restore after the mute test, set while the test runs.
-  private(set) var gainBeforeMuteTest: UInt8?
+  /// Pendants seen while scanning without a saved one.
+  private(set) var candidates: [Candidate] = []
+  /// When the current scan started.
+  private(set) var scanStartedAt: Date?
+  /// Whether audio notifications are on.
+  private(set) var ready = false
+  /// Whether a pendant is saved: the link reconnects to it by itself.
+  var hasSavedPendant: Bool { UserDefaults.standard.string(forKey: Self.savedPeripheralKey) != nil }
 
   /// Called with true once audio notifications are on, with false at a disconnection.
   var onReadyChanged: ((Bool) -> Void)?
   /// Called for each audio notification, with the largest piece the connection can carry.
   var onAudio: ((AudioPacket, Int) -> Void)?
+  /// Called with the counter of the first audio packet of each connection.
+  var onFirstAudio: ((UInt16) -> Void)?
   /// Called for each button event.
   var onButton: ((ButtonEvent) -> Void)?
-  private var ready = false
+  /// Called when the battery level changes.
+  var onBattery: ((Int) -> Void)?
+  /// Called with the ring pointers each time the pendant reports them.
+  var onRingInfo: ((Storage.Info) -> Void)?
+  /// Called when the characteristics a setting writes become available.
+  var onSettingsAvailable: (() -> Void)?
 
   /// A read of the storage ring saved to a file, for checking the offline format.
   struct RingRead {
@@ -48,14 +77,17 @@ final class DeviceLink: NSObject {
     let fileURL: URL
   }
 
+  var config: Configuration
   private let log: ProbeLog
-  private let config: Configuration
-  private var central: CBCentralManager!
+  private var central: CBCentralManager?
   private var peripheral: CBPeripheral?
   private var characteristics: [CBUUID: CBCharacteristic] = [:]
   private var lastAudioStats = Date.distantPast
   private var lastStatusPoll = Date.distantPast
   private var ringFile: FileHandle?
+  private var firstAudioSeen = false
+  /// The peripherals behind `candidates`: iOS needs the same object to connect.
+  private var found: [UUID: CBPeripheral] = [:]
 
   private static let restoreIdentifier = "dev.esse.pendant.central"
   private static let savedPeripheralKey = "pendant.peripheralIdentifier"
@@ -66,22 +98,68 @@ final class DeviceLink: NSObject {
     self.config = config
     self.audio = AudioPacketTracker(restartGap: config.audioRestartGap)
     super.init()
+  }
+
+  /// Creates the central manager, which asks the Bluetooth permission the first time.
+  func start() {
+    guard central == nil else { return }
+    phase = .starting
     central = CBCentralManager(
       delegate: self, queue: nil,
       options: [CBCentralManagerOptionRestoreIdentifierKey: Self.restoreIdentifier])
   }
 
+  /// The Bluetooth permission as iOS has it, without asking.
+  static var authorization: CBManagerAuthorization { CBManager.authorization }
+
   // MARK: Actions from the screen
+
+  /// Connects to a pendant found while scanning and saves it.
+  func pair(_ candidate: Candidate) {
+    guard let central, let target = found[candidate.id] else { return }
+    central.stopScan()
+    scanStartedAt = nil
+    candidates = []
+    found = [:]
+    log.record("pair", candidate.id.uuidString)
+    connect(target)
+  }
+
+  /// Forgets the pendant: disconnects, stops reconnecting and goes back to scanning.
+  func forget() {
+    UserDefaults.standard.removeObject(forKey: Self.savedPeripheralKey)
+    if let peripheral, let central { central.cancelPeripheralConnection(peripheral) }
+    peripheral = nil
+    log.record("forget")
+    resetSession()
+    setReady(false)
+    reconnect()
+  }
+
+  /// Scans again from the start, after the user checked the pendant.
+  func rescan() {
+    guard let central, central.state == .poweredOn, peripheral == nil else { return }
+    central.stopScan()
+    candidates = []
+    found = [:]
+    reconnect()
+  }
 
   /// Asks the ring for its pointers.
   func requestRingInfo() {
     write(Storage.Command.info, to: OmiGatt.Storage.control)
   }
 
+  /// Resets the pendant's memory (`storage.c`, command 0x13).
+  func clearStorage() {
+    write(Storage.Command.clear, to: OmiGatt.Storage.control)
+    log.record("storageClear")
+  }
+
   /// Reads every pending packet of the ring into a file in Documents.
   ///
   /// The firmware moves its read pointer forward while it sends (`storage.c:380-434`), so the
-  /// packets read here are no longer pending for the Omi app.
+  /// packets read here are no longer pending.
   func readRing() {
     guard let info = ringInfo, ringRead == nil else { return }
     let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -99,28 +177,26 @@ final class DeviceLink: NSObject {
     log.record("haptic", "\(length)")
   }
 
-  /// Sets the microphone gain to 0, remembering the current one, to test it as a mute.
-  func startMuteTest() {
-    guard let current = micGain, gainBeforeMuteTest == nil else { return }
-    gainBeforeMuteTest = current
-    write(DeviceCommand.micGain(0), to: OmiGatt.Settings.micGain)
-    log.record("muteTest", "gain \(current) -> 0")
-    read(OmiGatt.Settings.micGain)
+  /// Sets the LED brightness, 0 turning it off; the firmware keeps it while disconnected.
+  func setLed(_ level: Int) {
+    let value = UInt8(min(max(level, 0), 100))
+    guard value != ledLevel, characteristic(OmiGatt.Settings.ledDimming) != nil else { return }
+    write(Data([value]), to: OmiGatt.Settings.ledDimming)
+    ledLevel = value
+    log.record("led", "\(value)")
   }
 
-  /// Restores the gain saved by the mute test.
-  func endMuteTest() {
-    guard let previous = gainBeforeMuteTest else { return }
-    write(DeviceCommand.micGain(previous), to: OmiGatt.Settings.micGain)
-    gainBeforeMuteTest = nil
-    log.record("muteTest", "gain 0 -> \(previous)")
-    read(OmiGatt.Settings.micGain)
+  /// Sets the microphone gain, which the firmware saves.
+  func setMicGain(_ level: UInt8) {
+    write(DeviceCommand.micGain(level), to: OmiGatt.Settings.micGain)
+    micGain = min(level, 8)
+    log.record("micGain", "set \(min(level, 8))")
   }
 
   // MARK: Connection
 
   private func reconnect() {
-    guard central.state == .poweredOn else { return }
+    guard let central, central.state == .poweredOn else { return }
     if let peripheral {
       if peripheral.state == .connected {
         discover(peripheral)
@@ -137,15 +213,25 @@ final class DeviceLink: NSObject {
       connect(known)
       return
     }
-    if let connected = central.retrieveConnectedPeripherals(withServices: [Self.audioService]).first
-    {
-      log.record("retrievedConnected", connected.identifier.uuidString)
-      connect(connected)
-      return
+    // A pendant held by another app on this phone shows up here, not in the scan.
+    for connected in central.retrieveConnectedPeripherals(withServices: [Self.audioService]) {
+      addCandidate(connected, rssi: -50)
     }
     phase = .scanning
+    scanStartedAt = Date()
     central.scanForPeripherals(withServices: [Self.audioService])
     log.record("scanning")
+  }
+
+  private func addCandidate(_ found: CBPeripheral, rssi: Int) {
+    self.found[found.identifier] = found
+    let candidate = Candidate(id: found.identifier, name: found.name ?? "Omi", rssi: rssi)
+    if let i = candidates.firstIndex(where: { $0.id == candidate.id }) {
+      candidates[i] = candidate
+    } else {
+      candidates.append(candidate)
+      log.record("discovered", "\(candidate.name) rssi \(rssi)")
+    }
   }
 
   private func connect(_ target: CBPeripheral) {
@@ -155,7 +241,7 @@ final class DeviceLink: NSObject {
     phase = .connecting
     // A pending connect never times out on iOS, also in the background: the pendant is caught
     // as soon as it comes back in range or is switched on.
-    central.connect(target)
+    central?.connect(target)
   }
 
   private func discover(_ target: CBPeripheral) {
@@ -170,10 +256,13 @@ final class DeviceLink: NSObject {
   }
 
   private func resetSession() {
+    if connectedSince != nil { lastSeen = Date() }
     connectedSince = nil
     characteristics = [:]
     audio = AudioPacketTracker(restartGap: config.audioRestartGap)
     ringInfo = nil
+    ledLevel = nil
+    firstAudioSeen = false
     finishRingRead(reason: "disconnected")
   }
 
@@ -202,6 +291,9 @@ final class DeviceLink: NSObject {
     case OmiGatt.Standard.firmwareRevision, OmiGatt.Standard.modelNumber, OmiGatt.Features.bitmask,
       OmiGatt.Audio.codec, OmiGatt.Settings.micGain, OmiGatt.Storage.status:
       target.readValue(for: c)
+    case OmiGatt.Settings.ledDimming:
+      target.readValue(for: c)
+      onSettingsAvailable?()
     case OmiGatt.Audio.data, OmiGatt.Button.event, OmiGatt.Storage.control:
       target.setNotifyValue(true, for: c)
     case OmiGatt.Standard.batteryLevel, OmiGatt.Settings.charging:
@@ -221,6 +313,11 @@ final class DeviceLink: NSObject {
     case OmiGatt.Audio.data:
       guard let packet = AudioPacket(value) else { return }
       audio.record(packet)
+      if !firstAudioSeen {
+        firstAudioSeen = true
+        log.record("firstAudio", "counter \(packet.counter)")
+        onFirstAudio?(packet.counter)
+      }
       if let peripheral {
         // The firmware cuts a frame at MTU - 3 bytes, the same limit iOS reports for writes.
         onAudio?(packet, peripheral.maximumWriteValueLength(for: .withoutResponse))
@@ -228,13 +325,15 @@ final class DeviceLink: NSObject {
       logPeriodicStats()
     case OmiGatt.Button.event:
       guard let event = ButtonEvent(value) else { return }
-      buttonCounts["\(event)", default: 0] += 1
       log.record("button", "\(event)")
       onButton?(event)
     case OmiGatt.Standard.batteryLevel:
       guard let level = value.first else { return }
-      if battery != Int(level) { log.record("battery", "\(level)%") }
-      battery = Int(level)
+      if battery != Int(level) {
+        log.record("battery", "\(level)%")
+        battery = Int(level)
+        onBattery?(Int(level))
+      }
     case OmiGatt.Settings.charging:
       guard let flag = value.first else { return }
       if charging != (flag == 1) { log.record("charging", flag == 1 ? "yes" : "no") }
@@ -242,6 +341,10 @@ final class DeviceLink: NSObject {
     case OmiGatt.Settings.micGain:
       micGain = value.first
       log.record("micGain", value.first.map(String.init) ?? "?")
+    case OmiGatt.Settings.ledDimming:
+      ledLevel = value.first
+      log.record("ledRead", value.first.map(String.init) ?? "?")
+      onSettingsAvailable?()
     case OmiGatt.Standard.firmwareRevision:
       firmware = String(decoding: value, as: UTF8.self)
       log.record("firmware", firmware ?? "")
@@ -277,6 +380,7 @@ final class DeviceLink: NSObject {
     switch notification {
     case .info(let info):
       ringInfo = info
+      onRingInfo?(info)
       log.record(
         "ringInfo",
         "read \(info.readSeq), write \(info.writeSeq), pending \(info.pendingPackets), "
@@ -294,6 +398,7 @@ final class DeviceLink: NSObject {
       requestRingInfo()
     case .ack(let code):
       log.record("storageAck", "\(code)")
+      requestRingInfo()
     }
   }
 
@@ -337,6 +442,7 @@ extension DeviceLink: CBCentralManagerDelegate {
       switch central.state {
       case .poweredOn: reconnect()
       case .unauthorized: phase = .unauthorized
+      case .unknown, .resetting: phase = .starting
       default: phase = .bluetoothOff
       }
     }
@@ -362,9 +468,7 @@ extension DeviceLink: CBCentralManagerDelegate {
     advertisementData: [String: Any], rssi: NSNumber
   ) {
     MainActor.assumeIsolated {
-      central.stopScan()
-      log.record("discovered", "\(peripheral.name ?? "?") rssi \(rssi)")
-      connect(peripheral)
+      addCandidate(peripheral, rssi: rssi.intValue)
     }
   }
 
@@ -390,6 +494,8 @@ extension DeviceLink: CBCentralManagerDelegate {
           + (error.map { ", \($0.localizedDescription)" } ?? ""))
       resetSession()
       setReady(false)
+      // A forgotten pendant is no longer ours: no reconnection.
+      guard self.peripheral === peripheral else { return }
       connect(peripheral)
     }
   }
@@ -399,6 +505,7 @@ extension DeviceLink: CBCentralManagerDelegate {
   ) {
     MainActor.assumeIsolated {
       log.record("connectFailed", error?.localizedDescription ?? "")
+      guard self.peripheral === peripheral else { return }
       connect(peripheral)
     }
   }

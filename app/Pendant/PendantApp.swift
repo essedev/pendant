@@ -1,51 +1,46 @@
 import PendantKit
 import SwiftUI
-import UIKit
-
-/// Records how iOS launched the app: a launch for Bluetooth means state restoration worked.
-final class AppDelegate: NSObject, UIApplicationDelegate {
-  nonisolated(unsafe) static var launchedForBluetooth = false
-
-  func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-  ) -> Bool {
-    Self.launchedForBluetooth = launchOptions?[.bluetoothCentrals] != nil
-    return true
-  }
-}
 
 @main
 struct PendantApp: App {
-  @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
   @Environment(\.scenePhase) private var scenePhase
-  @State private var log: ProbeLog
-  @State private var link: DeviceLink
-  @State private var capture: CaptureCoordinator
-
-  init() {
-    let config = Configuration.defaults
-    let log = ProbeLog(screenLimit: config.logScreenEntries)
-    // The app delegate runs after this init: a Bluetooth relaunch shows up as `restored`.
-    log.record(
-      "launch",
-      "version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
-    if let outcome = Credentials.importBootstrap() { log.record("credentials", outcome) }
-    let notifier = Notifier()
-    notifier.requestPermission()
-    let link = DeviceLink(log: log, config: config)
-    _log = State(initialValue: log)
-    _link = State(initialValue: link)
-    _capture = State(
-      initialValue: CaptureCoordinator(link: link, config: config, log: log, notifier: notifier))
-  }
+  @State private var model = AppModel.shared
 
   var body: some Scene {
     WindowGroup {
-      ProbeView(link: link, capture: capture, log: log)
+      RootView()
+        .environment(model)
     }
     .onChange(of: scenePhase) { _, phase in
-      log.record("scene", "\(phase)")
+      model.log.record("scene", "\(phase)")
+    }
+  }
+}
+
+/// The three tabs, and the first launch over them.
+struct RootView: View {
+  @Environment(AppModel.self) private var model
+
+  var body: some View {
+    @Bindable var model = model
+    TabView(selection: $model.tab) {
+      Tab("Adesso", systemImage: "waveform", value: AppModel.Tab.now) {
+        NavigationStack { NowView() }
+      }
+      Tab("Oggi", systemImage: "list.bullet", value: AppModel.Tab.today) {
+        NavigationStack(path: $model.todayPath) { TodayView() }
+      }
+      Tab("Impostazioni", systemImage: "slider.horizontal.3", value: AppModel.Tab.settings) {
+        NavigationStack(path: $model.settingsPath) { SettingsView() }
+      }
+    }
+    .tint(Theme.ink)
+    .fullScreenCover(
+      isPresented: Binding(
+        get: { model.onboarding != nil }, set: { if !$0 { model.onboarding = nil } })
+    ) {
+      OnboardingView(start: model.onboarding ?? .welcome)
+        .environment(model)
     }
   }
 }

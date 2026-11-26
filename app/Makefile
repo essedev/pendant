@@ -4,14 +4,14 @@
 BUNDLE_ID := dev.esse.pendant
 DERIVED := .derived
 APP := $(DERIVED)/Build/Products/Debug-iphoneos/Pendant.app
-SOURCES := Pendant PendantKit/Sources PendantKit/Tests PendantKit/Package.swift
+SOURCES := Pendant Shared PendantWidgets PendantKit/Sources PendantKit/Tests PendantKit/Package.swift
 DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/null | \
 	python3 -I -c "import json,sys; d=json.load(sys.stdin)['result']['devices']; \
 	print(next((x['hardwareProperties']['udid'] for x in d if x['hardwareProperties'].get('reality')=='physical' \
 	and x['connectionProperties'].get('pairingState')=='paired' and x['connectionProperties'].get('tunnelState')!='unavailable'),''))" 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help project build install run test lint format check credentials logs devices clean
+.PHONY: help project build install run test lint format check credentials logs devices clean sim screens
 
 help: ## Elenca i comandi
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -67,6 +67,36 @@ logs: ## Copia dall'iPhone il log e i file della verifica in app/.logs
 
 devices: ## Elenca i dispositivi visti da Xcode
 	xcrun devicectl list devices
+
+SIMULATOR ?= iPhone 18 Pro
+SIM_ID = $(shell xcrun simctl list devices available -j | python3 -I -c "import json,sys; \
+	d=[x for r in json.load(sys.stdin)['devices'].values() for x in r if x['name']=='$(SIMULATOR)']; \
+	print(d[0]['udid'] if d else '')")
+SIM_APP := $(DERIVED)/sim/Build/Products/Debug-iphonesimulator/Pendant.app
+SCENES ?= $(shell sed -n 's/^  case [a-zA-Z]* = "\(.*\)"/\1/p; s/^  case \([a-z]*\)$$/\1/p' Pendant/Demo.swift)
+
+sim: project ## Compila per il simulatore e lo avvia in una scena demo: SCENE=home.rec
+	@test -n "$(SIM_ID)" || (echo "Nessun simulatore $(SIMULATOR)" && exit 1)
+	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(SIM_ID)' \
+		-derivedDataPath $(DERIVED)/sim -quiet build
+	xcrun simctl boot $(SIM_ID) 2>/dev/null || true
+	xcrun simctl bootstatus $(SIM_ID) -b >/dev/null
+	xcrun simctl install $(SIM_ID) $(SIM_APP)
+	xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $(or $(SCENE),home.rec)
+
+screens: sim ## Schermate di tutte le scene demo in app/.screens, chiaro e scuro
+	mkdir -p .screens
+	xcrun simctl status_bar $(SIM_ID) override --time 17:42 --batteryState charged --batteryLevel 100
+	@for mode in light dark; do \
+		xcrun simctl ui $(SIM_ID) appearance $$mode; \
+		for scene in $(SCENES); do \
+			xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $$scene >/dev/null; \
+			sleep 2.5; \
+			xcrun simctl io $(SIM_ID) screenshot .screens/$$scene.$$mode.png >/dev/null 2>&1; \
+		done; \
+	done
+	xcrun simctl ui $(SIM_ID) appearance light
+	@echo "Schermate in app/.screens"
 
 clean: ## Toglie build e progetto generato
 	rm -rf $(DERIVED) Pendant.xcodeproj

@@ -4,8 +4,8 @@
 
 Dal 26/11/2026 l'audio del ciondolo arriva a `audio_stream` di Nexus con l'app iOS nostra
 (M5 e M6); l'app Omi resta solo per il firmware, col ciondolo dimenticato. La trascrizione la
-fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. Prossimo: l'app vera (M7), interfaccia
-scelta sul mock del 26/11.
+fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. L'app vera (M7) è scritta e installata il
+27/11: manca la prova sul ciondolo.
 
 ## Prossime milestone
 
@@ -16,10 +16,12 @@ scelta sul mock del 26/11.
   modifiche a Nexus, con pausa al doppio tocco, vibrazione e notifiche locali. Prova da capo a
   fondo riuscita (`ARCHITECTURE.md #Verifiche sul ciondolo`). Resta da misurare il background
   per ore nell'uso reale.
-- [ ] M7 L'app vera: l'interfaccia scelta (`ARCHITECTURE.md #Interfaccia`), le impostazioni sul
-  telefono con server configurabile, il LED che segue la registrazione, i comandi di sistema
-  (tasto Azione, Centro di Controllo, blocco schermo, attività in tempo reale:
-  `docs/features/system-controls.md`). Target a iOS 26 per il vetro.
+- [ ] M7 L'app vera: fatta il 27/11 dal mock completo (`docs/concepts/concept-b-app.html`):
+  primo avvio, Adesso, Oggi, Impostazioni con server configurabile e prova della connessione,
+  LED che segue la registrazione, segnalibri, comandi di sistema e attività in tempo reale,
+  iOS 26. Verificata nel simulatore su ogni scena (`make screens`); resta la prova sul
+  ciondolo: spia, segnalibro al tocco, controlli, attività in tempo reale, accensione
+  inattesa.
 - [ ] M8 Stato verso il server: eventi del ciondolo e segnale periodico, avviso su Telegram se
   l'app tace o il ciondolo resta scollegato. Aggiunta lato Nexus.
 - [ ] M9 Offline dalla memoria: lettura alla connessione, invio al server con l'ora vera,

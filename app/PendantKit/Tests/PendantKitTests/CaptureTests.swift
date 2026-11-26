@@ -89,10 +89,35 @@ import Testing
   }
 
   @Test func ignoresGesturesMappedToNothing() {
+    var quiet = config
+    quiet.gestures["singleTap"] = GestureAction.none
     var capture = CaptureController(paused: false)
     _ = capture.deviceConnectionChanged(true)
+    #expect(capture.button(.singleTap, config: quiet) == [])
+    #expect(capture.button(.release, config: quiet) == [])
+  }
+
+  @Test func singleTapBookmarksWithAShortVibration() {
+    var capture = CaptureController(paused: false)
+    _ = capture.deviceConnectionChanged(true)
+    #expect(capture.button(.singleTap, config: config) == [.bookmark, .vibrate(.short)])
+  }
+
+  @Test func bookmarksNothingWhilePaused() {
+    var capture = CaptureController(paused: true)
+    _ = capture.deviceConnectionChanged(true)
     #expect(capture.button(.singleTap, config: config) == [])
-    #expect(capture.button(.release, config: config) == [])
+  }
+
+  @Test func confirmsWithoutVibrationWhenTurnedOff() {
+    var silent = config
+    silent.vibrationConfirm = false
+    var capture = CaptureController(paused: false)
+    _ = capture.deviceConnectionChanged(true)
+    #expect(capture.button(.singleTap, config: silent) == [.bookmark])
+    #expect(
+      capture.button(.doubleTap, config: silent)
+        == [.persistPaused(true), .closeStream(graceful: true)])
   }
 
   @Test func pausingWhileDisconnectedOnlySavesTheFlag() {
@@ -123,6 +148,31 @@ import Testing
     let config = try JSONDecoder().decode(
       Configuration.self, from: Data(#"{"language": "italian"}"#.utf8))
     #expect(config.language == "it")
+  }
+
+  @Test func clampsNumbersAndFallsBackOnUnknownValues() throws {
+    let json =
+      #"{"ledBrightness": 400, "batteryThreshold": 1, "ledPolicy": "blink", "spoolSeconds": 5}"#
+    let config = try JSONDecoder().decode(Configuration.self, from: Data(json.utf8))
+    #expect(config.ledBrightness == 100)
+    #expect(config.batteryThreshold == 5)
+    #expect(config.ledPolicy == .followRecording)
+    #expect(config.spoolFrames == 60 * 50)
+  }
+
+  @Test func letsTheServerDecideTheLanguageWhenEmpty() throws {
+    let config = try JSONDecoder().decode(Configuration.self, from: Data(#"{"language": ""}"#.utf8))
+    #expect(config.language == "")
+  }
+
+  @Test func lightsTheLedByPolicy() {
+    var config = Configuration.defaults
+    #expect(config.ledLevel(recording: true) == 50)
+    #expect(config.ledLevel(recording: false) == 0)
+    config.ledPolicy = .alwaysOn
+    #expect(config.ledLevel(recording: false) == 50)
+    config.ledPolicy = .alwaysOff
+    #expect(config.ledLevel(recording: true) == 0)
   }
 
   @Test func roundTripsThroughJSON() throws {

@@ -2,7 +2,7 @@ name: Pendant
 options:
   bundleIdPrefix: dev.esse
   deploymentTarget:
-    iOS: "18.0"
+    iOS: "26.0"
   createIntermediateGroups: true
 configFiles:
   Debug: Local.xcconfig
@@ -10,28 +10,73 @@ configFiles:
 packages:
   PendantKit:
     path: PendantKit
+settings:
+  base:
+    MARKETING_VERSION: "0.4.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "6.0"
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
 targets:
   Pendant:
     type: application
     platform: iOS
     sources:
       - Pendant
+      - Shared
     dependencies:
       - package: PendantKit
+      - target: PendantWidgets
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.esse.pendant
-        MARKETING_VERSION: "0.3.0"
-        CURRENT_PROJECT_VERSION: "1"
-        TARGETED_DEVICE_FAMILY: "1"
-        CODE_SIGN_STYLE: Automatic
-        SWIFT_VERSION: "6.0"
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Pendant
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Pendant si collega al ciondolo Omi per riceverne l'audio."
+        # iPhone only, portrait; the iPad key only quiets the multitasking check of Xcode 26.
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Serve per ricevere l’audio dal ciondolo."
+        INFOPLIST_KEY_NSSupportsLiveActivities: YES
     info:
       path: Pendant/Info.plist
       properties:
         UIBackgroundModes:
           - bluetooth-central
+        UIAppFonts:
+          - Archivo.ttf
+    entitlements:
+      path: Pendant/Pendant.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.dev.esse.pendant
+  PendantWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - PendantWidgets
+      - Shared
+      - path: Pendant/Resources/Archivo.ttf
+        buildPhase: resources
+    dependencies:
+      - package: PendantKit
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.esse.pendant.widgets
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Pendant
+        SKIP_INSTALL: YES
+    info:
+      path: PendantWidgets/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        UIAppFonts:
+          - Archivo.ttf
+    entitlements:
+      path: PendantWidgets/PendantWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.dev.esse.pendant
