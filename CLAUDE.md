@@ -13,7 +13,8 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   custodia dell'audio, configurazione, contratto con Nexus, verifiche aperte, rischi.
 - `docs/DECISIONS.md`: scelte fatte e perché. `docs/ROADMAP.md`: milestone e domande aperte.
 - `docs/CONVENTIONS.md`: regole di codice e di prosa.
-- `app/`: l'app iOS (nasce con M5).
+- `app/`: l'app iOS. `project.yml` (XcodeGen), `Pendant/` il target dell'app, `PendantKit/`
+  il pacchetto con la logica.
 - `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app
   Omi.
 - `docs/archive/`: il ciondolo fai-da-te. Si legge, non si aggiorna.
@@ -25,6 +26,10 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 
 ## Comandi
 
+- App, da `app/`: `make run` (genera il progetto, compila, installa e avvia sull'iPhone
+  collegato), `make test`, `make check` prima di ogni commit che tocca l'app, `make help` per
+  il resto. Primo setup: `brew install xcodegen`, Apple ID in Xcode, `DEVELOPMENT_TEAM` in
+  `app/Local.xcconfig` (il Team ID è l'OU del certificato "Apple Development" nel portachiavi).
 - Prototipo: `PROBE_TOKEN=<token> uv run prototype/omi_stt_probe.py` (ascolta su
   127.0.0.1:8765, scrive WAV ed `events.jsonl` in `prototype/recordings/`).
 - Esposizione per l'iPhone: `cloudflared tunnel --url http://localhost:8765`, poi nell'app

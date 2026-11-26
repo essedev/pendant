@@ -8,9 +8,12 @@
 
 ## App iOS
 
-- Swift e SwiftUI, solo iPhone. Il progetto Xcode lo crea Xcode; la logica sta in un pacchetto
-  Swift locale dentro `app/`, così il file di progetto cambia di rado e la logica si testa con
-  `swift test` senza iPhone.
+- Swift e SwiftUI, solo iPhone, tutto da riga di comando: il progetto Xcode lo genera XcodeGen
+  da `app/project.yml` (il `.xcodeproj` non è versionato), build e installazione passano da
+  `app/Makefile`. Il team di firma sta in `app/Local.xcconfig`, ignorato da git.
+- La logica sta nel pacchetto Swift locale `app/PendantKit`, testabile con `swift test` senza
+  iPhone; il target dell'app resta sottile.
+- Formattazione con `swift format` (quello della toolchain), controllata da `make lint`.
 - Nessun valore di comportamento nel codice: ogni tempo, soglia o mappa entra nello schema della
   configurazione con default e limiti.
 - Il protocollo del ciondolo in un solo modulo, con i riferimenti al codice del firmware
