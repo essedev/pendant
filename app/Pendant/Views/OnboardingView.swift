@@ -194,7 +194,7 @@ struct OnboardingView: View {
   }
 }
 
-/// Six ticks: past, current, future.
+/// Six equal ticks across the width: past, current, future.
 private struct StepTicks: View {
   let index: Int
 
@@ -203,7 +203,8 @@ private struct StepTicks: View {
       ForEach(0..<6, id: \.self) { i in
         RoundedRectangle(cornerRadius: 2)
           .fill(i == index ? Theme.ink : i < index ? Theme.recorded : Theme.tickEmpty)
-          .frame(width: 28, height: 4)
+          .frame(maxWidth: .infinity)
+          .frame(height: 4)
       }
     }
     .accessibilityElement(children: .ignore)
