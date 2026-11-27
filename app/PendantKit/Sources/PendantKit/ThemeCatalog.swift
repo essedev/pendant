@@ -3,6 +3,15 @@ import Foundation
 /// A colour as 0xRRGGBB, for the theme catalogue.
 public typealias Hex = UInt32
 
+/// The app's own surfaces, the same in every theme: the page background and the cells. Here so
+/// the contrast test checks the colours the app draws.
+public enum AppSurface {
+  /// The page background, light and dark.
+  public static let background: (light: Hex, dark: Hex) = (0xE4E5E2, 0x141518)
+  /// Cells, notices, sheets.
+  public static let cell: (light: Hex, dark: Hex) = (0xEAEBE8, 0x191A1E)
+}
+
 /// The surface of the display: the home display, the pendant card, the conversation card, the
 /// Live Activity. Each has a light and a dark rendering (DECISIONS 2026-11-27, "Temi").
 public enum DisplayStyle: String, Codable, Sendable, CaseIterable {

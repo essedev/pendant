@@ -4,7 +4,8 @@ import Testing
 
 @Suite struct ThemeCatalogTests {
   private let backgrounds: [(dark: Bool, hex: Hex)] = [
-    (false, 0xE4E5E2), (false, 0xF1F1EF), (true, 0x141518), (true, 0x1D1F23),
+    (false, AppSurface.background.light), (false, AppSurface.cell.light),
+    (true, AppSurface.background.dark), (true, AppSurface.cell.dark),
   ]
 
   @Test(arguments: AccentStyle.allCases)

@@ -70,9 +70,9 @@ enum Theme {
   }
 
   /// Screen background.
-  static let background = dynamic(0xE4E5E2, 0x141518)
+  static let background = dynamic(AppSurface.background.light, AppSurface.background.dark)
   /// Cells, notices, sheets.
-  static let cell = dynamic(0xEAEBE8, 0x191A1E)
+  static let cell = dynamic(AppSurface.cell.light, AppSurface.cell.dark)
   /// Hairline between rows of a cell.
   static let hairline = dynamic(0xDFE0DC, 0x2A2C31)
   /// Main text on the background and in cells.
