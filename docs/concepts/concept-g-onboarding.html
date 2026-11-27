@@ -10,6 +10,10 @@
 		<!--
 			Concept G: il primo avvio dell'app com'è oggi, per decidere cosa cambiare.
 
+			GIRO 3 (27/11/2026): il ciondolo della ricerca è disegnato come quello vero e come l'icona
+			(app/Icon/pendant-light.svg): faccia grigia, anello chiaro grigio-azzurro, spia al centro.
+			Prima era il disegno del codice, disco scuro con la spia sopra il centro.
+
 			GIRO 2 (27/11/2026): le tacche dei passi in alto vanno da un margine all'altro (24 punti per
 			lato), sei segmenti uguali, invece di sei tacche corte allineate a sinistra.
 
@@ -44,8 +48,9 @@
 			- Tasto principale pieno, senza filo di luce; spento in grigio col testo secondario.
 			- Anteprima della richiesta di iOS: titolo e testo in inchiostro pieno, divisore, tasti a
 			  capsula alti 32 dentro una riga di 44.
-			- Ricerca: il ciondolo è il disegno del codice (disco con la spia sopra il centro), le
-			  tacche sono alte 16 e restano piene in grigio quando la ricerca si ferma.
+			- Ricerca: le tacche sono alte 16 e restano piene in grigio quando la ricerca si ferma. Il
+			  ciondolo invece qui è quello vero (giro 3), mentre il codice lo disegna ancora scuro con
+			  la spia sopra il centro.
 			- Bluetooth negato: i tre passi senza divisori. Fine: divisori a tutta larghezza.
 
 			COSA NON È FEDELE
@@ -182,14 +187,12 @@
 
 			/* PendantFigure and ScanTicks. */
 			.pend { margin-top: 28px; height: 236px; border-radius: 28px; background: var(--cell); display: grid; place-items: center; }
-			.pend .fig { position: relative; width: 132px; height: 132px; }
-			.pend .disc { position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 8px var(--frame); }
-			.pend .led { position: absolute; left: 62px; top: 24px; width: 8px; height: 8px; border-radius: 50%; }
+			/* The pendant as the icon draws it, from the Omi render (app/Icon/pendant-light.svg): grey
+			   face in a clear grey-blue ring, the LED at the centre. Searching, it is faded and dark. */
+			.pend .fig { width: 132px; height: 132px; display: block; }
 			.pend.ghost .fig { opacity: 0.55; }
-			.pend.ghost .disc { background: radial-gradient(circle 90px at 35% 30%, var(--empty) 4px, var(--rec) 90px); }
-			.pend.ghost .led { background: var(--ink3); }
-			.pend.found .disc { background: radial-gradient(circle 90px at 35% 30%, #525252 4px, #1f1f1f 90px); }
-			.pend.found .led { background: var(--redlit); }
+			.pend.ghost .glow { display: none; }
+			.pend.ghost .led { fill: #8a8884; }
 			.scan { display: flex; gap: 3px; height: 16px; }
 			.scan i { flex: 1; border-radius: 1px; background: var(--empty); }
 			.scan i.hd { background: var(--ink); }
@@ -239,7 +242,7 @@
 			<button data-zoom="0.5"><kbd>3</kbd> 50%</button>
 		</div>
 		<header class="intro">
-			<h1>Giro 2: il primo avvio, tacche dei passi a tutta larghezza</h1>
+			<h1>Giro 3: il primo avvio, col ciondolo vero nella ricerca</h1>
 			<p>
 				Ogni schermata del primo avvio come la disegna il codice adesso, per la revisione: nessuna variante, nessun miglioramento.
 				Sotto ogni telefono, il nome del passo e cosa lo fa comparire. Dove il codice e il mock vecchio non coincidono, qui c’è il codice.
@@ -301,6 +304,18 @@
 
 			const HOST = 'server.esempio.it';
 
+			// The pendant figure, the same drawing as the app icon.
+			const PENDANT = `<svg class="fig" viewBox="172 172 680 680" aria-hidden="true">
+				<defs>
+					<radialGradient id="pf-face" cx="0.4" cy="0.36" r="0.75"><stop offset="0" stop-color="#a19f9a"/><stop offset="1" stop-color="#6b6966"/></radialGradient>
+					<radialGradient id="pf-glow"><stop offset="0" stop-color="#e5402f" stop-opacity="0.45"/><stop offset="1" stop-color="#e5402f" stop-opacity="0"/></radialGradient>
+				</defs>
+				<circle cx="512" cy="512" r="340" fill="#aab2bc"/>
+				<circle cx="512" cy="512" r="332" fill="none" stroke="#cfd5db" stroke-width="6"/>
+				<circle cx="512" cy="512" r="276" fill="url(#pf-face)"/>
+				<circle class="glow" cx="512" cy="512" r="78" fill="url(#pf-glow)"/>
+				<circle class="led" cx="512" cy="512" r="30" fill="#e5402f"/>
+			</svg>`;
 			// SearchStep: title, text, figure, ticks and row per state.
 			const SEARCH = {
 				scanning: ['Cerco il ciondolo', 'Tienilo acceso e vicino al telefono. Di solito bastano pochi secondi.'],
@@ -320,7 +335,7 @@
 					];
 					body += `<div class="cell causes surf">${causes.map(([a, b], i) => `<div><span class="n">${i + 1}</span><div><strong>${a}</strong><p>${b}</p></div></div>`).join('')}</div>`;
 				} else {
-					body += `<div class="pend surf ${st === 'scanning' ? 'ghost' : 'found'}" role="img" aria-label="Il ciondolo Omi"><div class="fig"><div class="disc"></div><div class="led"></div></div></div>`;
+					body += `<div class="pend surf ${st === 'scanning' ? 'ghost' : 'found'}" role="img" aria-label="Il ciondolo Omi">${PENDANT}</div>`;
 					body += scan(st === 'scanning' || st === 'linking');
 					const dev = {
 						found: row('Omi', { sub: 'Segnale forte', accessory: '<button class="capsule">Collega</button>' }),
