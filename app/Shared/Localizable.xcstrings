@@ -460,6 +460,16 @@
         }
       }
     },
+    "Back" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indietro"
+          }
+        }
+      }
+    },
     "Back to today" : {
       "localizations" : {
         "it" : {
@@ -1382,6 +1392,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resta su questo telefono finché resta la conversazione."
+          }
+        }
+      }
+    },
+    "It usually takes a few seconds." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di solito bastano pochi secondi."
           }
         }
       }
@@ -4142,16 +4162,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Occupata ora"
-          }
-        }
-      }
-    },
-    "Usually it takes a few seconds." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Di solito bastano pochi secondi."
           }
         }
       }

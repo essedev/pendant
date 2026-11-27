@@ -393,7 +393,7 @@ struct ProbeResult: View {
   var body: some View {
     if probing {
       NoticeCard(
-        kind: .busy, title: "Trying to connect to \(host)", text: "Usually it takes a few seconds.")
+        kind: .busy, title: "Trying to connect to \(host)", text: "It usually takes a few seconds.")
     } else if let outcome {
       NoticeCard(
         kind: outcome == .ok ? .success : .problem, title: title(outcome), text: text(outcome))

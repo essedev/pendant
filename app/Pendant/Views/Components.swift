@@ -442,33 +442,75 @@ struct CapsuleButton: View {
   }
 }
 
-/// The navigation bar in Archivo: the big title of a tab's root and the inline title.
+/// The big title of a tab's root page, with controls on its line.
 ///
-/// The tab roots carry their title in the system bar, on the line of its buttons: a root with an empty bar
-/// counts as one without a bar, and on a swipe back iOS then slides the pushed page's bar off with
-/// it, back button included (DECISIONS, "Native titles on the tab roots").
-@MainActor
-enum NavigationBarStyle {
-  static func apply() {
-    let ink = UIColor(Theme.ink)
-    // The bar sets the title at its layout margin; the indent brings it to the title gutter,
-    // where the free blocks of the page start.
-    let indent = NSMutableParagraphStyle()
-    indent.firstLineHeadIndent = Theme.Gutter.title - Theme.Gutter.surface
-    indent.headIndent = indent.firstLineHeadIndent
-    let appearance = UINavigationBarAppearance()
-    appearance.configureWithTransparentBackground()
-    appearance.largeTitleTextAttributes = [
-      .font: Theme.uiFont(34, .semibold, wide: false), .foregroundColor: ink, .kern: -0.68,
-      .paragraphStyle: indent,
-    ]
-    appearance.titleTextAttributes = [
-      .font: Theme.uiFont(17, .semibold, wide: false), .foregroundColor: ink,
-    ]
-    let bar = UINavigationBar.appearance()
-    bar.standardAppearance = appearance
-    bar.scrollEdgeAppearance = appearance
-    bar.compactAppearance = appearance
+/// The roots hide the navigation bar, so every tab's title starts at the same height and the
+/// controls sit centred on the title instead of in a bar above it.
+struct PageTitle<Trailing: View>: View {
+  let title: LocalizedStringResource
+  var subtitle: LocalizedStringResource?
+  @ViewBuilder var trailing: Trailing
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      HStack(alignment: .center) {
+        Text(title)
+          .type(34, 40, .semibold)
+          .tracking(-0.68)
+          .foregroundStyle(Theme.ink)
+        Spacer(minLength: 12)
+        trailing
+      }
+      // The title's line height: taller controls overflow it, so every title sits at one height.
+      .frame(height: 40)
+      if let subtitle {
+        Text(subtitle).type(17, 24).foregroundStyle(Theme.ink2)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.horizontal, Theme.Gutter.title)
+  }
+}
+
+extension PageTitle where Trailing == EmptyView {
+  init(title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil) {
+    self.init(title: title, subtitle: subtitle) { EmptyView() }
+  }
+}
+
+/// Two chevrons in one glass capsule, as iOS draws a pair of toolbar buttons.
+struct ChevronPair: View {
+  let backLabel: LocalizedStringResource
+  let forwardLabel: LocalizedStringResource
+  let canGoBack: Bool
+  let canGoForward: Bool
+  let back: () -> Void
+  let forward: () -> Void
+
+  var body: some View {
+    HStack(spacing: 0) {
+      chevron("chevron.left", backLabel, enabled: canGoBack, action: back)
+      chevron("chevron.right", forwardLabel, enabled: canGoForward, action: forward)
+    }
+    .glassEffect(.regular.interactive(), in: Capsule())
+  }
+
+  private func chevron(
+    _ symbol: String, _ label: LocalizedStringResource, enabled: Bool,
+    action: @escaping () -> Void
+  )
+    -> some View
+  {
+    Button(action: action) {
+      Image(systemName: symbol)
+        .font(.system(size: 17, weight: .semibold))
+        .foregroundStyle(enabled ? Theme.ink : Theme.ink3)
+        .frame(width: 44, height: 44)
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .disabled(!enabled)
+    .accessibilityLabel(Text(label))
   }
 }
 
@@ -591,19 +633,89 @@ struct TextButton: View {
   }
 }
 
-/// The page background and the navigation title in Archivo.
+/// The page background and our own bar: the back button and the title in Archivo.
+///
+/// The app draws its own bar, and no page shows the system one: when two pages of a stack differ
+/// in bar, iOS slides the bar off with the pushed page on a swipe back and the back button loses
+/// its margin (DECISIONS, "Our own bar on every page").
 struct PageChrome: ViewModifier {
   let title: LocalizedStringResource
+  @Environment(\.dismiss) private var dismiss
 
   func body(content: Content) -> some View {
     content
       .background(Theme.background.ignoresSafeArea())
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .principal) {
-          Text(title).type(17, 22, .semibold).foregroundStyle(Theme.ink)
+      .toolbar(.hidden, for: .navigationBar)
+      .safeAreaBar(edge: .top) {
+        ZStack {
+          Text(title)
+            .type(17, 22, .semibold)
+            .foregroundStyle(Theme.ink)
+            .lineLimit(1)
+            .padding(.horizontal, 60)
+          HStack {
+            Button {
+              dismiss()
+            } label: {
+              Image(systemName: "chevron.left")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(Theme.ink)
+                .frame(width: 44, height: 44)
+                .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: Circle())
+            .accessibilityLabel(Text("Back"))
+            Spacer()
+          }
+          .padding(.horizontal, Theme.Gutter.surface)
         }
+        .frame(height: 52)
       }
+      .background(SwipeBack())
+  }
+}
+
+/// Turns the swipe back on again for a page without the system bar, which iOS otherwise turns off.
+///
+/// The page reaches its navigation controller and hands both swipes a delegate that lets them
+/// start only when there is a page to go back to and no transition is running, the checks of
+/// iOS's own delegate that matter here. The delegate lives as long as the app: the recognizer
+/// holds it weakly, and with no delegate a swipe on a root would leave the stack stuck.
+private struct SwipeBack: UIViewControllerRepresentable {
+  func makeUIViewController(context: Context) -> Probe { Probe() }
+
+  func updateUIViewController(_ probe: Probe, context: Context) {}
+
+  @MainActor static let delegate = Delegate()
+
+  final class Delegate: NSObject, UIGestureRecognizerDelegate {
+    func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
+      var responder: UIResponder? = recognizer.view
+      while let current = responder, !(current is UINavigationController) {
+        responder = current.next
+      }
+      guard let navigation = responder as? UINavigationController,
+        navigation.transitionCoordinator == nil
+      else { return false }
+      return navigation.viewControllers.count > 1
+    }
+  }
+
+  /// An empty controller placed in the page, only to reach its navigation controller.
+  final class Probe: UIViewController {
+    override func viewDidAppear(_ animated: Bool) {
+      super.viewDidAppear(animated)
+      guard let navigation = navigationController else { return }
+      // The edge swipe, and since iOS 26 the one from anywhere in the page.
+      for recognizer in [
+        navigation.interactivePopGestureRecognizer,
+        navigation.interactiveContentPopGestureRecognizer,
+      ] {
+        recognizer?.delegate = SwipeBack.delegate
+        recognizer?.isEnabled = true
+      }
+    }
   }
 }
 

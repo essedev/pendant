@@ -38,8 +38,7 @@ struct NowView: View {
     }
     .scrollContentBackground(.hidden)
     .background(Theme.background.ignoresSafeArea())
-    .navigationTitle("Now")
-    .toolbarTitleDisplayMode(.inlineLarge)
+    .toolbar(.hidden, for: .navigationBar)
     .navigationDestination(for: UUID.self) { id in
       if let c = model.conversations.conversations.first(where: { $0.id == id }) {
         ConversationView(conversation: c)
