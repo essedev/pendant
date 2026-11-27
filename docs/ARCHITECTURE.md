@@ -65,8 +65,13 @@ finestre di 20 s - 2 min. Il firmware è cambiato dopo: sono ordini di grandezza
 
 Nell'uso reale si ricarica ogni sera: una recensione ha misurato 18-20 h, un utente circa
 11 h con lo streaming attivo (ricerca del 26/11/2026). Dopo 10 s di silenzio il microfono si
-addormenta e si risveglia al primo suono: la pausa decisa dall'app non fa risparmiare
-batteria.
+addormenta e si risveglia al primo suono (`mic.c`, `CONFIG_OMI_VAD_HOLD_MS`): la pausa decisa
+dall'app non fa risparmiare batteria. L'unica parte che l'app può togliere col 3.0.21 è la
+trasmissione: collegato ma senza l'app iscritta all'audio, il firmware scarta i pacchetti invece
+di mandarli (`transport.c`, `pusher`). È l'interruttore "Ferma l'audio in pausa" in Avanzate,
+spento di default: aiuta solo nelle pause col suono intorno, e meno della differenza fra
+parlato e silenzio (circa 1,3 mA), che comprende anche microfono e compressione. Il log
+`power` registra le due batterie ogni 10 minuti per misurarlo.
 
 ## Firmware: il protocollo
 
@@ -157,7 +162,11 @@ Tutti i numeri sono big-endian, le risposte arrivano su `30295781` (`storage.c`)
 
 ### Cosa aggiunge il 3.0.24
 
-Pubblicato il 9/11/2026 ma al 0% di rollout il 26/11/2026: non si installa dall'app Omi.
+Pubblicato il 9/11/2026, al 27/11 ancora allo 0% con un solo tester abilitato; il 3.0.23 è
+bloccato. Secondo la doc di Omi (`cv1-manufacturing-and-field-recovery.md`, PR #26199 del
+25/11) i CV1 usciti di fabbrica col 3.0.21 hanno un bootloader che rifiuta gli aggiornamenti
+via Bluetooth; quelli partiti dal 3.0.19 e aggiornati no. Il nostro è stato aggiornato
+all'arrivo, quindi probabilmente installerà la prossima release (3.0.25).
 
 | Funzione | Effetto per l'app |
 |---|---|

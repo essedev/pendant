@@ -37,6 +37,7 @@ final class CaptureCoordinator {
       uplink.config = config
       link.config = config
       applyLed()
+      applyAudioWanted()
       if config.notifyIdle != oldValue.notifyIdle
         || IdleSchedule(config: config) != IdleSchedule(config: oldValue)
       {
@@ -102,6 +103,7 @@ final class CaptureCoordinator {
     link.onAudio = { [weak self] packet, maxPiece in self?.audio(packet, maxPiece: maxPiece) }
     link.onSettingsAvailable = { [weak self] in self?.applyLed() }
     if controller.paused { log.record("capture", "starting paused") }
+    applyAudioWanted()
   }
 
   /// Pauses or resumes, from the screen or a system control.
@@ -179,6 +181,11 @@ final class CaptureCoordinator {
     } catch {
       log.record("conversationsSaveFailed", error.localizedDescription)
     }
+  }
+
+  /// Takes the pendant's audio unless paused with `stopAudioInPause` on.
+  private func applyAudioWanted() {
+    link.audioWanted = !(config.stopAudioInPause && controller.paused)
   }
 
   private func deviceReadyChanged(_ ready: Bool) {
@@ -275,6 +282,7 @@ final class CaptureCoordinator {
         UserDefaults.standard.set(pausedSince, forKey: Self.pausedSinceKey)
         log.record("capture", paused ? "paused" : "resumed")
         applyLed()
+        applyAudioWanted()
       case .bookmark:
         let now = Date()
         if conversations.bookmark(at: now) { save() }

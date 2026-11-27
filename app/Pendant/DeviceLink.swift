@@ -246,6 +246,22 @@ final class DeviceLink: NSObject {
     target.discoverServices(nil)
   }
 
+  /// Whether the app takes the pendant's audio. Off, the firmware drops the packets instead of
+  /// sending them (3.0.21, `transport.c` `pusher`): the radio rests while the microphone runs.
+  var audioWanted = true {
+    didSet { if audioWanted != oldValue { applyAudioSubscription() } }
+  }
+
+  private func applyAudioSubscription() {
+    guard let peripheral, let c = characteristic(OmiGatt.Audio.data) else { return }
+    if audioWanted {
+      // The packet counter ran on while nobody listened: a fresh tracker, not a loss.
+      audio = AudioPacketTracker(restartGap: config.audioRestartGap)
+    }
+    peripheral.setNotifyValue(audioWanted, for: c)
+    log.record("audioSubscription", audioWanted ? "on" : "off")
+  }
+
   private func setReady(_ value: Bool) {
     guard value != ready else { return }
     ready = value
@@ -290,7 +306,10 @@ final class DeviceLink: NSObject {
     case OmiGatt.Settings.ledDimming:
       target.readValue(for: c)
       onSettingsAvailable?()
-    case OmiGatt.Audio.data, OmiGatt.Button.event, OmiGatt.Storage.control:
+    case OmiGatt.Audio.data:
+      target.setNotifyValue(audioWanted, for: c)
+      if !audioWanted { log.record("audioSubscription", "off") }
+    case OmiGatt.Button.event, OmiGatt.Storage.control:
       target.setNotifyValue(true, for: c)
     case OmiGatt.Standard.batteryLevel, OmiGatt.Settings.charging:
       target.readValue(for: c)

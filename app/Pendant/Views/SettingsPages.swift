@@ -688,6 +688,13 @@ struct AdvancedPage: View {
           )
         }
         CellGroup(
+          header: "Batteria del ciondolo",
+          footer:
+            "In pausa l’app smette di ricevere l’audio e il ciondolo smette di trasmetterlo: la radio riposa, il microfono resta acceso. Aiuta nelle pause in posti rumorosi; nel silenzio il microfono dorme già da solo. Senza audio iOS può sospendere l’app in pausa: il doppio tocco la risveglia, ma gli avvisi del ciondolo acceso a vuoto potrebbero arrivare in ritardo."
+        ) {
+          ToggleRow(label: "Ferma l’audio in pausa", isOn: $model.config.stopAudioInPause)
+        }
+        CellGroup(
           header: "Coda senza rete",
           footer:
             "Quando il server non risponde l’audio aspetta sul telefono. Piena la coda, si perde l’audio più vecchio."

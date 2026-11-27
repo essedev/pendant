@@ -74,6 +74,11 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var gestures: [String: GestureAction]
   /// Whether the pendant vibrates to confirm an action.
   public var vibrationConfirm: Bool
+  /// Unsubscribe from the pendant's audio while paused. Firmware 3.0.21 drops the packets
+  /// of a connected phone that is not subscribed instead of sending them, so the pendant's
+  /// radio rests; the microphone keeps running. Without audio iOS may suspend the app in a
+  /// pause: the gestures still wake it.
+  public var stopAudioInPause: Bool
   /// Vibration confirming a pause or the end of something.
   public var pauseVibration: Vibration
   /// Vibration confirming a resume or the start of something.
@@ -148,6 +153,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     language = "it"
     gestures = ["doubleTap": .toggleRecording, "singleTap": .bookmark]
     vibrationConfirm = true
+    stopAudioInPause = false
     pauseVibration = .short
     resumeVibration = .medium
     ledPolicy = .followRecording
@@ -226,6 +232,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     }
     gestures = merged
     vibrationConfirm = value(.vibrationConfirm, d.vibrationConfirm)
+    stopAudioInPause = value(.stopAudioInPause, d.stopAudioInPause)
     pauseVibration =
       Vibration(rawValue: value(.pauseVibration, d.pauseVibration.rawValue)) ?? d.pauseVibration
     resumeVibration =
@@ -274,6 +281,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(language, forKey: .language)
     try c.encode(gestures.mapValues(\.rawValue), forKey: .gestures)
     try c.encode(vibrationConfirm, forKey: .vibrationConfirm)
+    try c.encode(stopAudioInPause, forKey: .stopAudioInPause)
     try c.encode(pauseVibration.rawValue, forKey: .pauseVibration)
     try c.encode(resumeVibration.rawValue, forKey: .resumeVibration)
     try c.encode(ledPolicy.rawValue, forKey: .ledPolicy)
@@ -307,7 +315,8 @@ public struct Configuration: Codable, Equatable, Sendable {
   private enum CodingKeys: String, CodingKey {
     case audioRestartGap, audioStatsInterval, powerLogInterval, statusPollInterval,
       logScreenEntries, language
-    case gestures, vibrationConfirm, pauseVibration, resumeVibration, ledPolicy, ledBrightness
+    case gestures, vibrationConfirm, stopAudioInPause, pauseVibration, resumeVibration, ledPolicy,
+      ledBrightness
     case offlinePolicy, pingInterval, reconnectMaxDelay, spoolSeconds, notifyDisconnect
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
     case notifyIdle, idleNotifyAfter, idleRepeatEvery, idleVibration, notifySignature,
