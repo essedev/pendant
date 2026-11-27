@@ -6,6 +6,8 @@ struct PendantApp: App {
   @Environment(\.scenePhase) private var scenePhase
   @State private var model = AppModel.shared
 
+  init() { NavigationBarStyle.apply() }
+
   var body: some Scene {
     WindowGroup {
       RootView()
