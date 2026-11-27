@@ -40,8 +40,9 @@ run: install ## Install and launch on the iPhone
 test: ## Test the PendantKit package, no iPhone needed
 	cd PendantKit && swift test
 
-lint: ## Check the formatting
+lint: ## Check the formatting and the prose language (docs/CONVENTIONS.md#language)
 	swift format lint --strict -r $(SOURCES)
+	cd .. && python3 scripts/check-prose.py
 
 format: ## Format the Swift code
 	swift format -i -r $(SOURCES)
