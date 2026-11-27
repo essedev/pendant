@@ -206,8 +206,10 @@ che su iOS ha sostituito il plugin Flutter.
    Riprende da sola solo una registrazione tagliata da una disconnessione, se il ciondolo
    torna entro i 120 s di grazia del server, o una ripresa chiesta mentre era lontano. Se resta
    collegato senza registrare per un tempo configurabile (5 minuti), il ciondolo vibra e arriva
-   una notifica, ripetuta ogni 15 minuti finché non si registra o il ciondolo non si scollega.
-   In carica non avvisa: il ciondolo non consuma e non è in tasca.
+   una notifica, ripetuta ogni 15 minuti (`idleRepeatEvery`, vibrazione secondo `idleVibration`)
+   finché non si registra o il ciondolo non si scollega. "Basta per ora" nella notifica ferma le
+   ripetizioni fino al prossimo collegamento. In carica non avvisa, perché il ciondolo non
+   consuma e non è in tasca; il conto riparte quando lo si stacca.
 4. Legge l'info della memoria. Se c'è audio offline, lo tratta secondo la politica configurata.
 5. Alla disconnessione chiude la sessione senza `CloseStream`: Nexus la tiene `interrupted` per
    120 s e la riprende se il ciondolo torna.

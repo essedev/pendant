@@ -16,7 +16,9 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 - `docs/features/`: una feature per file (comandi di sistema). `docs/concepts/`: i mock HTML
   dell'interfaccia; `docs/concepts/inspo/` è ispirazione scaricata, non versionata.
 - `app/`: l'app iOS. `project.yml` (XcodeGen), `Pendant/` il target dell'app, `PendantKit/`
-  il pacchetto con la logica.
+  il pacchetto con la logica, `PendantWidgets/` l'estensione (controlli e attività in tempo
+  reale), `Shared/` il codice di entrambi (tema, intent, viste dell'attività), `Icon/` gli SVG
+  dell'icona (`make icon`).
 - `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app
   Omi.
 - `docs/archive/`: il ciondolo fai-da-te. Si legge, non si aggiorna.
