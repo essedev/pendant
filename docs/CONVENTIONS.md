@@ -19,6 +19,9 @@
 - Il protocollo del ciondolo in un solo modulo, con i riferimenti al codice del firmware
   (`file:riga` al tag della versione).
 - Il codice preso dall'app Omi (licenza MIT) cita file e commit d'origine.
+- Versione in `app/project.yml`: la minore sale a ogni milestone (M5 0.2, M6 0.3, M7 0.4), la
+  patch a ogni giro di correzioni installato sul telefono dentro la stessa milestone; il numero
+  di build sale con la versione.
 - Spazi (`Theme.Gutter`, `Theme.pageTop`): tre margini laterali per ruolo, mai un numero a mano.
   16 punti per ciò che ha un fondo (display, tasti, celle, card), 24 per i titoli di pagina e i
   blocchi liberi (la giornata), 32 per il testo dentro le celle e per quello che accompagna un
