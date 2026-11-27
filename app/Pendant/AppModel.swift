@@ -99,7 +99,7 @@ final class AppModel {
   private(set) var signatureExpiry: Date?
 
   private let probe = ServerProbe()
-  private let activities = LiveActivityController()
+  private let activities: LiveActivityController
   private var batteryWarned = false
   /// The connection whose ring was last cleared, so a connection clears it once.
   private var clearedRingFor: Date?
@@ -135,6 +135,7 @@ final class AppModel {
     ThemeSelection.set(display: config.displayStyle, accent: config.accentStyle)
     let log = ProbeLog(screenLimit: config.logScreenEntries)
     self.log = log
+    activities = LiveActivityController(log: log)
     log.record(
       "launch",
       "version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")"
