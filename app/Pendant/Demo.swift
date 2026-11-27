@@ -14,9 +14,9 @@ enum DemoScene: String, CaseIterable {
   case homeCharge = "home.charge"
   case homeLow = "home.low"
   case homeBluetoothOff = "home.btoff"
-  case homeIdle = "home.idle"
   case homeCut = "home.cut"
   case homeFirst = "home.first"
+  case homeBusy = "home.busy"
   case homeDenied = "home.denied"
   case homeToken = "home.token"
   case homeFull = "home.full"
@@ -152,7 +152,7 @@ enum DemoScene: String, CaseIterable {
       mode: .recording, since: n.addingTimeInterval(-728), battery: 84,
       serverHost: "server.example.com", serverState: .online, level: -16.7, firmware: "3.0.21")
     switch self {
-    case .homePause, .pageControlsPause:
+    case .homePause, .homeBusy, .pageControlsPause:
       s.mode = .paused
       s.since = n.addingTimeInterval(-130)
     case .homeOff, .pageControlsOff:
@@ -174,11 +174,6 @@ enum DemoScene: String, CaseIterable {
       s.since = n.addingTimeInterval(-45)
       s.battery = nil
       s.notice = .bluetoothOff
-    case .homeIdle:
-      s.mode = .paused
-      s.since = n.addingTimeInterval(-312)
-      s.idleSince = n.addingTimeInterval(-312)
-      s.notice = .idle
     case .homeCut:
       s.mode = .disconnected
       s.since = n.addingTimeInterval(-48)
@@ -224,6 +219,7 @@ enum DemoScene: String, CaseIterable {
 
   var conversations: ConversationLog {
     if self == .homeFirst { return ConversationLog(conversations: [Fixture.liveConversation(now)]) }
+    if self == .homeBusy { return Fixture.log(now: now, busy: true) }
     return Fixture.log(now: now)
   }
 
@@ -237,7 +233,9 @@ enum DemoScene: String, CaseIterable {
       Conversation(id: live, start: now.addingTimeInterval(-12))
     }
 
-    static func log(now: Date) -> ConversationLog {
+    /// The log of the mock; `busy` adds five conversations today, for a list longer than the
+    /// home shows.
+    static func log(now: Date, busy: Bool = false) -> ConversationLog {
       func c(
         _ h: Int, _ m: Int, seconds: Int, id: UUID = UUID(), day: Int = 26,
         status: Conversation.Status = .sent, marks: [(Int, Int)] = []
@@ -247,17 +245,24 @@ enum DemoScene: String, CaseIterable {
           id: id, start: start, end: start.addingTimeInterval(Double(seconds)), status: status,
           bookmarks: marks.map { DemoScene.at($0.0, $0.1, day: day) })
       }
-      return ConversationLog(conversations: [
-        Conversation(
-          id: live, start: DemoScene.at(17, 30), bookmarks: [DemoScene.at(17, 36)]),
-        c(17, 21, seconds: 287),
-        c(11, 30, seconds: 2892, id: morning, marks: [(11, 42), (12, 5)]),
-        c(9, 4, seconds: 2586),
-        c(18, 40, seconds: 552, day: 25),
-        c(15, 12, seconds: 1331, id: cut, day: 25, status: .interrupted),
-        c(10, 15, seconds: 4335, day: 25, marks: [(10, 48)]),
-        c(8, 52, seconds: 1874, day: 25),
-      ])
+      let extra =
+        busy
+        ? [
+          c(16, 40, seconds: 724), c(15, 12, seconds: 1331, status: .interrupted),
+          c(13, 5, seconds: 2461), c(10, 15, seconds: 1093), c(8, 40, seconds: 427),
+        ] : []
+      return ConversationLog(
+        conversations: extra + [
+          Conversation(
+            id: live, start: DemoScene.at(17, 30), bookmarks: [DemoScene.at(17, 36)]),
+          c(17, 21, seconds: 287),
+          c(11, 30, seconds: 2892, id: morning, marks: [(11, 42), (12, 5)]),
+          c(9, 4, seconds: 2586),
+          c(18, 40, seconds: 552, day: 25),
+          c(15, 12, seconds: 1331, id: cut, day: 25, status: .interrupted),
+          c(10, 15, seconds: 4335, day: 25, marks: [(10, 48)]),
+          c(8, 52, seconds: 1874, day: 25),
+        ])
     }
   }
 }

@@ -209,8 +209,9 @@ which on iOS replaced the Flutter plugin.
    the server's 120 s grace period, or a resume requested while it was away. If it stays
    connected without recording for a configurable time (5 minutes), the pendant vibrates and a
    notification arrives, repeated every 15 minutes (`idleRepeatEvery`, vibration according to
-   `idleVibration`) until recording starts or the pendant disconnects. "Basta per ora" in the
-   notification stops the repeats until the next connection. While charging it does not warn,
+   `idleVibration`) until recording starts or the pendant disconnects. The warning is only the
+   notification, which also shows as a banner with the app open: "Registra" in the
+   notification resumes, "Basta per ora" stops the repeats until the next connection. While charging it does not warn,
    because the pendant draws nothing and is not in a pocket; the count restarts when it is
    unplugged.
 4. It reads the storage info. If there is offline audio, it handles it according to the
@@ -315,6 +316,14 @@ record" (the Riprendi key). Display as a material (aluminium bezel, glass with a
 warm aluminium as the second tint. A single key, recessed in the same bezel: graphite "Pausa"
 while recording, red "Riprendi" when stopped. Tabs: Adesso, Oggi, Impostazioni. Archivo font.
 Glass only on the bottom bar, which floats over the content.
+
+The display shows the running time and the level only while recording. Still (paused or away
+from the pendant) it shows the day's counter: recorded today (`1h36m`, hours from the first),
+in how many conversations, and the day's strip in place of the level meter. Away, the tag
+carries since when ("Scollegato dalle 17:39"); what happens on return is the line under the
+greyed key, never a sentence in the display. Under the key, the last three conversations open
+their page, and "Tutte e N" opens Oggi; the total and the strip of Oggi show there only while
+recording (`docs/concepts/concept-d-pausa.html` G, `concept-e-righe.html` A).
 
 Colours, taken from the mockup (Graphite and red pair with the second tint); the cells sit
 halfway between the mockup and the background, because on the phone they stood out too much

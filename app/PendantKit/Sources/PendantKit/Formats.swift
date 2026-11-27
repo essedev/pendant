@@ -10,10 +10,11 @@ public enum DurationFormat {
     public let unit: String
   }
 
-  /// The display form: `12m08s`, and `1h42m` past 99 minutes so it keeps its width.
-  public static func units(_ seconds: TimeInterval) -> [Part] {
+  /// The display form: `12m08s`, and `1h42m` past 99 minutes so it keeps its width. A day's
+  /// total reads better in hours from the first: `hoursAfter` sets the last minute in `m` and `s`.
+  public static func units(_ seconds: TimeInterval, hoursAfter: Int = 99) -> [Part] {
     let s = max(0, Int(seconds))
-    if s / 60 > 99 {
+    if s / 60 > hoursAfter {
       return [
         Part(number: String(s / 3600), unit: "h"), Part(number: pad(s % 3600 / 60), unit: "m"),
       ]

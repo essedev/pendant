@@ -31,13 +31,18 @@ struct NowView: View {
             .padding(.horizontal, Theme.Gutter.surface)
             .padding(.top, 16)
         }
-        DaySection()
+        DaySection(showsDay: s.mode == .recording)
           .padding(.top, 28)
           .padding(.bottom, 32)
       }
     }
     .scrollContentBackground(.hidden)
     .background(Theme.background.ignoresSafeArea())
+    .navigationDestination(for: UUID.self) { id in
+      if let c = model.conversations.conversations.first(where: { $0.id == id }) {
+        ConversationView(conversation: c)
+      }
+    }
     .onAppear { model.capture.meterEnabled = scenePhase == .active }
     .onDisappear { model.capture.meterEnabled = false }
     .onChange(of: scenePhase) { _, phase in model.capture.meterEnabled = phase == .active }
@@ -48,11 +53,19 @@ struct NowView: View {
     s.resumesUntil.map { $0 > model.now } ?? false
   }
 
-  /// The line under the key; away from the pendant the display already says it all.
+  /// The line under the key. Away from the pendant it says what the greyed key will do when the
+  /// pendant is back: the display holds no sentences (concept-d-pausa.html, variant G).
   private func hint(_ s: AppModel.Snapshot) -> String? {
     let doubleTap = model.config.gestures["doubleTap"] == .toggleRecording
     switch s.mode {
-    case .disconnected, .bluetoothOff, .denied, .unpaired: return nil
+    case .unpaired: return "Collega il ciondolo dalle impostazioni."
+    case .disconnected, .bluetoothOff, .denied:
+      if resumes(s) { return "Se il ciondolo torna subito, continua la stessa conversazione." }
+      // On 3.0.21 a pendant away writes its audio to storage even when the app is paused
+      // (ARCHITECTURE, Storage); the Bluetooth notice already says so.
+      return s.mode == .disconnected
+        ? "Al ritorno resta in pausa. Intanto, se è acceso, registra nella sua memoria."
+        : "Al ritorno resta in pausa."
     case .recording where s.charging: return "Il ciondolo è in carica e continua a registrare."
     case .recording: return doubleTap ? "Oppure tocca due volte il ciondolo." : nil
     case .paused: return doubleTap ? "Oppure tocca due volte il ciondolo per registrare." : nil
@@ -60,7 +73,8 @@ struct NowView: View {
   }
 }
 
-/// The home display: tags and battery, the time, the level, the server line.
+/// The home display: tags and battery, then the running time and the level while recording, or
+/// the day's counter and strip when still (concept-d-pausa.html, variant G); the server line.
 struct HomeDisplay: View {
   let snapshot: AppModel.Snapshot
   let now: Date
@@ -68,6 +82,7 @@ struct HomeDisplay: View {
 
   var body: some View {
     let s = snapshot
+    let day = AppModel.shared.conversations.summary(of: now, now: now)
     DisplaySurface {
       VStack(alignment: .leading, spacing: 0) {
         HStack(spacing: 8) {
@@ -82,21 +97,21 @@ struct HomeDisplay: View {
               tight: tags(s).count > 1)
           }
         }
-        if away(s) {
-          // Away, a running time says nothing to act on: the display shows when the pendant
-          // was last here and what happens when it comes back.
-          AwayTime(snapshot: s, now: now, doubleTap: doubleTap)
-            .padding(.top, 28)
-        } else {
+        if live(s) {
           TimelineView(.periodic(from: .now, by: 1)) { context in
-            DisplayDuration(
-              seconds: elapsedSeconds(context.date),
-              color: live(s) ? Theme.displayInk : Theme.displayInk2)
+            DisplayDuration(seconds: elapsedSeconds(context.date), color: Theme.displayInk)
           }
           .padding(.top, 28)
+          LevelMeterView(decibels: reduceMotion ? -20 : s.level, live: true)
+            .padding(.top, 20)
+        } else {
+          // Still, a running time says nothing to act on (every connection starts paused): the
+          // display counts the day instead, and the level row becomes the day's strip.
+          DayCounter(summary: day)
+            .padding(.top, 28)
+          DayStrip(summary: day, height: 16, showNow: false, onDisplay: true)
+            .padding(.top, 20)
         }
-        LevelMeterView(decibels: reduceMotion ? -20 : s.level, live: live(s))
-          .padding(.top, 20)
         Rectangle().fill(Theme.displayRule).frame(height: 1).padding(.top, 16)
         HStack {
           Text(s.serverHost).foregroundStyle(Theme.displayInk).lineLimit(1)
@@ -123,22 +138,20 @@ struct HomeDisplay: View {
 
   private func live(_ s: AppModel.Snapshot) -> Bool { s.mode == .recording }
 
-  private func away(_ s: AppModel.Snapshot) -> Bool {
-    [.disconnected, .bluetoothOff, .denied, .unpaired].contains(s.mode)
-  }
-
-  private var doubleTap: Bool {
-    AppModel.shared.config.gestures["doubleTap"] == .toggleRecording
+  /// Away, the tag carries since when: the hour today, the day before that.
+  private func since(_ s: AppModel.Snapshot) -> String {
+    Calendar.current.isDate(s.since, inSameDayAs: now)
+      ? "dalle \(Clock.time(s.since))" : "da \(Clock.shortDay(s.since))"
   }
 
   private func tags(_ s: AppModel.Snapshot) -> [(Tag.Kind, String)] {
     var out: [(Tag.Kind, String)]
     switch s.mode {
     case .recording: out = [(.rec, "Registra da")]
-    case .paused: out = [(.line, "In pausa da")]
-    case .disconnected: out = [(.warn, "Scollegato")]
-    case .bluetoothOff: out = [(.warn, "Bluetooth spento")]
-    case .denied: out = [(.warn, "Senza Bluetooth")]
+    case .paused: out = [(.line, "In pausa")]
+    case .disconnected: out = [(.warn, "Scollegato \(since(s))")]
+    case .bluetoothOff: out = [(.warn, "Bluetooth spento \(since(s))")]
+    case .denied: out = [(.warn, "Senza Bluetooth \(since(s))")]
     case .unpaired: out = [(.warn, "Nessun ciondolo")]
     }
     if s.serverState != .online && s.queuedSeconds >= 1 {
@@ -158,49 +171,39 @@ struct HomeDisplay: View {
   }
 }
 
-/// The display away from the pendant: dashes in place of the time, then when the pendant was
-/// last seen and what happens when it comes back.
-private struct AwayTime: View {
-  let snapshot: AppModel.Snapshot
-  let now: Date
-  let doubleTap: Bool
+/// The display when still: what was recorded today and in how many conversations, with dashes
+/// in the time's shape on a day with nothing yet.
+private struct DayCounter: View {
+  let summary: DaySummary
 
   var body: some View {
-    let s = snapshot
     VStack(alignment: .leading, spacing: 6) {
-      // The time's shape with no figures, as a recorder with nothing to count.
-      HStack(alignment: .firstTextBaseline, spacing: 0) {
-        Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
-        Text("m").font(Theme.font(28, .medium)).padding(.leading, 3).padding(.trailing, 8)
-        Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
-        Text("s").font(Theme.font(28, .medium)).padding(.leading, 3)
+      if summary.closedCount > 0 {
+        DisplayDuration(seconds: summary.totalSeconds, color: Theme.displayInk2, hoursAfter: 59)
+      } else {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
+          Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
+          Text("m").font(Theme.font(28, .medium)).padding(.leading, 3).padding(.trailing, 8)
+          Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
+          Text("s").font(Theme.font(28, .medium)).padding(.leading, 3)
+        }
+        .foregroundStyle(Theme.displayInk2)
+        .lineLimit(1)
+        .accessibilityHidden(true)
       }
-      .foregroundStyle(Theme.displayInk2)
-      .lineLimit(1)
-      .accessibilityHidden(true)
-      Text(line(s))
+      Text(line)
         .type(15, 20)
         .foregroundStyle(Theme.displayInk2)
-        .fixedSize(horizontal: false, vertical: true)
     }
     .accessibilityElement(children: .combine)
   }
 
-  private func line(_ s: AppModel.Snapshot) -> String {
-    let at = Clock.time(s.since)
-    let since: String =
-      switch s.mode {
-      case .bluetoothOff: "Bluetooth spento dalle \(at)."
-      case .denied: "Senza permesso dalle \(at)."
-      case .unpaired: "Collega il ciondolo dalle impostazioni."
-      default: "Visto l’ultima volta alle \(at)."
-      }
-    guard s.mode != .unpaired else { return since }
-    if let until = s.resumesUntil, until > now {
-      return "\(since) Se torna entro le \(Clock.time(until)) continua la stessa conversazione."
+  private var line: String {
+    switch summary.closedCount {
+    case 0: "Ancora niente registrato oggi."
+    case 1: "Registrato oggi, in 1 conversazione."
+    case let n: "Registrato oggi, in \(n) conversazioni."
     }
-    return "\(since) Al ritorno resta in pausa"
-      + (doubleTap ? ": toccalo due volte per registrare." : ".")
   }
 }
 
@@ -349,56 +352,72 @@ struct NoticeCard: View {
         "Questa versione dell’app conosce il \(supported). Registra e mette in pausa come prima; le funzioni nuove del ciondolo restano spente finché non aggiorni l’app.",
         [("Ho capito", { model.dismiss(.firmwareUnsupported) })]
       )
-    case .idle:
-      let on = s.idleSince.map { model.now.timeIntervalSince($0) } ?? model.config.idleNotifyAfter
-      let minutes = DurationFormat.words(max(60, (on / 60).rounded(.down) * 60))
-      return (
-        "Il ciondolo è acceso da \(minutes) senza registrare",
-        "Forse un tocco in tasca. Consuma batteria anche così: tienilo premuto 3 secondi per spegnerlo, o registra.",
-        [
-          ("Registra", { model.setPaused(false) }),
-          ("Ho capito", { model.dismiss(.idle) }),
-        ]
-      )
     }
   }
 }
 
-/// La giornata: today's total, the strip, the closed conversations.
+/// The day under the key: the last conversations, each opening its page, and a row to all of
+/// them on Oggi (concept-e-righe.html, variant A). Total and strip only while recording: still,
+/// the display already shows them.
 private struct DaySection: View {
+  /// Whether the header carries the day's total and strip.
+  let showsDay: Bool
   @Environment(AppModel.self) private var model
+
+  /// The conversations shown before the row to all of them.
+  private static let shown = 3
 
   var body: some View {
     let log = model.conversations
     let now = model.now
     let summary = log.summary(of: now, now: now)
     let closed = log.conversations(on: now).filter { $0.status != .live }
-    VStack(alignment: .leading, spacing: 0) {
-      VStack(alignment: .leading, spacing: 12) {
-        HStack(alignment: .firstTextBaseline) {
-          Text("Oggi").type(22, 28, .semibold).foregroundStyle(Theme.ink)
-          Spacer()
-          Text(total(summary, closed: closed.count))
+      .sorted { $0.start > $1.start }
+    // Still with nothing yet, the display already says so and the key says what to do.
+    if showsDay || !closed.isEmpty {
+      VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 12) {
+          HStack(alignment: .firstTextBaseline) {
+            Text("Oggi").type(22, 28, .semibold).foregroundStyle(Theme.ink)
+            Spacer()
+            if showsDay {
+              Text(total(summary, closed: closed.count))
+                .type(15, 20)
+                .foregroundStyle(Theme.ink2)
+            }
+          }
+          if showsDay { DayStrip(summary: summary, showNow: model.recording) }
+          if closed.isEmpty {
+            Text(
+              "La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa."
+            )
             .type(15, 20)
             .foregroundStyle(Theme.ink2)
-        }
-        DayStrip(summary: summary, showNow: model.recording)
-        if closed.isEmpty {
-          Text(
-            "La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa."
-          )
-          .type(15, 20)
-          .foregroundStyle(Theme.ink2)
-          .fixedSize(horizontal: false, vertical: true)
-        }
-      }
-      .padding(.horizontal, Theme.Gutter.title)
-      // The same conversations as on Oggi, in a cell as there.
-      if !closed.isEmpty {
-        CellGroup {
-          ForEach(closed.prefix(5)) { c in
-            Row(Clock.time(c.start), value: DurationFormat.words(c.duration(now: now)))
+            .fixedSize(horizontal: false, vertical: true)
           }
+        }
+        .padding(.horizontal, Theme.Gutter.title)
+        if !closed.isEmpty {
+          CellGroup {
+            ForEach(closed.prefix(Self.shown)) { c in
+              NavigationLink(value: c.id) {
+                Row(
+                  Clock.time(c.start), value: DurationFormat.words(c.duration(now: now)),
+                  chevron: true)
+              }
+              .buttonStyle(.plain)
+            }
+            if closed.count > Self.shown {
+              Button {
+                model.todayPath = []
+                model.tab = .today
+              } label: {
+                Row("Tutte e \(closed.count)", chevron: true)
+              }
+              .buttonStyle(.plain)
+            }
+          }
+          .padding(.top, 10)
         }
       }
     }

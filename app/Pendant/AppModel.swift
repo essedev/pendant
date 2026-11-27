@@ -52,8 +52,6 @@ final class AppModel {
     var firmware: String?
     /// Until when a recording cut by a disconnection resumes by itself.
     var resumesUntil: Date?
-    /// Since when the pendant is on without recording, once the warning fired.
-    var idleSince: Date?
   }
 
   /// What the pendant pages show.
@@ -218,7 +216,6 @@ final class AppModel {
     s.queuedSeconds = uplink.spooledSeconds
     s.level = capture.level
     s.resumesUntil = capture.controller.resumesUntil(config: config)
-    s.idleSince = capture.idleSince
     s.notice = HomeNotice.top(noticeInputs(s))
     return s
   }
@@ -266,7 +263,6 @@ final class AppModel {
         SupportedFirmware.isSupported(firmware)
         || UserDefaults.standard.string(forKey: Self.firmwareDismissedKey) == firmware
     }
-    i.idle = s.idleSince != nil
     return i
   }
 
@@ -281,7 +277,6 @@ final class AppModel {
   /// Dismisses the notice shown now, where it can be dismissed.
   func dismiss(_ notice: HomeNotice) {
     switch notice {
-    case .idle: capture.dismissIdleWarning()
     case .firmwareUnsupported:
       UserDefaults.standard.set(link.firmware, forKey: Self.firmwareDismissedKey)
     default: break
@@ -399,6 +394,7 @@ final class AppModel {
     notifier.onSnooze = { [weak self] kind in
       if kind == .pendantIdle { self?.capture.snoozeIdleWarning() }
     }
+    notifier.onRecord = { [weak self] in self?.setPaused(false) }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
   }

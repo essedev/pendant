@@ -178,3 +178,18 @@ accents include no red, yellow or amber. Every combination is in the catalogue w
 test (4.5:1); on the display an accent that fails falls back to the secondary ink. Rejected a
 free colour with the system picker (contrast not guaranteed) and a red that changes with the
 theme (the "recording" signal must hold everywhere). The default remains Grafite e rosso.
+
+## 2026-11-27 Still display: the day's counter instead of the pause time
+
+When not recording, the home display no longer counts the time since the pause: since every
+connection starts paused, that number only said how long the pendant had been on without
+recording. It shows what was recorded today, in how many conversations, and the day's strip in
+the row of the level meter, like a recorder's counter with the tape stopped. Away from the
+pendant the tag carries since when, and what happens on return goes under the greyed key. The
+idle warning is only the notification, which gains "Registra": it is an event, not a condition
+that stays like Bluetooth off. The home lists the last three conversations, tappable, and a
+row to all of them on Oggi. Rejected (`docs/concepts/concept-d-pausa.html`): the last
+conversation frozen on the display (A, it needs a second line in half the states), the hour of
+the pause (B), a readout of rows (C), the next calendar event (E, permission and scope), the
+battery's end time (F, the drain is not measured yet); in `concept-e-righe.html` all the
+conversations with no cap (D, the home turns into Oggi) and tiles (E).

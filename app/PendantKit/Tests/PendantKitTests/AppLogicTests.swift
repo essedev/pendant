@@ -78,6 +78,9 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
     #expect(DurationFormat.units(99 * 60 + 59).map { $0.number + $0.unit }.joined() == "99m59s")
     #expect(DurationFormat.units(102 * 60).map { $0.number + $0.unit }.joined() == "1h42m")
     #expect(DurationFormat.units(-3).map { $0.number + $0.unit }.joined() == "0m00s")
+    let day = { (s: Double) in DurationFormat.units(s, hoursAfter: 59).map { $0.number + $0.unit } }
+    #expect(day(59 * 60 + 59).joined() == "59m59s")
+    #expect(day(96 * 60 + 5).joined() == "1h36m")
   }
 
   @Test func writesWords() {
@@ -149,7 +152,6 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
   @Test func showsTheMostSevereNotice() {
     var i = HomeNotice.Inputs()
     #expect(HomeNotice.top(i) == nil)
-    i.idle = true
     i.batteryPercent = 10
     #expect(HomeNotice.top(i) == .batteryLow)
     i.queueFill = 0.9

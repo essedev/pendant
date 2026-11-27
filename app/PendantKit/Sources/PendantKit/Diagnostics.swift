@@ -62,8 +62,6 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
   case batteryLow
   /// The pendant runs a firmware this app does not know.
   case firmwareUnsupported
-  /// The pendant has been on and connected for a while without recording.
-  case idle
 
   /// The inputs that decide the notice.
   public struct Inputs: Equatable, Sendable {
@@ -75,7 +73,6 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
     public var batteryPercent: Int?
     public var batteryThreshold = 20
     public var firmwareSupported = true
-    public var idle = false
 
     public init() {}
   }
@@ -91,7 +88,6 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
     if i.queueFill >= queueWarning { return .queueNearlyFull }
     if let b = i.batteryPercent, b < i.batteryThreshold { return .batteryLow }
     if !i.firmwareSupported { return .firmwareUnsupported }
-    if i.idle { return .idle }
     return nil
   }
 }

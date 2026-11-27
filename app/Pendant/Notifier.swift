@@ -22,9 +22,12 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
   var onOpen: ((Kind) -> Void)?
   /// Called when the user stopped the repetitions of a notification from its action.
   var onSnooze: ((Kind) -> Void)?
+  /// Called when the user asked to record from the idle warning.
+  var onRecord: (() -> Void)?
 
-  /// The category of the idle warning, with the action that stops its repetitions.
+  /// The category of the idle warning, with the actions to record and to stop its repetitions.
   private static let idleCategory = "pendant.idle"
+  private static let recordAction = "pendant.idle.record"
   private static let snoozeAction = "pendant.idle.snooze"
 
   /// A notifier, set as delegate at once: iOS hands a tap that launched the app only to a
@@ -35,7 +38,10 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     center.setNotificationCategories([
       UNNotificationCategory(
         identifier: Self.idleCategory,
-        actions: [UNNotificationAction(identifier: Self.snoozeAction, title: "Basta per ora")],
+        actions: [
+          UNNotificationAction(identifier: Self.recordAction, title: "Registra"),
+          UNNotificationAction(identifier: Self.snoozeAction, title: "Basta per ora"),
+        ],
         intentIdentifiers: [])
     ])
   }
@@ -55,6 +61,8 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
       guard let kind = Kind(rawValue: id) else { return }
       if action == Self.snoozeAction {
         onSnooze?(kind)
+      } else if action == Self.recordAction {
+        onRecord?()
       } else if action == UNNotificationDefaultActionIdentifier {
         onOpen?(kind)
       }

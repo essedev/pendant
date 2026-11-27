@@ -102,10 +102,14 @@ struct DisplayDuration: View {
   var size: CGFloat = 72
   var unitSize: CGFloat = 28
   var color: Color = Theme.displayInk
+  /// The last minute shown in minutes and seconds (DurationFormat.units).
+  var hoursAfter = 99
 
   var body: some View {
     HStack(alignment: .firstTextBaseline, spacing: 0) {
-      ForEach(Array(DurationFormat.units(seconds).enumerated()), id: \.offset) { i, part in
+      ForEach(
+        Array(DurationFormat.units(seconds, hoursAfter: hoursAfter).enumerated()), id: \.offset
+      ) { i, part in
         Text(part.number)
           .font(Theme.font(size, .semibold, wide: true))
           .tracking(-0.02 * size)
@@ -161,6 +165,8 @@ struct DayStrip: View {
   /// The live conversation's quarter hours, drawn as now.
   var showNow = true
   var marks = false
+  /// Drawn on the display, in place of the level meter: display inks and the meter's scale type.
+  var onDisplay = false
 
   var body: some View {
     VStack(spacing: 6) {
@@ -184,7 +190,7 @@ struct DayStrip: View {
               if summary.filled[i] > 0 {
                 // A floor of a quarter, so a minute of recording still shows.
                 RoundedRectangle(cornerRadius: 1)
-                  .fill(Theme.recorded)
+                  .fill(onDisplay ? Theme.displayInk2 : Theme.recorded)
                   .frame(height: height * max(0.25, summary.filled[i]))
               }
             }
@@ -196,8 +202,8 @@ struct DayStrip: View {
           if hour != "20" { Spacer(minLength: 0) }
         }
       }
-      .type(13, 18)
-      .foregroundStyle(Theme.ink2)
+      .type(onDisplay ? 11 : 13, onDisplay ? 14 : 18, onDisplay ? .medium : .regular)
+      .foregroundStyle(onDisplay ? Theme.displayInk2 : Theme.ink2)
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel("La giornata dalle 8 alle 20")
@@ -205,7 +211,7 @@ struct DayStrip: View {
 
   private func empty(_ i: Int) -> Color {
     if showNow, summary.nowTick == i, summary.filled[i] == 0 { return Theme.red }
-    return Theme.tickEmpty
+    return onDisplay ? Theme.tickOff : Theme.tickEmpty
   }
 }
 

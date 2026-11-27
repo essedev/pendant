@@ -22,16 +22,6 @@ final class CaptureCoordinator {
     didSet { if !meterEnabled { level = LevelMeter.floor } }
   }
 
-  /// When the warning of a pendant on without recording fired, until it is dismissed, the
-  /// recording starts or the pendant goes.
-  private(set) var idleWarnedAt: Date?
-  /// Since when the pendant is on without recording, while the warnings are armed.
-  private var idleStartedAt: Date?
-
-  /// Since when the pendant is on without recording, once a warning fired and until it is
-  /// dismissed.
-  var idleSince: Date? { idleWarnedAt == nil ? nil : idleStartedAt }
-
   var config: Configuration {
     didSet {
       uplink.config = config
@@ -119,11 +109,6 @@ final class CaptureCoordinator {
     apply(controller.bookmark(config: config))
   }
 
-  /// Hides the warning of a pendant on without recording.
-  func dismissIdleWarning() {
-    idleWarnedAt = nil
-  }
-
   /// Stops the warnings of a pendant on without recording until it connects again.
   func snoozeIdleWarning() {
     idleSnoozed = true
@@ -146,7 +131,6 @@ final class CaptureCoordinator {
     else { return }
     let schedule = IdleSchedule(config: config)
     let start = Date()
-    idleStartedAt = start
     scheduleIdleNotification(schedule, index: 0, from: start)
     idleTask = Task { [weak self] in
       var index = 0
@@ -157,7 +141,6 @@ final class CaptureCoordinator {
         else {
           return
         }
-        self.idleWarnedAt = Date()
         if schedule.vibrates(index) { self.link.vibrate(.long) }
         self.log.record("idle", "on for \(DurationFormat.words(offset)) without recording")
         index += 1
@@ -177,8 +160,6 @@ final class CaptureCoordinator {
   private func cancelIdleWarning() {
     idleTask?.cancel()
     idleTask = nil
-    idleWarnedAt = nil
-    idleStartedAt = nil
     notifier.cancel(.pendantIdle)
   }
 
