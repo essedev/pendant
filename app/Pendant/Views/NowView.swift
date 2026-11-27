@@ -159,8 +159,8 @@ struct HomeDisplay: View {
   }
 }
 
-/// The display away from the pendant: the hour of the last contact in the big figures, and
-/// what happens when the pendant comes back.
+/// The display away from the pendant: dashes in place of the time, then when the pendant was
+/// last seen and what happens when it comes back.
 private struct AwayTime: View {
   let snapshot: AppModel.Snapshot
   let now: Date
@@ -169,13 +169,16 @@ private struct AwayTime: View {
   var body: some View {
     let s = snapshot
     VStack(alignment: .leading, spacing: 6) {
-      Text(s.mode == .unpaired ? "--:--" : Clock.time(s.since))
-        .font(Theme.font(72, .semibold, wide: true))
-        .tracking(-1.44)
-        .monospacedDigit()
-        .foregroundStyle(Theme.displayInk2)
-        .lineLimit(1)
-        .minimumScaleFactor(0.6)
+      // The time's shape with no figures, as a recorder with nothing to count.
+      HStack(alignment: .firstTextBaseline, spacing: 0) {
+        Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
+        Text("m").font(Theme.font(28, .medium)).padding(.leading, 3).padding(.trailing, 8)
+        Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
+        Text("s").font(Theme.font(28, .medium)).padding(.leading, 3)
+      }
+      .foregroundStyle(Theme.displayInk2)
+      .lineLimit(1)
+      .accessibilityHidden(true)
       Text(line(s))
         .type(15, 20)
         .foregroundStyle(Theme.displayInk2)
@@ -185,12 +188,13 @@ private struct AwayTime: View {
   }
 
   private func line(_ s: AppModel.Snapshot) -> String {
+    let at = Clock.time(s.since)
     let since: String =
       switch s.mode {
-      case .bluetoothOff: "Bluetooth spento da allora."
-      case .denied: "Senza permesso da allora."
+      case .bluetoothOff: "Bluetooth spento dalle \(at)."
+      case .denied: "Senza permesso dalle \(at)."
       case .unpaired: "Collega il ciondolo dalle impostazioni."
-      default: "Ultimo contatto col ciondolo."
+      default: "Visto l’ultima volta alle \(at)."
       }
     guard s.mode != .unpaired else { return since }
     if let until = s.resumesUntil, until > now {
