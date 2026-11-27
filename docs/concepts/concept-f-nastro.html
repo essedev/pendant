@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept F - Nastro della giornata</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet" />
+		<!--
+			Concept F: come disegnare le barre del nastro della giornata (DayStrip), sul display
+			fermo della home e nella scheda Oggi.
+			Tasti: x a b c d per la variante, t tema, p nasconde la barra. Ogni variante mostra tre
+			giornate (3, 8 e 15 conversazioni), ognuna sul display e nella scheda Oggi.
+
+			Oggi (Components.swift, DayStrip): 48 barre, una per quarto d'ora dalle 8 alle 20. Ogni
+			barra ha un binario grigio alto quanto la striscia e si riempie dal basso per la parte
+			del quarto d'ora registrata, con un minimo di un quarto dell'altezza perché un minuto
+			si veda. Il tetto è il quarto d'ora pieno: in una giornata piena quasi tutte le barre
+			registrate arrivano in cima e si somigliano; i binari grigi fanno sembrare la striscia
+			una fila di caselle.
+
+			X  oggi: binario pieno, riempimento per quarto d'ora, minimo un quarto.
+			A  Senza binario: niente casella grigia; i quarti vuoti sono una tacca bassa, quelli
+			   registrati crescono da lì. La striscia si legge come un istogramma.
+			B  Per ora: 12 barre larghe, una per ora, alte quanto i minuti registrati nell'ora. Meno
+			   barre, differenze più leggibili; si perde il quarto d'ora.
+			C  Scala del giorno: come A, ma la barra più alta è il quarto d'ora più pieno della
+			   giornata, non i 15 minuti: in una giornata leggera le barre non restano basse.
+			D  Conversazioni: niente altezze; ogni conversazione è un tratto lungo quanto dura, al suo
+			   posto nella giornata. La durata si legge nella larghezza.
+
+			A1 A con la linea: una linea di base continua al posto delle 48 tacche dei quarti vuoti,
+			   che in A facevano una linea tratteggiata.
+
+			Mappatura sul codice di oggi (fattibilità, non piano): A e C cambiano solo il disegno di
+			DayStrip (`summary.filled` c'è); B vuole il riempimento per ora, da sommare dai quarti;
+			D vuole inizio e fine delle conversazioni, che DaySummary oggi non espone ma il log ha.
+			I segnalibri e la barra rossa di "adesso" della scheda Oggi valgono per tutte.
+
+			Dati: le giornate di concept-e-righe.html (09:04, 11:30, 17:21 dai mock; il resto
+			plausibile). Solo desktop.
+
+			Scelta (27/11/2026): X, il nastro resta com'è. Le caselle tengono sul display la forma
+			del livello che sostituiscono e mostrano il nastro vuoto in una giornata senza niente.
+			Scartate A e A1 (tacche o linea di base: non convincono), B (si perde il quarto d'ora),
+			C (l'altezza non vuol più dire minuti), D (i tratti brevi si toccano).
+		-->
+		<style>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			h2, p { margin: 0; }
+			[hidden] { display: none !important; }
+			body { min-height: 100vh; background: #dcdee3; color: #23252a; font: 13px/1.45 system-ui, -apple-system, sans-serif;
+				--font: 'Archivo', sans-serif;
+				--bg: #e4e5e2; --ink: #15171b; --ink2: #5b6068; --tick-empty: #d2d3cf; --recorded: #7c818a; --bezel: #cfd0cc;
+				--lcd: #2b2e34; --lcd-ink: #f1f2f4; --lcd-ink2: #a9aeb7; --lcd-dim: #3d4149; --lcd-line: #464a53; }
+			:root[data-theme='dark'] body { background: #1a1b1e; color: #d5d7dc;
+				--bg: #141518; --ink: #ecedef; --ink2: #9a9ea6; --tick-empty: #2a2c30; --recorded: #6f757f; --bezel: #2c2f34;
+				--lcd: #23262b; --lcd-ink: #eceef1; --lcd-ink2: #9ba0a9; --lcd-dim: #34383f; --lcd-line: #3a3e45; }
+
+			/* Concept chrome. Not part of the design. */
+			.switch { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; background: #111214; color: #b4b7bd; font: 12px/1.4 ui-monospace, Menlo, monospace; }
+			.switch button { font: inherit; border: 0; padding: 5px 9px; border-radius: 6px; background: #26282c; color: #eeeff1; cursor: pointer; }
+			.switch button[aria-pressed='true'] { background: #eeeff1; color: #111214; }
+			.switch p { margin: 0 0 0 8px; flex: 1 1 240px; min-width: 0; }
+			body[data-chrome='off'] .switch { display: none; }
+			.stage { display: grid; grid-template-columns: repeat(auto-fill, 390px); gap: 40px 32px; justify-content: center; padding: 32px 24px 64px; }
+			.cap { margin-bottom: 10px; }
+			.cap b { display: block; font-weight: 600; font-size: 14px; }
+			.cap span { color: #50545c; }
+			:root[data-theme='dark'] .cap span { color: #a4a8b0; }
+			.label { margin: 18px 0 8px; font: 500 12px/16px ui-monospace, Menlo, monospace; color: #6b7078; }
+
+			/* A piece of the screen: the display, then the Oggi tab's strip. */
+			.frag { width: 390px; padding: 18px 16px 20px; border-radius: 40px; background: var(--bg); color: var(--ink); font: 400 17px/24px var(--font); -webkit-font-smoothing: antialiased; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 16px 40px rgb(0 0 0 / 0.12); }
+			.lcd { margin: 6px; border-radius: 28px; background: var(--lcd); color: var(--lcd-ink); padding: 20px 20px 16px;
+				background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 38%), linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.08));
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), 0 0 0 6px var(--bezel); }
+			.lcd-time { font: 600 72px/72px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--lcd-ink2); }
+			.lcd-time i { font: 500 28px/28px var(--font); font-style: normal; font-stretch: 100%; letter-spacing: 0; margin: 0 8px 0 3px; }
+			.lcd-time i:last-child { margin-right: 0; }
+			.lcd-line { margin-top: 6px; font-size: 15px; line-height: 20px; color: var(--lcd-ink2); }
+			.lcd-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--lcd-line); display: flex; justify-content: space-between; font-size: 15px; line-height: 20px; }
+			.lcd-foot span:last-child { color: var(--lcd-ink2); }
+			.today { margin: 0 8px; }
+			.today h2 { display: flex; align-items: baseline; gap: 8px; font: 600 22px/28px var(--font); }
+			.today h2 span { font: 400 15px/20px var(--font); color: var(--ink2); }
+
+			/* The strip. `--h` is its height; each bar sets its own `--f`, 0 to 1. */
+			.strip { margin-top: 20px; }
+			.today .strip { margin-top: 12px; }
+			.bars { display: flex; align-items: flex-end; gap: 3px; height: var(--h); }
+			.bars i { position: relative; flex: 1; height: 100%; border-radius: 1px; background: var(--track); }
+			.bars i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--f, 0) * 100%); border-radius: 1px; background: var(--fill); }
+			.on-lcd { --track: var(--lcd-dim); --fill: var(--lcd-ink2); --axis: var(--lcd-ink2); }
+			.on-page { --track: var(--tick-empty); --fill: var(--recorded); --axis: var(--ink2); }
+			.axis { display: flex; justify-content: space-between; margin-top: 6px; font: 500 11px/14px var(--font); color: var(--axis); font-variant-numeric: tabular-nums; }
+			.on-page .axis { font: 400 13px/18px var(--font); }
+			/* A, C: no track; an empty bar is a low tick on the baseline. */
+			.bars.bare i { background: none; }
+			.bars.bare i::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px; background: var(--track); }
+			/* A1: one continuous baseline under the bars instead of a tick per quarter hour. */
+			.bars.based { position: relative; }
+			.bars.based::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px; background: var(--track); }
+			.bars.based i::before { display: none; }
+			/* B: twelve wide bars. */
+			.bars.hours { gap: 4px; }
+			.bars.hours i { border-radius: 2px; }
+			.bars.hours i::after { border-radius: 2px; }
+			/* D: a line of the day with the conversations on it. */
+			.line { position: relative; height: var(--h); }
+			.line::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px; background: var(--track); }
+			.line b { position: absolute; top: 0; bottom: 0; min-width: 3px; border-radius: 2px; background: var(--fill); }
+		</style>
+	</head>
+	<body data-v="x">
+		<div class="switch">
+			<span data-buttons></span>
+			<p data-desc></p>
+			<button data-theme-toggle>t tema</button>
+		</div>
+		<main class="stage" data-stage></main>
+
+		<script>
+			const DESC = {
+				x: 'oggi: binario grigio pieno, riempimento per quarto d’ora, tetto a 15 minuti',
+				a: 'Senza binario: i quarti vuoti sono una tacca, quelli registrati crescono da lì',
+				a1: 'A con la linea: al posto delle 48 tacche una linea di base continua',
+				b: 'Per ora: 12 barre larghe, alte quanto i minuti registrati in ogni ora',
+				c: 'Scala del giorno: come A, ma la barra più alta è il quarto d’ora più pieno di oggi',
+				d: 'Conversazioni: un tratto per conversazione, lungo quanto dura, nessuna altezza'
+			};
+
+			// Conversations: start, end. The days are those of concept-e-righe.html.
+			const ALL = [
+				['17:21', '17:25:47'], ['16:40', '16:52:04'], ['15:58', '16:01:10'], ['15:12', '15:34:11'], ['14:30', '14:39:12'],
+				['13:05', '13:46:01'], ['12:40', '12:42:05'], ['11:30', '12:18:12'], ['11:02', '11:08:08'], ['10:15', '10:33:13'],
+				['09:48', '09:53:30'], ['09:04', '09:47:06'], ['08:52', '08:53:12'], ['08:40', '08:47:07'], ['08:21', '08:24:03']
+			];
+			const DAYS = [
+				{ name: '3 conversazioni', note: 'Una giornata leggera', pick: ['17:21', '11:30', '09:04'] },
+				{ name: '8 conversazioni', note: 'Una giornata normale', pick: ['17:21', '16:40', '15:12', '13:05', '11:30', '10:15', '09:04', '08:40'] },
+				{ name: '15 conversazioni', note: 'Una giornata piena di pause', pick: ALL.map((c) => c[0]) }
+			];
+
+			const secs = (t) => { const [h, m, s = 0] = t.split(':').map(Number); return (h - 8) * 3600 + m * 60 + s; };
+			const SPAN = 12 * 3600;
+			// Share of each slot recorded, as DaySummary.filled does for quarter hours.
+			const fill = (convs, slot) => {
+				const n = SPAN / slot;
+				const out = new Array(n).fill(0);
+				convs.forEach(([a, b]) => {
+					const x = secs(a), y = secs(b);
+					for (let t = Math.floor(x / slot); t <= Math.min(n - 1, Math.floor((y - 1) / slot)); t++) {
+						const lo = t * slot;
+						out[t] = Math.min(1, out[t] + Math.max(0, Math.min(y, lo + slot) - Math.max(x, lo)) / slot);
+					}
+				});
+				return out;
+			};
+			const two = (n) => String(n).padStart(2, '0');
+			const hm = (t) => `${Math.floor(t / 3600)}<i>h</i>${two(Math.floor((t % 3600) / 60))}<i>m</i>`;
+			const AXIS = '<div class="axis"><span>8</span><span>11</span><span>14</span><span>17</span><span>20</span></div>';
+
+			// The strip of each variant; `h` is its height in px.
+			const STRIPS = {
+				x: (convs, h) => bars(fill(convs, 900).map((f) => (f > 0 ? Math.max(0.25, f) : 0)), h, ''),
+				a: (convs, h) => bars(fill(convs, 900).map((f) => (f > 0 ? Math.max(0.25, f) : 0)), h, 'bare'),
+				a1: (convs, h) => bars(fill(convs, 900).map((f) => (f > 0 ? Math.max(0.25, f) : 0)), h, 'bare based'),
+				b: (convs, h) => bars(fill(convs, 3600).map((f) => (f > 0 ? Math.max(0.12, f) : 0)), h, 'hours'),
+				c: (convs, h) => {
+					const f = fill(convs, 900);
+					const top = Math.max(...f);
+					return bars(f.map((v) => (v > 0 ? Math.max(0.25, v / top) : 0)), h, 'bare');
+				},
+				d: (convs, h) => `<div class="line" style="--h:${h}px">${convs.map(([a, b]) => `<b style="left:${(secs(a) / SPAN) * 100}%;width:${((secs(b) - secs(a)) / SPAN) * 100}%"></b>`).join('')}</div>${AXIS}`
+			};
+			const bars = (fs, h, cls) => `<div class="bars ${cls}" style="--h:${h}px">${fs.map((f) => `<i style="--f:${f.toFixed(3)}"></i>`).join('')}</div>${AXIS}`;
+
+			const card = (day, v) => {
+				const convs = ALL.filter((c) => day.pick.includes(c[0]));
+				const total = convs.reduce((s, [a, b]) => s + secs(b) - secs(a), 0);
+				const words = `${Math.floor(total / 3600)} h ${Math.floor((total % 3600) / 60)} min`;
+				return `<article>
+					<div class="cap"><b>${day.name}</b><span>${day.note}</span></div>
+					<div class="frag">
+						<p class="label">Adesso, display fermo</p>
+						<section class="lcd">
+							<div class="lcd-time">${hm(total)}</div>
+							<p class="lcd-line">Registrato oggi, in ${convs.length} conversazioni.</p>
+							<div class="strip on-lcd">${STRIPS[v](convs, 16)}</div>
+							<div class="lcd-foot"><span>server.example.com</span><span>in linea</span></div>
+						</section>
+						<p class="label">Scheda Oggi</p>
+						<section class="today">
+							<h2>${words}<span>in ${convs.length} conversazioni</span></h2>
+							<div class="strip on-page">${STRIPS[v](convs, 32)}</div>
+						</section>
+					</div>
+				</article>`;
+			};
+
+			const stage = document.querySelector('[data-stage]');
+			const draw = () => (stage.innerHTML = DAYS.map((d) => card(d, document.body.dataset.v)).join(''));
+
+			// Variant bar, keys, hash and theme, as in the mockup template.
+			const KEY = `concept:${location.pathname}`;
+			const root = document.documentElement;
+			const load = () => {
+				try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+			};
+			const save = (state) => {
+				try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+			};
+			document.querySelector('[data-buttons]').innerHTML = Object.keys(DESC).map((v) => `<button data-v="${v}">${v.toUpperCase()} ${DESC[v].split(':')[0]}</button>`).join(' ');
+			const pick = (v) => {
+				if (!DESC[v]) return;
+				document.body.dataset.v = v;
+				document.querySelectorAll('.switch [data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+				document.querySelector('[data-desc]').textContent = DESC[v];
+				history.replaceState(null, '', `${location.search}#${v}`);
+				draw();
+			};
+			const setTheme = (t) => {
+				root.dataset.theme = t;
+				save({ ...load(), theme: t });
+			};
+			document.querySelector('.switch').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-v]');
+				if (b) pick(b.dataset.v);
+			});
+			document.querySelector('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select, [contenteditable]')) return;
+				const k = e.key.toLowerCase();
+				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (k === 'p') document.body.dataset.chrome = document.body.dataset.chrome === 'off' ? 'on' : 'off';
+				else if (/^\d$/.test(k)) pick(`${document.body.dataset.v.replace(/\d+$/, '')}${k}`);
+				else pick(k);
+			});
+			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'x');
+		</script>
+	</body>
+</html>
