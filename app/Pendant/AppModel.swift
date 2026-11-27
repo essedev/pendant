@@ -446,9 +446,12 @@ final class AppModel {
       case .notFound:
         capture.removeConversation(c.id)
         return
-          "Il server non l’ha trovata, forse è già stata eliminata: l’ho tolta da questo telefono."
+          String(
+            localized:
+              "The server didn’t find it, maybe it was already deleted: I’ve removed it from this phone."
+          )
       case .failed(let reason):
-        return "Non l’ho eliminata. \(reason) Riprova più tardi."
+        return String(localized: "I didn’t delete it. \(reason) Try again later.")
       }
     }
     capture.removeConversation(c.id)

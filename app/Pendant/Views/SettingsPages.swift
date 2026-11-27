@@ -101,14 +101,14 @@ struct PendantPage: View {
           .buttonStyle(.plain)
           // On iOS 26 the dialog is a popover anchored to the view that carries it.
           .confirmationDialog(
-            "Dimenticare \(model.config.pendantName)?", isPresented: $confirmForget,
+            "Forget \(model.config.pendantName)?", isPresented: $confirmForget,
             titleVisibility: .visible
           ) {
-            Button("Dimentica il ciondolo") { model.forgetPendant() }
-            Button("Annulla", role: .cancel) {}
+            Button("Forget the pendant") { model.forgetPendant() }
+            Button("Cancel", role: .cancel) {}
           } message: {
             Text(
-              "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
+              "The app stops looking for it and recording. To use it again, connect it from the search, in a few seconds."
             )
           }
         }
@@ -753,13 +753,15 @@ struct AdvancedPage: View {
               confirmRing = true
             }
             .confirmationDialog(
-              "Leggere la memoria del ciondolo?", isPresented: $confirmRing,
+              "Read the pendant’s memory?", isPresented: $confirmRing,
               titleVisibility: .visible
             ) {
-              Button("Leggi la memoria") { model.link.readRing() }
-              Button("Annulla", role: .cancel) {}
+              Button("Read the memory") { model.link.readRing() }
+              Button("Cancel", role: .cancel) {}
             } message: {
-              Text("L’audio letto finisce in un file accanto al log e non resta più nel ciondolo.")
+              Text(
+                "The audio read goes into a file next to the log and no longer stays in the pendant."
+              )
             }
           }
         }
@@ -775,14 +777,14 @@ struct AdvancedPage: View {
           }
           .buttonStyle(.plain)
           .confirmationDialog(
-            "Riportare le impostazioni ai valori iniziali?", isPresented: $confirmReset,
+            "Reset the settings to their defaults?", isPresented: $confirmReset,
             titleVisibility: .visible
           ) {
-            Button("Riporta ai valori iniziali") { model.resetSettings() }
-            Button("Annulla", role: .cancel) {}
+            Button("Reset to defaults") { model.resetSettings() }
+            Button("Cancel", role: .cancel) {}
           } message: {
             Text(
-              "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
+              "Gestures, notifications and advanced values go back to how they were at first launch. The server address and token stay."
             )
           }
         }

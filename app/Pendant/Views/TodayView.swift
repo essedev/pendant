@@ -313,7 +313,7 @@ struct ConversationView: View {
             Button {
               askingDelete = true
             } label: {
-              Row(deleting ? "Elimino…" : "Elimina conversazione", disabled: deleting)
+              Row(deleting ? "Deleting…" : "Delete conversation", disabled: deleting)
             }
             .buttonStyle(.plain)
             .disabled(deleting)

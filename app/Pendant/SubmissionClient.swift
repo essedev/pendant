@@ -113,7 +113,7 @@ final class SubmissionClient {
   func delete(_ conversation: Conversation) async -> Deletion {
     guard let op = conversation.submission, let credentials = Credentials.load(),
       let base = credentials.httpBase, let url = op.readURL(base: base)
-    else { return .failed("Nessun server impostato.") }
+    else { return .failed(String(localized: "No server set up.")) }
     var request = credentials.get(url, timeout: Self.timeout)
     request.httpMethod = "DELETE"
     do {
@@ -123,12 +123,12 @@ final class SubmissionClient {
       switch status {
       case 200, 204: return .deleted
       case 404: return .notFound
-      case 401, 403: return .failed("Il server ha rifiutato il token.")
-      default: return .failed("Il server ha risposto con un errore (\(status)).")
+      case 401, 403: return .failed(String(localized: "The server rejected the token."))
+      default: return .failed(String(localized: "The server answered with an error (\(status))."))
       }
     } catch {
       log.record("submissionDelete", "\(op.id), \(error.localizedDescription)")
-      return .failed("Il server non risponde.")
+      return .failed(String(localized: "The server isn’t responding."))
     }
   }
 }

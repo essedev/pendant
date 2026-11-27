@@ -780,6 +780,16 @@
         }
       }
     },
+    "Delete conversation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina conversazione"
+          }
+        }
+      }
+    },
     "Delete from the server too" : {
       "localizations" : {
         "it" : {
@@ -796,6 +806,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminare la conversazione delle %@?"
+          }
+        }
+      }
+    },
+    "Deleting…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimino…"
           }
         }
       }
@@ -1010,6 +1030,16 @@
         }
       }
     },
+    "Forget %@?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimenticare %@?"
+          }
+        }
+      }
+    },
     "Forget the pendant" : {
       "localizations" : {
         "it" : {
@@ -1076,6 +1106,16 @@
         }
       }
     },
+    "Gestures, notifications and advanced values go back to how they were at first launch. The server address and token stay." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
+          }
+        }
+      }
+    },
     "Get started" : {
       "localizations" : {
         "it" : {
@@ -1132,6 +1172,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare."
+          }
+        }
+      }
+    },
+    "I didn’t delete it. %@ Try again later." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non l’ho eliminata. %@ Riprova più tardi."
           }
         }
       }
@@ -1722,6 +1772,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessun server"
+          }
+        }
+      }
+    },
+    "No server set up." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun server impostato."
           }
         }
       }
@@ -2536,12 +2596,32 @@
         }
       }
     },
+    "Read the memory" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggi la memoria"
+          }
+        }
+      }
+    },
     "Read the pendant’s memory" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leggi la memoria del ciondolo"
+          }
+        }
+      }
+    },
+    "Read the pendant’s memory?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggere la memoria del ciondolo?"
           }
         }
       }
@@ -2688,6 +2768,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ripeti"
+          }
+        }
+      }
+    },
+    "Reset the settings to their defaults?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riportare le impostazioni ai valori iniziali?"
           }
         }
       }
@@ -3182,6 +3272,16 @@
         }
       }
     },
+    "The app stops looking for it and recording. To use it again, connect it from the search, in a few seconds." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
+          }
+        }
+      }
+    },
     "The app’s signature expires in %lld days" : {
       "localizations" : {
         "it" : {
@@ -3248,6 +3348,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’audio arriva al server mentre parli. Sul telefono non resta niente."
+          }
+        }
+      }
+    },
+    "The audio read goes into a file next to the log and no longer stays in the pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio letto finisce in un file accanto al log e non resta più nel ciondolo."
           }
         }
       }
@@ -3490,6 +3600,16 @@
         }
       }
     },
+    "The server answered with an error (%lld)." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server ha risposto con un errore (%lld)."
+          }
+        }
+      }
+    },
     "The server couldn’t transcribe it." : {
       "localizations" : {
         "it" : {
@@ -3506,6 +3626,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La riconosce il server"
+          }
+        }
+      }
+    },
+    "The server didn’t find it, maybe it was already deleted: I’ve removed it from this phone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non l’ha trovata, forse è già stata eliminata: l’ho tolta da questo telefono."
           }
         }
       }
@@ -3576,6 +3706,16 @@
         }
       }
     },
+    "The server isn’t responding." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non risponde."
+          }
+        }
+      }
+    },
     "The server isn’t responding. In %lld minutes the oldest audio starts to be lost. Check the server or make the queue longer." : {
       "localizations" : {
         "it" : {
@@ -3632,6 +3772,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il server ha rifiutato il token alle %@"
+          }
+        }
+      }
+    },
+    "The server rejected the token." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server ha rifiutato il token."
           }
         }
       }
