@@ -197,14 +197,15 @@ conversations with no cap (D, the home turns into Oggi) and tiles (E).
 ## 2026-11-27 Transcript back from the server: a long-running operation
 
 The app shows the transcript of a conversation, read back from the server. The pattern is the
-standard long-running operation (AIP-151, "Asynchronous Request-Reply"): the server announces
-an operation on the WebSocket when the stream opens, and the app reads it with a `GET`,
-spacing the reads, until it is done or failed. The read uses the same token as the stream, in
-the header, and may read only the operations born from that token. In Nexus the operation is a
-generic primitive, not a pendant feature; the contract is in ARCHITECTURE, "Server contract".
+standard long-running operation (AIP-151, "Asynchronous Request-Reply"), named Submission as
+in Nexus, where "Operation" already means something else: the server announces it on the
+WebSocket when the stream opens, and the app reads it with a `GET`, spacing the reads, until
+it is done or failed. The read uses the same token as the stream, in the header, and may read
+only the submissions born from that token. In Nexus it is a generic primitive (Nexus DECISIONS
+#166), not a pendant feature; the contract is in ARCHITECTURE, "Server contract".
 Rejected: push notifications (the Personal Team has no APNs), webhooks (a phone has no address
 to call), a signed URL as the receipt (it ends up in proxy logs), and giving the stream token
-read access to the server's entities (too wide for one client). A server without operations
+read access to the server's entities (too wide for one client). A server without submissions
 keeps working: the app simply shows no transcript. Receiving them is an option, on by default:
 the transcripts stay on the phone with their conversations (30 days, in the app's file and its
 backups), and turning it off forgets them. Both forms are read: segments with speakers, or

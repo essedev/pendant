@@ -296,9 +296,9 @@ The app talks to any server that implements this protocol; today it is Nexus's
 | Empty session | Under 2 s of audio it does not become a transcription |
 | Connection test | Opens and closes without `CloseStream`, and never while a conversation is open: opening resumes the interrupted session within the grace period, and `CloseStream` would close it |
 | Handshake errors | 401 or 403 token rejected, no response or 5xx server unreachable, anything else a different protocol |
-| Operation | After the upgrade the server may send `{"type":"Operation","id":...,"url":...}`: the long-running operation of this conversation. A resumed session sends the same id. Text messages of unknown type are ignored |
-| Reading the operation | `GET` on `url` (absolute, or a path on the server; without it `/api/operations/{id}`), same token in `Authorization: Bearer`. Body `{"id","status":"pending"\|"running"\|"done"\|"failed","result","error":{"message"}}`, optional `Retry-After`. 404 unknown or expired |
-| Transcript | `result.transcript`: `text`, `language`, `duration`, `segments` (`speaker`, `start`, `end`, `text`), the same fields as the Omi app's segments. With segments the app shows a paragraph per speaker, with `text` only a single paragraph. `done` with no result: too short to transcribe |
+| Submission | After the upgrade the server may send `{"type":"Submission","id":...,"url":...}`: the long-running operation of this conversation (Nexus DECISIONS #166). A resumed session sends the same id. Text messages of unknown type are ignored |
+| Reading the submission | `GET` on `url` (a path on the server or absolute; without it `/api/submissions/{id}`), same token in `Authorization: Bearer`, never in the query. Body `{"id","status":"pending"\|"running"\|"done"\|"failed","result","error":{"message"}}`: `result` only with `done`, `error` only with `failed`, `Retry-After` while pending or running. 401 token, 404 unknown, outside the token's reach or older than 7 days, 502 the server's storage did not answer (retried) |
+| Transcript | `result.transcript`: `text`, `language`, `duration`, `segments` (`speaker`, `start`, `end`, `text`), the same fields as the Omi app's segments. `speaker` is a number from 0 (the app writes "Persona 1") or a label, absent when the server does not separate speakers. With segments the app shows a paragraph per speaker, with `text` only a single paragraph; `done` with empty segments and text: no speech recognised. `done` with no result: too short to transcribe |
 
 To add in Nexus, proposed, one at a time when the milestone needs them:
 
@@ -405,7 +405,7 @@ with the prototype `prototype/omi_stt_probe.py` on 28/10/2026, Omi app 1.0.577.
 
 ## Transcription
 
-The server does it, once the session is closed: the app sends only the audio. With "Trascrizioni sul telefono" on, when the server announces an operation for the conversation, the app reads it after the close, more and more rarely, and keeps the transcript with the conversation on the phone, for as long as the conversation stays (30 days); a server without operations works as before.
+The server does it, once the session is closed: the app sends only the audio. With "Trascrizioni sul telefono" on, when the server announces a submission for the conversation, the app reads it after the close, more and more rarely, and keeps the transcript with the conversation on the phone, for as long as the conversation stays (30 days); a server without submissions works as before.
 
 ## Pendant checks
 

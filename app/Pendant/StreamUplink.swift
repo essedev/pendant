@@ -37,8 +37,8 @@ final class StreamUplink: NSObject {
   private(set) var lastContact: Date?
   /// Called when a conversation closed and nothing is left to send.
   var onDrained: (() -> Void)?
-  /// Called with the operation the server announced for the stream that opened.
-  var onOperation: ((_ id: String, _ url: String?) -> Void)?
+  /// Called with the submission the server announced for the stream that opened.
+  var onSubmission: ((_ id: String, _ url: String?) -> Void)?
   /// Seconds of audio sent in this app run.
   private(set) var sentSeconds: Double = 0
   /// Frames waiting to be sent.
@@ -177,9 +177,9 @@ final class StreamUplink: NSObject {
           self.connectionFailed(failure, httpStatus: status)
           return
         }
-        if let text, case .operation(let id, let url)? = ServerMessage.parse(text) {
-          self.log.record("operation", id)
-          self.onOperation?(id, url)
+        if let text, case .submission(let id, let url)? = ServerMessage.parse(text) {
+          self.log.record("submission", id)
+          self.onSubmission?(id, url)
         }
         self.receive(on: watched)
       }

@@ -26,22 +26,22 @@ public struct Conversation: Codable, Equatable, Sendable, Identifiable {
   public var status: Status
   /// Moments marked during the conversation.
   public var bookmarks: [Date]
-  /// The server's operation for it, with the transcript once done; nil when the server
-  /// announced none (a server without operations, or a conversation from before them).
-  public var operation: ServerOperation?
+  /// The server's submission for it, with the transcript once done; nil when the server
+  /// announced none (a server without submissions, or a conversation from before them).
+  public var submission: Submission?
 
   /// A conversation starting now.
   public init(
     id: UUID = UUID(), start: Date, end: Date? = nil, status: Status = .live,
     bookmarks: [Date] = [],
-    operation: ServerOperation? = nil
+    submission: Submission? = nil
   ) {
     self.id = id
     self.start = start
     self.end = end
     self.status = status
     self.bookmarks = bookmarks
-    self.operation = operation
+    self.submission = submission
   }
 
   /// Seconds from start to end, or to `now` while live.
@@ -108,53 +108,53 @@ public struct ConversationLog: Codable, Equatable, Sendable {
     conversations[i].status = status
   }
 
-  /// Records the operation the server announced when the stream opened: on the live
+  /// Records the submission the server announced when the stream opened: on the live
   /// conversation, or, when a closed one is still being delivered, on the newest without one.
   /// A resumed conversation gets the same id again and keeps what it has. Returns whether
   /// anything changed.
   @discardableResult
-  public mutating func attach(operationID id: String, url: String?) -> Bool {
-    if conversations.contains(where: { $0.operation?.id == id }) { return false }
+  public mutating func attach(submissionID id: String, url: String?) -> Bool {
+    if conversations.contains(where: { $0.submission?.id == id }) { return false }
     guard
       let i = conversations.firstIndex(where: { $0.status == .live })
-        ?? conversations.firstIndex(where: { $0.operation == nil })
+        ?? conversations.firstIndex(where: { $0.submission == nil })
     else { return false }
-    conversations[i].operation = ServerOperation(id: id, url: url)
+    conversations[i].submission = Submission(id: id, url: url)
     return true
   }
 
-  /// The closed conversations whose operation is due for a read at `now`; none while the
+  /// The closed conversations whose submission is due for a read at `now`; none while the
   /// transcripts are off.
-  public func dueOperations(now: Date, config: Configuration) -> [Conversation] {
+  public func dueSubmissions(now: Date, config: Configuration) -> [Conversation] {
     guard config.transcripts else { return [] }
     return conversations.filter { c in
-      guard c.status != .live, let end = c.end, let op = c.operation, !op.isFinal else {
+      guard c.status != .live, let end = c.end, let op = c.submission, !op.isFinal else {
         return false
       }
-      return (op.nextCheck ?? OperationSchedule.first(closedAt: end, config: config)) <= now
+      return (op.nextCheck ?? SubmissionSchedule.first(closedAt: end, config: config)) <= now
     }
   }
 
-  /// Forgets every transcript and what was read of the operations, keeping their ids: turned
+  /// Forgets every transcript and what was read of the submissions, keeping their ids: turned
   /// back on, the app reads them again from the start. Returns whether anything changed.
   @discardableResult
   public mutating func forgetTranscripts() -> Bool {
     var changed = false
     for i in conversations.indices {
-      guard let op = conversations[i].operation else { continue }
-      let fresh = ServerOperation(id: op.id, url: op.url)
+      guard let op = conversations[i].submission else { continue }
+      let fresh = Submission(id: op.id, url: op.url)
       if op != fresh {
-        conversations[i].operation = fresh
+        conversations[i].submission = fresh
         changed = true
       }
     }
     return changed
   }
 
-  /// Replaces the operation of a conversation after a read.
-  public mutating func setOperation(_ operation: ServerOperation, of id: UUID) {
+  /// Replaces the submission of a conversation after a read.
+  public mutating func setSubmission(_ submission: Submission, of id: UUID) {
     guard let i = conversations.firstIndex(where: { $0.id == id }) else { return }
-    conversations[i].operation = operation
+    conversations[i].submission = submission
   }
 
   /// Drops conversations older than the retention.

@@ -399,7 +399,7 @@ final class AppModel {
       if kind == .pendantIdle { self?.capture.snoozeIdleWarning() }
     }
     notifier.onRecord = { [weak self] in self?.setPaused(false) }
-    capture.onOperationsChanged = { [weak self] in self?.transcripts.poke() }
+    capture.onSubmissionsChanged = { [weak self] in self?.transcripts.poke() }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
   }

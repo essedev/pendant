@@ -1,20 +1,20 @@
 import Foundation
 
-/// The long-running operation a server returns for what the app hands it: today the
+/// What the app handed the server, as a long-running operation the server returns: today the
 /// transcription of a conversation (ARCHITECTURE, "Server contract", and DECISIONS
-/// "Transcript back from the server").
+/// "Transcript back from the server"). Nexus calls it a Submission, and so does the protocol.
 ///
 /// The server announces it on the WebSocket as soon as the stream opens; the app reads it with
 /// a GET, more and more rarely, until it is done, failed or too old to wait for.
-public struct ServerOperation: Codable, Equatable, Sendable {
-  /// Where the operation stands, as the server says.
+public struct Submission: Codable, Equatable, Sendable {
+  /// Where the submission stands, as the server says.
   public enum Status: String, Codable, Sendable {
     case pending, running, done, failed
   }
 
-  /// The operation's id on the server.
+  /// The submission's id on the server.
   public let id: String
-  /// Where to read it: absolute, or a path on the server; nil means `/api/operations/{id}`.
+  /// Where to read it: absolute, or a path on the server; nil means `/api/submissions/{id}`.
   public let url: String?
   /// Its status at the last read, nil before the first.
   public var status: Status?
@@ -26,10 +26,10 @@ public struct ServerOperation: Codable, Equatable, Sendable {
   public var checks: Int
   /// When to read it next; nil before the conversation closes.
   public var nextCheck: Date?
-  /// The app stopped asking: the operation stayed open past the give-up time.
+  /// The app stopped asking: the submission stayed open past the give-up time.
   public var gaveUp: Bool
 
-  /// An operation just announced.
+  /// An submission just announced.
   public init(id: String, url: String?) {
     self.id = id
     self.url = url
@@ -42,7 +42,7 @@ public struct ServerOperation: Codable, Equatable, Sendable {
 
   /// The path read when the server gives no URL.
   public static func defaultPath(id: String) -> String {
-    "/api/operations/\(id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id)"
+    "/api/submissions/\(id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id)"
   }
 
   /// The URL to read, resolved against the server's base (`https://host`).
@@ -56,6 +56,8 @@ public struct ServerOperation: Codable, Equatable, Sendable {
 public struct Transcript: Codable, Equatable, Sendable {
   /// One stretch of speech.
   public struct Segment: Codable, Equatable, Sendable {
+    /// Who spoke, as the server tells them apart: a number from 0 (Nexus, the Omi app's
+    /// `speakerId`) or a label; nil when the server does not separate speakers.
     public var speaker: String?
     public var start: Double?
     public var end: Double?
@@ -66,6 +68,25 @@ public struct Transcript: Codable, Equatable, Sendable {
       self.start = start
       self.end = end
       self.text = text
+    }
+
+    public init(from decoder: Decoder) throws {
+      let c = try decoder.container(keyedBy: CodingKeys.self)
+      if let n = try? c.decodeIfPresent(Int.self, forKey: .speaker) {
+        speaker = String(n)
+      } else {
+        speaker = try c.decodeIfPresent(String.self, forKey: .speaker)
+      }
+      start = try c.decodeIfPresent(Double.self, forKey: .start)
+      end = try c.decodeIfPresent(Double.self, forKey: .end)
+      text = try c.decodeIfPresent(String.self, forKey: .text) ?? ""
+    }
+
+    /// The speaker as the app names them: "Persona 1" for the first numbered one, a label as
+    /// the server wrote it.
+    public var speakerName: String? {
+      guard let speaker else { return nil }
+      return Int(speaker).map { "Persona \($0 + 1)" } ?? speaker
     }
   }
 
@@ -97,10 +118,10 @@ public struct Transcript: Codable, Equatable, Sendable {
       for s in segments {
         let text = s.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { continue }
-        if let last = out.last, last.speaker == s.speaker {
-          out[out.count - 1] = Paragraph(speaker: s.speaker, text: last.text + " " + text)
+        if let last = out.last, last.speaker == s.speakerName {
+          out[out.count - 1] = Paragraph(speaker: s.speakerName, text: last.text + " " + text)
         } else {
-          out.append(Paragraph(speaker: s.speaker, text: text))
+          out.append(Paragraph(speaker: s.speakerName, text: text))
         }
       }
       return out
@@ -112,24 +133,24 @@ public struct Transcript: Codable, Equatable, Sendable {
 
 /// The messages the server sends on the WebSocket.
 public enum ServerMessage: Equatable, Sendable {
-  /// The operation of this conversation.
-  case operation(id: String, url: String?)
+  /// The submission of this conversation.
+  case submission(id: String, url: String?)
 
   /// The message in a text frame, nil for a type the app does not know: the protocol lets the
   /// server add messages without breaking older apps.
   public static func parse(_ text: String) -> ServerMessage? {
     guard let data = text.data(using: .utf8),
       let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-      object["type"] as? String == "Operation",
+      object["type"] as? String == "Submission",
       let id = object["id"] as? String, !id.isEmpty
     else { return nil }
     let url = (object["url"] as? String).flatMap { $0.isEmpty ? nil : $0 }
-    return .operation(id: id, url: url)
+    return .submission(id: id, url: url)
   }
 }
 
-/// One read of an operation: the body of `GET` on its URL.
-public struct OperationReading: Decodable, Equatable, Sendable {
+/// One read of an submission: the body of `GET` on its URL.
+public struct SubmissionReading: Decodable, Equatable, Sendable {
   public struct Result: Decodable, Equatable, Sendable {
     public var transcript: Transcript?
   }
@@ -138,31 +159,31 @@ public struct OperationReading: Decodable, Equatable, Sendable {
   }
 
   public var id: String
-  public var status: ServerOperation.Status
+  public var status: Submission.Status
   public var result: Result?
   public var error: Failure?
 
   /// A reading from a response body, nil when it is not one.
-  public static func decode(_ data: Data) -> OperationReading? {
-    try? JSONDecoder().decode(OperationReading.self, from: data)
+  public static func decode(_ data: Data) -> SubmissionReading? {
+    try? JSONDecoder().decode(SubmissionReading.self, from: data)
   }
 }
 
-/// When to read an operation: the first time a while after the conversation closes, then
+/// When to read an submission: the first time a while after the conversation closes, then
 /// doubling up to a ceiling, never sooner than the server's `Retry-After`, never past the
 /// give-up time. The three times are in the configuration.
-public enum OperationSchedule {
+public enum SubmissionSchedule {
   /// The first read of a conversation that closed at `closedAt`.
   public static func first(closedAt: Date, config: Configuration) -> Date {
     closedAt.addingTimeInterval(config.transcriptCheckFirst)
   }
 
-  /// The operation after a read at `now`: status, result and the next read.
+  /// The submission after a read at `now`: status, result and the next read.
   public static func applying(
-    _ reading: OperationReading, to operation: ServerOperation, closedAt: Date, now: Date,
+    _ reading: SubmissionReading, to submission: Submission, closedAt: Date, now: Date,
     retryAfter: Double?, config: Configuration
-  ) -> ServerOperation {
-    var op = operation
+  ) -> Submission {
+    var op = submission
     op.status = reading.status
     op.checks += 1
     if reading.status == .done { op.transcript = reading.result?.transcript }
@@ -174,13 +195,13 @@ public enum OperationSchedule {
     return op
   }
 
-  /// The operation after a read that got no answer at `now`: asked again later, on the same
+  /// The submission after a read that got no answer at `now`: asked again later, on the same
   /// spacing, until the give-up time.
   public static func missed(
-    _ operation: ServerOperation, closedAt: Date, now: Date, retryAfter: Double? = nil,
+    _ submission: Submission, closedAt: Date, now: Date, retryAfter: Double? = nil,
     config: Configuration
-  ) -> ServerOperation {
-    var op = operation
+  ) -> Submission {
+    var op = submission
     op.checks += 1
     op.nextCheck = next(op, closedAt: closedAt, now: now, retryAfter: retryAfter, config: config)
     if op.nextCheck == nil { op.gaveUp = true }
@@ -188,7 +209,7 @@ public enum OperationSchedule {
   }
 
   private static func next(
-    _ op: ServerOperation, closedAt: Date, now: Date, retryAfter: Double?, config: Configuration
+    _ op: Submission, closedAt: Date, now: Date, retryAfter: Double?, config: Configuration
   ) -> Date? {
     let doubled = config.transcriptCheckFirst * pow(2, Double(max(0, op.checks - 1)))
     let delay = max(min(doubled, config.transcriptCheckMax), retryAfter ?? 0)

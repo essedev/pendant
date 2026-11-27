@@ -233,26 +233,26 @@ enum DemoScene: String, CaseIterable {
     static let cut = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
     static let latest = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
 
-    /// The operation of a conversation whose transcript arrived.
-    static var transcribed: ServerOperation {
-      var op = ServerOperation(id: "demo-morning", url: nil)
+    /// The submission of a conversation whose transcript arrived.
+    static var transcribed: Submission {
+      var op = Submission(id: "demo-morning", url: nil)
       op.status = .done
       op.transcript = Transcript(
         language: "it", duration: 2892,
         segments: [
-          .init(speaker: "S1", text: "Allora, partiamo dal calendario delle consegne."),
-          .init(speaker: "S1", text: "La prima è fissata per il 12, giusto?"),
+          .init(speaker: "0", text: "Allora, partiamo dal calendario delle consegne."),
+          .init(speaker: "0", text: "La prima è fissata per il 12, giusto?"),
           .init(
-            speaker: "S2", text: "Sì, il 12. Ma la parte dei test la sposterei alla settimana dopo."
+            speaker: "1", text: "Sì, il 12. Ma la parte dei test la sposterei alla settimana dopo."
           ),
-          .init(speaker: "S1", text: "Va bene, allora la segno così e la riprendiamo lunedì."),
+          .init(speaker: "0", text: "Va bene, allora la segno così e la riprendiamo lunedì."),
         ])
       return op
     }
 
-    /// The operation of a conversation the server is still transcribing.
-    static var transcribing: ServerOperation {
-      var op = ServerOperation(id: "demo-latest", url: nil)
+    /// The submission of a conversation the server is still transcribing.
+    static var transcribing: Submission {
+      var op = Submission(id: "demo-latest", url: nil)
       op.status = .running
       op.checks = 1
       return op
@@ -268,12 +268,12 @@ enum DemoScene: String, CaseIterable {
       func c(
         _ h: Int, _ m: Int, seconds: Int, id: UUID = UUID(), day: Int = 26,
         status: Conversation.Status = .sent, marks: [(Int, Int)] = [],
-        operation: ServerOperation? = nil
+        submission: Submission? = nil
       ) -> Conversation {
         let start = DemoScene.at(h, m, day: day)
         return Conversation(
           id: id, start: start, end: start.addingTimeInterval(Double(seconds)), status: status,
-          bookmarks: marks.map { DemoScene.at($0.0, $0.1, day: day) }, operation: operation)
+          bookmarks: marks.map { DemoScene.at($0.0, $0.1, day: day) }, submission: submission)
       }
       let extra =
         busy
@@ -285,9 +285,9 @@ enum DemoScene: String, CaseIterable {
         conversations: extra + [
           Conversation(
             id: live, start: DemoScene.at(17, 30), bookmarks: [DemoScene.at(17, 36)]),
-          c(17, 21, seconds: 287, id: latest, operation: transcribing),
+          c(17, 21, seconds: 287, id: latest, submission: transcribing),
           c(
-            11, 30, seconds: 2892, id: morning, marks: [(11, 42), (12, 5)], operation: transcribed),
+            11, 30, seconds: 2892, id: morning, marks: [(11, 42), (12, 5)], submission: transcribed),
           c(9, 4, seconds: 2586),
           c(18, 40, seconds: 552, day: 25),
           c(15, 12, seconds: 1331, id: cut, day: 25, status: .interrupted),

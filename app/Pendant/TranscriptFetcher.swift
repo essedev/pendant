@@ -1,12 +1,12 @@
 import Foundation
 import PendantKit
 
-/// Reads the server's operations of the closed conversations until their transcript arrives
+/// Reads the server's submissions of the closed conversations until their transcript arrives
 /// (DECISIONS "Transcript back from the server").
 ///
-/// The schedule is `OperationSchedule` (PendantKit, tested): here the loop sleeps until the
+/// The schedule is `SubmissionSchedule` (PendantKit, tested): here the loop sleeps until the
 /// earliest read is due, reads with the stream's token, and stores what comes back. It is
-/// poked when an operation is announced, a conversation closes or the app comes back to the
+/// poked when an submission is announced, a conversation closes or the app comes back to the
 /// foreground; with nothing to wait for, it stops until the next poke.
 @MainActor
 final class TranscriptFetcher {
@@ -31,7 +31,7 @@ final class TranscriptFetcher {
   private func run() async {
     while !Task.isCancelled {
       let config = capture.config
-      for c in capture.conversations.dueOperations(now: Date(), config: config) {
+      for c in capture.conversations.dueSubmissions(now: Date(), config: config) {
         guard !Task.isCancelled else { return }
         await read(c, config: config)
       }
@@ -43,25 +43,25 @@ final class TranscriptFetcher {
   /// The earliest read still to come, nil when nothing waits.
   private func earliest(config: Configuration) -> Date? {
     capture.conversations.conversations.compactMap { c -> Date? in
-      guard c.status != .live, let end = c.end, let op = c.operation, !op.isFinal else {
+      guard c.status != .live, let end = c.end, let op = c.submission, !op.isFinal else {
         return nil
       }
-      return op.nextCheck ?? OperationSchedule.first(closedAt: end, config: config)
+      return op.nextCheck ?? SubmissionSchedule.first(closedAt: end, config: config)
     }.min()
   }
 
   private func read(_ conversation: Conversation, config: Configuration) async {
-    guard let op = conversation.operation, let end = conversation.end else { return }
+    guard let op = conversation.submission, let end = conversation.end else { return }
     guard let credentials = Credentials.load(), let base = credentials.httpBase,
       let url = op.readURL(base: base)
     else {
-      capture.setOperation(
-        OperationSchedule.missed(op, closedAt: end, now: Date(), config: config),
+      capture.setSubmission(
+        SubmissionSchedule.missed(op, closedAt: end, now: Date(), config: config),
         of: conversation.id)
       return
     }
     let now = Date()
-    var updated: ServerOperation
+    var updated: Submission
     do {
       let (data, response) = try await session.data(
         for: credentials.get(url, timeout: Self.timeout))
@@ -69,14 +69,14 @@ final class TranscriptFetcher {
       let retryAfter = http?.value(forHTTPHeaderField: "Retry-After").flatMap(Double.init)
       switch http?.statusCode ?? 0 {
       case 200:
-        if let reading = OperationReading.decode(data) {
-          updated = OperationSchedule.applying(
+        if let reading = SubmissionReading.decode(data) {
+          updated = SubmissionSchedule.applying(
             reading, to: op, closedAt: end, now: now, retryAfter: retryAfter, config: config)
-          log.record("operation", "\(op.id) \(reading.status.rawValue)")
+          log.record("submission", "\(op.id) \(reading.status.rawValue)")
         } else {
-          updated = OperationSchedule.missed(
+          updated = SubmissionSchedule.missed(
             op, closedAt: end, now: now, retryAfter: retryAfter, config: config)
-          log.record("operationUnreadable", op.id)
+          log.record("submissionUnreadable", op.id)
         }
       case 404:
         // Unknown or expired on the server: nothing will come any more.
@@ -84,17 +84,17 @@ final class TranscriptFetcher {
         updated.gaveUp = true
         updated.nextCheck = nil
         updated.error = "Il server non conosce più questa conversazione."
-        log.record("operationGone", op.id)
+        log.record("submissionGone", op.id)
       default:
         // A rejected token or a server in trouble may get better: ask again later.
-        updated = OperationSchedule.missed(
+        updated = SubmissionSchedule.missed(
           op, closedAt: end, now: now, retryAfter: retryAfter, config: config)
-        log.record("operationFailed", "\(op.id), HTTP \(http?.statusCode ?? 0)")
+        log.record("submissionFailed", "\(op.id), HTTP \(http?.statusCode ?? 0)")
       }
     } catch {
-      updated = OperationSchedule.missed(op, closedAt: end, now: now, config: config)
-      log.record("operationFailed", "\(op.id), \(error.localizedDescription)")
+      updated = SubmissionSchedule.missed(op, closedAt: end, now: now, config: config)
+      log.record("submissionFailed", "\(op.id), \(error.localizedDescription)")
     }
-    capture.setOperation(updated, of: conversation.id)
+    capture.setSubmission(updated, of: conversation.id)
   }
 }

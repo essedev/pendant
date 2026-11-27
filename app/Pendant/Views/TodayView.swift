@@ -254,8 +254,8 @@ struct ConversationView: View {
         }
         .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, Theme.pageTop)
-        if model.config.transcripts, let op = c.operation {
-          TranscriptSection(conversation: c, operation: op)
+        if model.config.transcripts, let op = c.submission {
+          TranscriptSection(conversation: c, submission: op)
         }
         CellGroup(
           header: "Momenti segnati",
@@ -314,7 +314,7 @@ struct ConversationView: View {
         ? "Il server non risponde: l’audio degli ultimi \(DurationFormat.words(seconds)) aspetta sul telefono e parte da solo quando torna in linea."
         : "L’audio arriva al server mentre parli. Sul telefono non resta niente."
     case .sent:
-      c.operation == nil || !model.config.transcripts
+      c.submission == nil || !model.config.transcripts
         ? "Sul telefono l’audio non c’è più: la trascrizione si legge sul server."
         : "Sul telefono l’audio non c’è più: è sul server."
     case .queued: "L’audio aspetta sul telefono e parte da solo quando il server torna in linea."
@@ -328,12 +328,12 @@ struct ConversationView: View {
 /// the server").
 private struct TranscriptSection: View {
   let conversation: Conversation
-  let operation: ServerOperation
+  let submission: Submission
 
   var body: some View {
-    let paragraphs = operation.transcript?.paragraphs ?? []
+    let paragraphs = submission.transcript?.paragraphs ?? []
     CellGroup(header: "Trascrizione", footer: footer) {
-      if operation.status == .done, !paragraphs.isEmpty {
+      if submission.status == .done, !paragraphs.isEmpty {
         VStack(alignment: .leading, spacing: 14) {
           ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, p in
             VStack(alignment: .leading, spacing: 2) {
@@ -361,11 +361,13 @@ private struct TranscriptSection: View {
     if conversation.status == .live {
       return "Arriva dal server dopo la chiusura della conversazione."
     }
-    if operation.gaveUp {
-      return operation.error ?? "Il server non l’ha mandata entro un giorno: si legge sul server."
+    if submission.gaveUp {
+      return submission.error ?? "Il server non l’ha mandata entro un giorno: si legge sul server."
     }
-    switch operation.status {
-    case .done: return "Troppo breve per una trascrizione."
+    switch submission.status {
+    case .done:
+      return submission.transcript == nil
+        ? "Troppo breve per una trascrizione." : "Il server non ha riconosciuto parlato."
     case .failed: return "Il server non è riuscito a trascriverla."
     case .running: return "Il server la sta trascrivendo."
     case .pending, nil: return "In arrivo dal server, di solito in pochi minuti."
@@ -373,10 +375,10 @@ private struct TranscriptSection: View {
   }
 
   private var footer: String? {
-    switch operation.status {
-    case .done where !(operation.transcript?.paragraphs.isEmpty ?? true):
+    switch submission.status {
+    case .done where !(submission.transcript?.paragraphs.isEmpty ?? true):
       "Resta su questo telefono finché resta la conversazione."
-    case .failed: operation.error
+    case .failed: submission.error
     default: nil
     }
   }
