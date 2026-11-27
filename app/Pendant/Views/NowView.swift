@@ -11,12 +11,12 @@ struct NowView: View {
     ScrollView {
       VStack(spacing: 0) {
         HomeDisplay(snapshot: s, now: model.now)
-          .padding(.horizontal, 22)
+          .padding(.horizontal, 16)
           .padding(.top, 8)
         RecessedKey(mode: s.mode, resumesOnReturn: resumes(s)) {
           model.setPaused(s.mode == .recording)
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, 16)
         .padding(.top, 18)
         if let hint = hint(s) {
           Text(hint)
