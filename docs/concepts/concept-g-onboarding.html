@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept G - Primo avvio</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet" />
+		<!--
+			Concept G: il primo avvio dell'app com'è oggi, per decidere cosa cambiare.
+
+			GIRO 1 (27/11/2026): solo lo stato attuale, nessuna variante. Ogni schermata e ogni stato
+			come li disegna il codice, uno accanto all'altro, con sotto ogni telefono il passo e cosa
+			lo fa comparire. Le varianti arrivano dal giro 2, dopo la revisione.
+
+			COME SI USA
+			- t tema chiaro o scuro (l'app segue il telefono), 1 2 3 zoom dei telefoni al 100, 75, 50%.
+			- Le tacche della ricerca e della prova del server scorrono come nell'app; il tempo del
+			  display di benvenuto parte da 0m00s al caricamento, come parte all'apertura del passo.
+
+			DA DOVE VIENE (il codice vince sul mock vecchio concept-b-app.html)
+			- app/Pendant/Views/OnboardingView.swift: passi, testi, stati, tasti e quando sono spenti.
+			- app/Pendant/AppModel.swift: OnboardingStep, quando parte il primo avvio, testServer.
+			- app/Pendant/Views/Components.swift: DisplaySurface, Tag, Row, CapsuleButton, MainButton,
+			  TextButton, ScanTicks. NowView.swift: HomeDisplay. SettingsPages.swift: ProbeResult, Steps.
+			- app/Shared/Theme.swift e PendantKit ThemeCatalog.swift: colori (tema predefinito Grafite,
+			  accento Inchiostro), margini (16 superfici, 24 titoli, 32 testo), scala Archivo.
+			- PendantKit Diagnostics.swift: gli esiti della prova (ok, non risponde, token rifiutato,
+			  protocollo diverso) e da quale codice HTTP vengono.
+
+			DATI
+			- Indirizzo del server: server.esempio.it, lo stesso del segnaposto e del display di
+			  benvenuto. Token: 16 pallini (campo protetto). Ciondolo: nome "Omi" (predefinito),
+			  firmware 3.0.21, batteria 84%, segnale forte: i valori delle scene demo.
+			- Il testo del passo Fine è quello col doppio tocco su registra/pausa, il predefinito.
+
+			DIFFERENZE DAL MOCK VECCHIO (concept-b), qui come nel codice
+			- Tacche dei passi allineate a sinistra al margine del titolo, non centrate.
+			- Celle #EAEBE8 / #191A1E e testo secondario #6B7079 / #9BA0A9.
+			- Tasto principale pieno, senza filo di luce; spento in grigio col testo secondario.
+			- Anteprima della richiesta di iOS: titolo e testo in inchiostro pieno, divisore, tasti a
+			  capsula alti 32 dentro una riga di 44.
+			- Ricerca: il ciondolo è il disegno del codice (disco con la spia sopra il centro), le
+			  tacche sono alte 16 e restano piene in grigio quando la ricerca si ferma.
+			- Bluetooth negato: i tre passi senza divisori. Fine: divisori a tutta larghezza.
+
+			COSA NON È FEDELE
+			- Simboli SF (spunta, onda, batteria) ridisegnati in SVG. La metrica di Archivo in SwiftUI
+			  (lineSpacing) è resa con line-height: le righe possono andare a capo in punti diversi.
+			- Le richieste vere di iOS (Bluetooth, notifiche) e la tastiera del modulo non ci sono.
+			- Il telefono è 390x844 con la Dynamic Island: margine sicuro 59 sopra, 34 sotto.
+		-->
+		<style>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			body { min-height: 100vh; background: #dcdee3; color: #23252a; font: 14px/1.45 system-ui, -apple-system, sans-serif; }
+			:root[data-theme='dark'] body { background: #1a1b1e; color: #d5d7dc; }
+			button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; }
+			button:focus-visible { outline: 2px solid #1f6feb; outline-offset: 2px; }
+			h1, h2, h3, p, figure { margin: 0; }
+
+			/* Concept chrome: header, sections, captions. Not part of the design. */
+			.bar { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 16px; background: #111214; color: #b4b7bd; }
+			.bar strong { color: #fff; font-weight: 600; margin-right: 8px; }
+			.bar button { padding: 6px 10px; border-radius: 6px; background: #26282c; color: #eeeff1; }
+			.bar button[aria-pressed='true'] { background: #eeeff1; color: #111214; }
+			.bar kbd { font: 600 12px/1 ui-monospace, Menlo, monospace; padding: 2px 5px; border-radius: 4px; background: #34373c; color: #fff; }
+			.bar button[aria-pressed='true'] kbd { background: #c9ccd1; color: #111214; }
+			.bar .sp { flex: 1; }
+			.intro { max-width: 760px; padding: 28px 16px 8px; margin: 0 auto 0 0; }
+			.intro h1 { font: 600 24px/30px system-ui, sans-serif; letter-spacing: -0.01em; }
+			.intro p { margin-top: 10px; max-width: 68ch; text-wrap: pretty; }
+			.intro .count { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 20px; color: #50545c; }
+			:root[data-theme='dark'] .intro .count { color: #a4a8b0; }
+			.intro .count b { color: inherit; font-weight: 600; }
+			section.step { padding: 28px 16px 8px; }
+			section.step > h2 { font: 600 16px/22px system-ui, sans-serif; margin-bottom: 14px; }
+			section.step > h2 span { font-weight: 400; color: #50545c; margin-left: 6px; }
+			:root[data-theme='dark'] section.step > h2 span { color: #a4a8b0; }
+			.row-frames { display: flex; flex-wrap: wrap; gap: 32px 28px; align-items: flex-start; }
+			figure.f { width: calc(410px * var(--z)); display: grid; gap: 12px; }
+			figure.f figcaption { font-size: 13px; line-height: 18px; color: #50545c; text-wrap: pretty; }
+			:root[data-theme='dark'] figure.f figcaption { color: #a4a8b0; }
+			figure.f figcaption b { display: block; color: #23252a; font-weight: 600; font-size: 14px; line-height: 20px; }
+			:root[data-theme='dark'] figure.f figcaption b { color: #eeeff1; }
+			.end { height: 48px; }
+
+			/* The phone: 390x844 screen, radius 55, bezel 10 (as concept-b). */
+			:root { --z: 1; }
+			.phone { zoom: var(--z); position: relative; width: 410px; height: 864px; padding: 10px; border-radius: 65px; background: #08080a; box-shadow: 0 0 0 1px #34363b, 0 24px 48px rgb(0 0 0 / 0.22); }
+			.screen { position: relative; width: 390px; height: 844px; border-radius: 55px; overflow: hidden; background: var(--bg); color: var(--ink); font: 400 17px/24px var(--font); -webkit-font-smoothing: antialiased; isolation: isolate;
+				--font: 'Archivo', sans-serif;
+				/* Theme.swift, light. */
+				--bg: #e4e5e2; --cell: #eaebe8; --hair: #dfe0dc; --ink: #15171b; --ink2: #6b7079; --ink3: #a3a6ac;
+				--frame: #cfd0cc; --key: #2b2e34; --red: #d93a2b; --redlit: #ff5a47; --rec: #7c818a; --empty: #d2d3cf; --warn: #9a5600; --dis: #d2d3cf;
+				--placeholder: rgb(60 60 67 / 0.3);
+				/* ThemeCatalog graphite, light. */
+				--d: #2b2e34; --d-ink: #f1f2f4; --d-ink2: #a9aeb7; --d-dim: #3d4149; --d-rule: #464a53; }
+			:root[data-theme='dark'] .screen {
+				--bg: #141518; --cell: #191a1e; --hair: #2a2c31; --ink: #eceef1; --ink2: #9ba0a9; --ink3: #5d626b;
+				--frame: #2c2f34; --key: #3a3e46; --rec: #6f757f; --empty: #2a2c30; --warn: #f0a840; --dis: #2a2c30;
+				--placeholder: rgb(235 235 245 / 0.3);
+				--d: #23262b; --d-ink: #eceef1; --d-ink2: #9ba0a9; --d-dim: #34383f; --d-rule: #3a3e45; }
+			.island { position: absolute; z-index: 60; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 19px; background: #000; }
+			.statusbar { position: absolute; z-index: 35; top: 0; left: 0; right: 0; height: 54px; padding-top: 7px; display: flex; justify-content: space-between; align-items: center; font: 600 17px/1 -apple-system, 'SF Pro Text', system-ui, sans-serif; letter-spacing: -0.01em; }
+			.statusbar > span { width: 132px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+			.statusbar svg { display: block; }
+			.homebar { position: absolute; z-index: 70; bottom: 8px; left: 50%; width: 138px; height: 5px; margin-left: -69px; border-radius: 3px; background: var(--ink); }
+			.num { font-variant-numeric: tabular-nums; }
+
+			/* OnboardingView: ticks 22 under the safe area at the title margin, content 32 under them,
+			   buttons 14 above the bottom safe area at the surface margin. */
+			.ticks { position: absolute; top: 81px; left: 24px; display: flex; gap: 4px; }
+			.ticks i { width: 28px; height: 4px; border-radius: 2px; background: var(--empty); }
+			.ticks i.past { background: var(--rec); }
+			.ticks i.at { background: var(--ink); }
+			.content { position: absolute; top: 85px; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 32px 24px 200px; scrollbar-width: none; }
+			.content::-webkit-scrollbar { display: none; }
+			.surf { margin-left: -8px; margin-right: -8px; }
+			.acts { position: absolute; left: 16px; right: 16px; bottom: 48px; display: grid; gap: 4px; }
+			.btn-main { height: 56px; border-radius: 28px; background: var(--key); color: #fff; font: 600 17px/24px var(--font); text-align: center; cursor: default; }
+			.btn-main:disabled { background: var(--dis); color: var(--ink2); }
+			.btn-text { min-height: 48px; font: 500 17px/24px var(--font); color: var(--ink); text-align: center; cursor: default; }
+
+			/* Heading. */
+			.hd h1 { font: 600 34px/40px var(--font); letter-spacing: -0.68px; color: var(--ink); }
+			.hd p { margin-top: 12px; font-size: 17px; line-height: 24px; color: var(--ink2); }
+
+			/* DisplaySurface and HomeDisplay. */
+			.disp-frame { padding: 6px; border-radius: 34px; background: var(--frame); }
+			.disp { border-radius: 28px; padding: 20px 20px 16px; color: var(--d-ink); background-color: var(--d);
+				background-image: linear-gradient(to bottom right, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0) 50%), linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.08));
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07); }
+			.d-top { display: flex; align-items: center; gap: 8px; height: 28px; }
+			.tag { height: 28px; padding: 0 10px; border-radius: 8px; background: var(--red); color: #fff; display: inline-flex; align-items: center; gap: 6px; font: 600 15px/20px var(--font); white-space: nowrap; font-variant-numeric: tabular-nums; }
+			.tag i { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+			.batt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 500 15px/20px var(--font); color: var(--d-ink2); font-variant-numeric: tabular-nums; }
+			.d-time { margin-top: 28px; font: 600 72px/78px var(--font); font-stretch: 112%; letter-spacing: -1.44px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+			.d-time i { font: 500 28px/28px var(--font); font-stretch: 100%; letter-spacing: 0; font-style: normal; margin: 0 8px 0 3px; }
+			.d-time i:last-child { margin-right: 0; }
+			.meter { margin-top: 20px; display: flex; gap: 3px; height: 16px; }
+			.meter i { flex: 1; border-radius: 1px; background: var(--d-dim); }
+			.meter i.on { background: var(--redlit); }
+			.scale { margin-top: 6px; display: flex; justify-content: space-between; font: 500 11px/14px var(--font); color: var(--d-ink2); }
+			.d-rule { margin-top: 16px; height: 1px; background: var(--d-rule); }
+			.d-srv { margin-top: 12px; display: flex; justify-content: space-between; gap: 12px; font-size: 15px; line-height: 20px; white-space: nowrap; }
+			.d-srv span:last-child { color: var(--d-ink2); }
+
+			/* Cells and rows. */
+			.cell { border-radius: 20px; background: var(--cell); }
+			.row { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; }
+			.row .lab { flex: 1; min-width: 0; }
+			.row .lab small { display: block; margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--ink2); }
+			.row .val { color: var(--ink2); font-variant-numeric: tabular-nums; text-align: right; }
+			.hair { height: 1px; background: var(--hair); }
+			.hair.in { margin-left: 16px; }
+			.capsule { flex: none; height: 36px; padding: 0 14px; border-radius: 18px; background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); font: 500 15px/36px var(--font); cursor: default; }
+			.foot { margin: 8px 8px 0; font-size: 13px; line-height: 18px; color: var(--ink2); }
+
+			/* SystemAlertPreview. */
+			.sysalert { margin-top: 28px; border-radius: 28px; background: var(--cell); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; color: var(--ink); }
+			.sysalert .t { padding: 20px; text-align: center; display: grid; gap: 4px; }
+			.sysalert .t b { font-size: 17px; line-height: 22px; font-weight: 600; }
+			.sysalert .t span { font-size: 13px; line-height: 18px; }
+			.sysalert .bs { padding: 6px; display: flex; }
+			.sysalert .bs span { flex: 1; padding: 6px; }
+			.sysalert .bs em { display: block; height: 32px; border-radius: 16px; font-style: normal; font-size: 17px; line-height: 32px; text-align: center; color: var(--ink2); }
+			.sysalert .bs em.pick { background: var(--ink); color: var(--cell); font-weight: 600; }
+
+			/* Steps and causes. */
+			.steps { margin-top: 28px; padding: 0; }
+			.steps div { display: grid; grid-template-columns: 24px 1fr; padding: 12px 16px; font-size: 15px; line-height: 20px; }
+			.steps div b, .causes .n { font: 600 15px/20px var(--font); color: var(--ink2); }
+			.causes { margin-top: 28px; }
+			.causes > div { display: grid; grid-template-columns: 24px 1fr; padding: 16px; align-items: baseline; }
+			.causes strong { display: block; font: 600 17px/24px var(--font); }
+			.causes p { margin-top: 2px; font-size: 15px; line-height: 20px; color: var(--ink2); }
+
+			/* PendantFigure and ScanTicks. */
+			.pend { margin-top: 28px; height: 236px; border-radius: 28px; background: var(--cell); display: grid; place-items: center; }
+			.pend .fig { position: relative; width: 132px; height: 132px; }
+			.pend .disc { position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 8px var(--frame); }
+			.pend .led { position: absolute; left: 62px; top: 24px; width: 8px; height: 8px; border-radius: 50%; }
+			.pend.ghost .fig { opacity: 0.55; }
+			.pend.ghost .disc { background: radial-gradient(circle 90px at 35% 30%, var(--empty) 4px, var(--rec) 90px); }
+			.pend.ghost .led { background: var(--ink3); }
+			.pend.found .disc { background: radial-gradient(circle 90px at 35% 30%, #525252 4px, #1f1f1f 90px); }
+			.pend.found .led { background: var(--redlit); }
+			.scan { display: flex; gap: 3px; height: 16px; }
+			.scan i { flex: 1; border-radius: 1px; background: var(--empty); }
+			.scan i.hd { background: var(--ink); }
+			.scan.done i { background: var(--rec); }
+			.content > .scan { margin-top: 16px; }
+			.dev { margin-top: 16px; }
+
+			/* ServerStep and ProbeResult. */
+			.form { margin-top: 28px; }
+			.field { display: flex; align-items: center; min-height: 52px; padding: 0 16px; }
+			.field label { flex: none; width: 84px; color: var(--ink2); }
+			.field span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; }
+			.field span.ph { color: var(--placeholder); }
+			.field span.dots { letter-spacing: 1px; }
+			.result { margin: 20px 8px 0; }
+			.result.probing { display: grid; gap: 10px; }
+			.result.probing b { font: 600 15px/20px var(--font); }
+			.result.out { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; }
+			.result.out svg { width: 14px; height: 14px; margin-top: 3px; color: var(--ink); }
+			.result .ring { width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; box-shadow: inset 0 0 0 2.5px var(--warn); }
+			.result.out b { display: block; font: 600 15px/20px var(--font); }
+			.result.out.warn b { color: var(--warn); }
+			.result.out p { margin-top: 2px; font-size: 15px; line-height: 20px; color: var(--ink2); }
+
+			/* NotificationPreview. */
+			.notif { margin-top: 28px; padding: 14px; border-radius: 24px; background: var(--cell); display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: start; }
+			.notif .ic { width: 38px; height: 38px; border-radius: 9px; background: var(--d); display: grid; place-items: center; color: var(--redlit); }
+			.notif .ic svg { width: 21px; height: 19px; }
+			.notif .tt { display: flex; justify-content: space-between; gap: 8px; }
+			.notif .tt b { font: 600 15px/20px var(--font); }
+			.notif .tt span { font-size: 13px; line-height: 18px; color: var(--ink2); white-space: nowrap; }
+			.notif p { margin-top: 2px; font-size: 15px; line-height: 20px; color: var(--ink2); }
+
+			.mt36 { margin-top: 36px; }
+			.mt28 { margin-top: 28px; }
+
+			@media (max-width: 760px) { .intro { padding-top: 20px; } section.step { padding-top: 20px; } }
+		</style>
+	</head>
+	<body>
+		<div class="bar">
+			<strong>Pendant, primo avvio</strong>
+			<button data-theme-toggle><kbd>t</kbd> tema</button>
+			<span class="sp"></span>
+			<button data-zoom="1"><kbd>1</kbd> 100%</button>
+			<button data-zoom="0.75"><kbd>2</kbd> 75%</button>
+			<button data-zoom="0.5"><kbd>3</kbd> 50%</button>
+		</div>
+		<header class="intro">
+			<h1>Giro 1: il primo avvio com’è oggi</h1>
+			<p>
+				Ogni schermata del primo avvio come la disegna il codice adesso, per la revisione: nessuna variante, nessun miglioramento.
+				Sotto ogni telefono, il nome del passo e cosa lo fa comparire. Dove il codice e il mock vecchio non coincidono, qui c’è il codice.
+				Il tema segue quello del telefono; qui si cambia col tasto o con <kbd>t</kbd>.
+			</p>
+			<div class="count" data-count></div>
+		</header>
+		<main data-flow></main>
+		<div class="end"></div>
+
+		<script>
+			const $ = (q, r = document) => r.querySelector(q);
+			const $$ = (q, r = document) => [...r.querySelectorAll(q)];
+			const root = document.documentElement;
+			const still = matchMedia('(prefers-reduced-motion: reduce)');
+			const two = (n) => String(n).padStart(2, '0');
+
+			// Icons: SF Symbols redrawn. checkmark (bold), waveform, battery.75percent.
+			const ICON = {
+				check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 6.5"/></svg>',
+				wave: '<svg viewBox="0 0 21 19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M1.5 8v3M5 5v9M8.5 1.5v16M12 6v7M15.5 3.5v12M19 7.5v4"/></svg>',
+				batt: (pct) => `<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.75" y="0.75" width="20.5" height="10.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="3" width="${Math.max(2, (16 * pct) / 100)}" height="6" rx="1.5" fill="currentColor"/><path d="M23.5 4.2v3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+			};
+
+			const chrome = `
+				<div class="island"></div>
+				<div class="statusbar"><span>17:42</span><span>
+					<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/></svg>
+					<svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M1.6 4.3a9.8 9.8 0 0 1 13.8 0M4.2 7a6.1 6.1 0 0 1 8.6 0"/><path d="M8.5 10.2h.01" stroke-width="2.6"/></svg>
+					<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x="0.6" y="0.6" width="22.8" height="11.8" rx="3.6" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/><rect x="2.3" y="2.3" width="15" height="8.4" rx="2.1" fill="currentColor"/><path d="M25.3 4.6v3.8" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.6" stroke-linecap="round"/></svg>
+				</span></div>
+				<div class="homebar"></div>`;
+
+			// StepTicks: six ticks; the denied screen counts as the Bluetooth step.
+			const ORDER = ['welcome', 'bluetooth', 'search', 'server', 'notifications', 'done'];
+			const ticks = (step) => {
+				const at = ORDER.indexOf(step === 'denied' ? 'bluetooth' : step);
+				return `<div class="ticks" role="img" aria-label="Passo ${at + 1} di 6">${ORDER.map((_, i) => `<i class="${i === at ? 'at' : i < at ? 'past' : ''}"></i>`).join('')}</div>`;
+			};
+			const heading = (title, text) => `<div class="hd"><h1>${title}</h1><p>${text}</p></div>`;
+			const main = (title, disabled = false) => `<button class="btn-main" ${disabled ? 'disabled' : ''}>${title}</button>`;
+			const text = (title) => `<button class="btn-text">${title}</button>`;
+			// ScanTicks: 36 ticks; running, a head of six ink ticks moves at 24 ticks a second.
+			const scan = (running) => `<div class="scan${running ? ' run' : ' done'}" aria-hidden="true">${'<i></i>'.repeat(36)}</div>`;
+			const row = (label, { sub, value, accessory } = {}) =>
+				`<div class="row"><div class="lab">${label}${sub ? `<small>${sub}</small>` : ''}</div>${value ? `<span class="val">${value}</span>` : ''}${accessory || ''}</div>`;
+
+			// HomeDisplay of the welcome step: recording since the step opened, 84%, level -14 dB.
+			const LIT = Math.round(((-14 + 40) / 40) * 36);
+			const homeDisplay = () => `
+				<div class="disp-frame surf" aria-hidden="true"><div class="disp">
+					<div class="d-top"><span class="tag"><i></i>Registra da</span><span class="batt">84%${ICON.batt(75)}</span></div>
+					<div class="d-time" data-clock>0<i>m</i>00<i>s</i></div>
+					<div class="meter">${Array.from({ length: 36 }, (_, i) => `<i class="${i < LIT ? 'on' : ''}"></i>`).join('')}</div>
+					<div class="scale"><span>-40</span><span>-20</span><span>-10</span><span>-6</span><span>-3</span><span>0 dB</span></div>
+					<div class="d-rule"></div>
+					<div class="d-srv"><span>server.esempio.it</span><span>in linea</span></div>
+				</div></div>`;
+
+			const HOST = 'server.esempio.it';
+
+			// SearchStep: title, text, figure, ticks and row per state.
+			const SEARCH = {
+				scanning: ['Cerco il ciondolo', 'Tienilo acceso e vicino al telefono. Di solito bastano pochi secondi.'],
+				found: ['Trovato', 'C’è un ciondolo qui vicino. Se è il tuo, collegalo.'],
+				linking: ['Mi collego al ciondolo', 'Leggo versione e batteria e gli scrivo l’ora.'],
+				linked: ['Collegato', 'Il ciondolo è pronto. Resta collegato anche con l’app chiusa.'],
+				none: ['Non trovo il ciondolo', 'Ho cercato per 30 secondi. Di solito è una di queste tre cose.']
+			};
+			const search = (st) => {
+				const [t, x] = SEARCH[st];
+				let body = heading(t, x);
+				if (st === 'none') {
+					const causes = [
+						['È spento', 'Dagli un tocco breve: la spia si accende.'],
+						['È collegato all’app Omi', 'Apri l’app Omi e fai Dimentica dispositivo: altrimenti il ciondolo resta con lei.'],
+						['È scarico o lontano', 'Mettilo in carica qualche minuto e tienilo accanto al telefono.']
+					];
+					body += `<div class="cell causes surf">${causes.map(([a, b], i) => `<div><span class="n">${i + 1}</span><div><strong>${a}</strong><p>${b}</p></div></div>`).join('')}</div>`;
+				} else {
+					body += `<div class="pend surf ${st === 'scanning' ? 'ghost' : 'found'}" role="img" aria-label="Il ciondolo Omi"><div class="fig"><div class="disc"></div><div class="led"></div></div></div>`;
+					body += scan(st === 'scanning' || st === 'linking');
+					const dev = {
+						found: row('Omi', { sub: 'Segnale forte', accessory: '<button class="capsule">Collega</button>' }),
+						linking: row('Omi', { sub: 'Segnale forte', value: 'Collegamento' }),
+						linked: row('Omi', { sub: 'Firmware 3.0.21', value: '84%' })
+					}[st];
+					if (dev) body += `<div class="cell dev surf">${dev}</div>`;
+				}
+				const acts = st === 'none' ? main('Cerca di nuovo') + text('Apri l’app Omi') : main('Continua', st !== 'linked');
+				return { step: 'search', body, acts };
+			};
+
+			// ServerStep and ProbeResult.
+			const OUTCOME = {
+				ok: ['Collegato', 'Il server ha accettato il token e parla audio_stream 1.'],
+				unreachable: [`${HOST} non risponde`, 'Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso.'],
+				token: ['Il server ha rifiutato il token', 'L’indirizzo è giusto, il token no. Incollalo di nuovo: deve essere quello creato per l’audio, intero.'],
+				proto: ['Il server parla un protocollo diverso', 'Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app.']
+			};
+			const server = (st) => {
+				const filled = st !== 'empty';
+				let body = heading('Dove mando l’audio', 'Scrivi l’indirizzo del tuo server e incolla il token che hai creato lì per l’audio.');
+				body += `<div class="cell form surf">
+					<div class="field"><label>Indirizzo</label>${filled ? `<span>${HOST}</span>` : '<span class="ph">server.esempio.it</span>'}</div>
+					<div class="hair in"></div>
+					<div class="field"><label>Token</label>${filled ? `<span class="dots">${'•'.repeat(16)}</span>` : '<span class="ph">Incolla il token</span>'}</div>
+				</div>`;
+				body += '<p class="foot">Il token finisce nel portachiavi di iOS. Indirizzo e token si cambiano poi dalle impostazioni.</p>';
+				if (st === 'testing') body += `<div class="result probing"><b>Provo a collegarmi a ${HOST}</b>${scan(true)}</div>`;
+				if (OUTCOME[st]) {
+					const [t, x] = OUTCOME[st];
+					body += `<div class="result out${st === 'ok' ? '' : ' warn'}">${st === 'ok' ? ICON.check : '<span class="ring"></span>'}<div><b>${t}</b><p>${x}</p></div></div>`;
+				}
+				const acts = st === 'ok' ? main('Continua') : main(st === 'testing' ? 'Provo la connessione' : 'Prova la connessione', !filled || st === 'testing');
+				return { step: 'server', body, acts };
+			};
+
+			const done = (allowed) => ({
+				step: 'done',
+				body:
+					heading('È tutto pronto', 'Pendant lavora anche chiusa, e registra solo quando lo chiedi tu: tocca due volte il ciondolo per registrare, e di nuovo due volte per la pausa.') +
+					`<div class="cell surf mt28">${row('Ciondolo', { value: 'Omi, 84%' })}<div class="hair"></div>${row('Server', { value: `${HOST}, in linea` })}<div class="hair"></div>${row('Notifiche', { value: allowed ? 'Consentite' : 'Non consentite' })}</div>` +
+					'<p class="foot">Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Fuori dall’app.</p>',
+				acts: main('Apri Pendant')
+			});
+
+			const SCREENS = {
+				welcome: () => ({
+					step: 'welcome',
+					body: homeDisplay() + `<div class="mt36">${heading('Registra le conversazioni col ciondolo', 'Pendant riceve l’audio dal ciondolo Omi e lo manda al tuo server mentre parli. Sul telefono resta qualcosa solo quando manca la rete.')}</div>`,
+					acts: main('Inizia')
+				}),
+				bluetooth: () => ({
+					step: 'bluetooth',
+					body:
+						heading('Serve il Bluetooth', 'Il ciondolo manda l’audio al telefono via Bluetooth, anche quando l’app è chiusa. Al prossimo passo iOS chiede il permesso: scegli Consenti.') +
+						`<div class="sysalert surf" role="img" aria-label="La richiesta di iOS, con Consenti evidenziato"><div class="t"><b>“Pendant” vorrebbe usare il Bluetooth</b><span>Serve per ricevere l’audio dal ciondolo.</span></div><div class="hair"></div><div class="bs"><span><em>Non consentire</em></span><span><em class="pick">Consenti</em></span></div></div>`,
+					acts: main('Continua')
+				}),
+				denied: () => ({
+					step: 'denied',
+					body:
+						heading('Il Bluetooth non è consentito', 'Senza Bluetooth l’app non riceve niente dal ciondolo. Si rimedia dalle Impostazioni di iOS, in tre tocchi.') +
+						`<div class="cell steps surf">${['Tocca Apri Impostazioni qui sotto.', 'Tocca Bluetooth.', 'Accendi l’interruttore e torna qui.'].map((s, i) => `<div><b>${i + 1}</b><span>${s}</span></div>`).join('')}</div>`,
+					acts: main('Apri Impostazioni') + text('Fatto, riprova')
+				}),
+				notifications: () => ({
+					step: 'notifications',
+					body:
+						heading('Un avviso quando qualcosa si ferma', 'Pendant ti avvisa se il ciondolo si scollega, se il server non risponde o se la batteria è bassa. Quando e quali lo scegli dalle impostazioni.') +
+						`<div class="notif"><span class="ic">${ICON.wave}</span><div><div class="tt"><b>Ciondolo scollegato da 2 min</b><span>adesso</span></div><p>Riprende da sola quando torna vicino.</p></div></div>`,
+					acts: main('Consenti le notifiche') + text('Non ora')
+				})
+			};
+
+			// The flow: sections by step, one frame per state, a caption under each.
+			const FLOW = [
+				{ n: 1, name: 'Benvenuto', frames: [
+					[SCREENS.welcome(), 'Benvenuto', 'Al primo avvio, se manca il ciondolo salvato o il server nel portachiavi. Il display è finto e il tempo corre da quando si apre il passo.']
+				] },
+				{ n: 2, name: 'Bluetooth', frames: [
+					[SCREENS.bluetooth(), 'Bluetooth', 'Da Inizia. Con Continua, se iOS non ha ancora chiesto il permesso, la richiesta vera compare sopra questa schermata; se è già concesso si passa alla ricerca.'],
+					[SCREENS.denied(), 'Bluetooth negato', 'Risposta Non consentire, o permesso già negato al tocco di Continua. Torna alla ricerca da sola al rientro nell’app col permesso acceso, o con Fatto, riprova.']
+				] },
+				{ n: 3, name: 'Ciondolo', frames: [
+					[search('scanning'), 'Ricerca, cerca', 'Permesso concesso: parte la scansione. Continua resta spento finché il ciondolo non è collegato.'],
+					[search('found'), 'Ricerca, trovato', 'La scansione ha un candidato: il primo trovato, col segnale dall’RSSI (forte sopra -60, medio sopra -75, poi debole).'],
+					[search('linking'), 'Ricerca, collegamento', 'Dopo Collega, mentre il collegamento è in corso o aperto ma non ancora pronto.'],
+					[search('linked'), 'Ricerca, collegato', 'Ciondolo pronto: Continua si accende. Dopo Dimentica ciondolo, dove il server c’è già, Continua chiude il primo avvio qui.'],
+					[search('none'), 'Ricerca, non trovato', '30 secondi di scansione senza candidati. Cerca di nuovo riparte da capo; con un candidato si torna a Trovato.']
+				] },
+				{ n: 4, name: 'Server', frames: [
+					[server('empty'), 'Server, vuoto', 'Si arriva da Continua della ricerca. Prova la connessione è spento finché mancano un indirizzo valido (senza spazi) o il token.'],
+					[server('filled'), 'Server, compilato', 'Indirizzo valido e token presente: Prova la connessione si accende. Prima della prova non si può andare avanti.'],
+					[server('testing'), 'Server, prova in corso', 'Dopo Prova la connessione: il tasto diventa Provo la connessione, spento, finché arriva l’esito.'],
+					[server('ok'), 'Server, collegato', 'Il server apre la connessione col token (risposta 101). Solo qui c’è Continua, che salva indirizzo e token.'],
+					[server('unreachable'), 'Server, non risponde', 'Nessuna risposta, errore di rete, tempo scaduto o errore 5xx. Cambiare un campo cancella l’esito.'],
+					[server('token'), 'Server, token rifiutato', 'Il server risponde 401 o 403.'],
+					[server('proto'), 'Server, protocollo diverso', 'Il server risponde con un altro codice HTTP, non con 101.']
+				] },
+				{ n: 5, name: 'Notifiche', frames: [
+					[SCREENS.notifications(), 'Notifiche', 'Dopo il server, solo se iOS non ha mai chiesto il permesso delle notifiche; altrimenti si salta a Fine. Il tasto apre la richiesta vera di iOS.']
+				] },
+				{ n: 6, name: 'Fine', frames: [
+					[done(true), 'Fine, notifiche consentite', 'Dopo la richiesta delle notifiche, o subito dopo il server se il permesso era già deciso. Apri Pendant chiude il primo avvio.'],
+					[done(false), 'Fine, notifiche non consentite', 'Dopo Non ora, o col permesso negato. Senza doppio tocco su registra e pausa nelle impostazioni, il testo dice di premere Riprendi in Adesso.']
+				] }
+			];
+
+			const screenHtml = ({ step, body, acts }) => `<div class="phone"><div class="screen">${chrome}${ticks(step)}<div class="content">${body}</div><div class="acts">${acts}</div></div></div>`;
+			$('[data-flow]').innerHTML = FLOW.map(
+				(s) => `<section class="step"><h2>Passo ${s.n} di 6: ${s.name}<span>${s.frames.length === 1 ? '1 stato' : `${s.frames.length} stati`}</span></h2><div class="row-frames">${s.frames
+					.map(([sc, name, cap]) => `<figure class="f">${screenHtml(sc)}<figcaption><b>${name}</b>${cap}</figcaption></figure>`)
+					.join('')}</div></section>`
+			).join('');
+			const states = FLOW.reduce((a, s) => a + s.frames.length, 0);
+			$('[data-count]').innerHTML = `<span><b>6 passi</b> nelle tacche in alto</span><span><b>7 schermate</b>: il Bluetooth negato è il passo 2</span><span><b>${states} stati</b> disegnati</span>`;
+
+			// Motion: the welcome clock and the running scan ticks. Reduce Motion: ticks stay empty.
+			const born = Date.now();
+			const clocks = $$('[data-clock]');
+			const runs = $$('.scan.run').map((el) => [...el.children]);
+			const frame = () => {
+				const t = Date.now() / 1000;
+				const head = Math.floor(t * 24) % 44;
+				for (const ticksEl of runs) ticksEl.forEach((el, i) => el.classList.toggle('hd', !still.matches && head - i >= 0 && head - i < 6));
+			};
+			setInterval(frame, 50);
+			frame();
+			setInterval(() => {
+				const s = Math.floor((Date.now() - born) / 1000);
+				for (const c of clocks) c.innerHTML = `${Math.floor(s / 60)}<i>m</i>${two(s % 60)}<i>s</i>`;
+			}, 1000);
+
+			// Theme: follows the system at load, t switches.
+			const setTheme = (t) => { root.dataset.theme = t; };
+			setTheme(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			$('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+
+			// Zoom of the phones; on a narrow window the phone fits the width.
+			let zoom = 1;
+			const applyZoom = () => {
+				const fit = Math.min(1, (window.innerWidth - 32) / 410);
+				root.style.setProperty('--z', String(Math.min(zoom, fit)));
+				$$('[data-zoom]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.zoom) === zoom)));
+			};
+			$$('[data-zoom]').forEach((b) => b.addEventListener('click', () => { zoom = Number(b.dataset.zoom); applyZoom(); }));
+			addEventListener('resize', applyZoom);
+			applyZoom();
+
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea')) return;
+				if (e.key === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (e.key in { 1: 0, 2: 0, 3: 0 }) { zoom = [1, 0.75, 0.5][Number(e.key) - 1]; applyZoom(); }
+			});
+		</script>
+	</body>
+</html>
