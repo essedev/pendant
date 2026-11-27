@@ -20,12 +20,24 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
 
   /// Called with the kind of a notification the user tapped.
   var onOpen: ((Kind) -> Void)?
+  /// Called when the user stopped the repetitions of a notification from its action.
+  var onSnooze: ((Kind) -> Void)?
+
+  /// The category of the idle warning, with the action that stops its repetitions.
+  private static let idleCategory = "pendant.idle"
+  private static let snoozeAction = "pendant.idle.snooze"
 
   /// A notifier, set as delegate at once: iOS hands a tap that launched the app only to a
   /// delegate that is in place before launch ends.
   override init() {
     super.init()
     center.delegate = self
+    center.setNotificationCategories([
+      UNNotificationCategory(
+        identifier: Self.idleCategory,
+        actions: [UNNotificationAction(identifier: Self.snoozeAction, title: "Basta per ora")],
+        intentIdentifiers: [])
+    ])
   }
 
   nonisolated func userNotificationCenter(
@@ -38,9 +50,14 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
   ) async {
     let id = response.notification.request.identifier
+    let action = response.actionIdentifier
     await MainActor.run {
       guard let kind = Kind(rawValue: id) else { return }
-      onOpen?(kind)
+      if action == Self.snoozeAction {
+        onSnooze?(kind)
+      } else if action == UNNotificationDefaultActionIdentifier {
+        onOpen?(kind)
+      }
     }
   }
 
@@ -84,6 +101,7 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     content.title = title
     content.body = body
     content.sound = .default
+    if kind == .pendantIdle { content.categoryIdentifier = Self.idleCategory }
     // Time sensitive only for what stops the recording. Breaking through a Focus also needs the
     // Time Sensitive entitlement, which the free account does not grant (Xcode refuses it,
     // 27/11/2026): the level is set for when the app is signed with a paid account.

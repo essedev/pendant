@@ -234,6 +234,21 @@ enum Choices {
     Choice(value: $0, label: DurationFormat.words($0))
   }
 
+  static let idleRepeat: [Choice<Double>] = [0, 600, 900, 1800].map {
+    Choice(value: $0, label: repeatLabel($0))
+  }
+
+  /// "Mai" for no repetition, otherwise the interval.
+  static func repeatLabel(_ seconds: Double) -> String {
+    seconds == 0 ? "Mai" : "Ogni \(DurationFormat.words(seconds))"
+  }
+
+  static let idleVibration: [Choice<IdleVibration>] = [
+    Choice(value: .every, label: "A ogni avviso"),
+    Choice(value: .first, label: "Solo al primo", subtitle: "Poi solo la notifica sul telefono"),
+    Choice(value: .never, label: "Mai", subtitle: "Solo la notifica sul telefono"),
+  ]
+
   static let battery: [Choice<Int>] = [10, 15, 20, 30].map { Choice(value: $0, label: "\($0)%") }
 
   static let signatureDays: [Choice<Int>] = [1, 2, 3].map {

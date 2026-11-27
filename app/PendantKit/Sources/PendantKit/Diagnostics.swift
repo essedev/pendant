@@ -106,3 +106,37 @@ public enum SupportedFirmware {
     versions.contains(revision.trimmingCharacters(in: .whitespacesAndNewlines))
   }
 }
+
+/// The warnings of a pendant on without recording: when each comes and whether it vibrates.
+public struct IdleSchedule: Equatable, Sendable {
+  /// Seconds before the first warning.
+  public let after: Double
+  /// Seconds between repetitions; 0 warns once.
+  public let repeatEvery: Double
+  /// When the pendant vibrates.
+  public let vibration: IdleVibration
+
+  /// The schedule of a configuration.
+  public init(config: Configuration) {
+    after = config.idleNotifyAfter
+    repeatEvery = config.idleRepeatEvery
+    vibration = config.idleVibration
+  }
+
+  /// Seconds from the start of the idle time to warning `index` (0 is the first), nil when
+  /// there is no such warning.
+  public func offset(of index: Int) -> Double? {
+    guard index >= 0 else { return nil }
+    if index == 0 { return after }
+    return repeatEvery > 0 ? after + Double(index) * repeatEvery : nil
+  }
+
+  /// Whether warning `index` vibrates the pendant.
+  public func vibrates(_ index: Int) -> Bool {
+    switch vibration {
+    case .every: true
+    case .first: index == 0
+    case .never: false
+    }
+  }
+}

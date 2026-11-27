@@ -21,6 +21,16 @@ public enum LedPolicy: String, Codable, Sendable, CaseIterable {
   case alwaysOff
 }
 
+/// When the pendant vibrates for the warning of a pendant on without recording.
+public enum IdleVibration: String, Codable, Sendable, CaseIterable {
+  /// At every warning, the first and each repetition.
+  case every
+  /// At the first warning only; the repetitions are notifications on the phone.
+  case first
+  /// Never: notifications only.
+  case never
+}
+
 /// The app's appearance.
 public enum AppAppearance: String, Codable, Sendable, CaseIterable {
   /// Follows the phone.
@@ -95,6 +105,11 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var notifyIdle: Bool
   /// Seconds connected without recording before that warning.
   public var idleNotifyAfter: Double
+  /// Seconds between repetitions of that warning, until the recording starts or the pendant
+  /// goes; 0 warns once.
+  public var idleRepeatEvery: Double
+  /// When the pendant vibrates for that warning.
+  public var idleVibration: IdleVibration
   /// Notify before the app signature expires.
   public var notifySignature: Bool
   /// Days before the expiry for that notification.
@@ -145,6 +160,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     batteryThreshold = 20
     notifyIdle = true
     idleNotifyAfter = 300
+    idleRepeatEvery = 900
+    idleVibration = .every
     notifySignature = true
     signatureDaysBefore = 2
     liveActivity = true
@@ -223,6 +240,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     batteryThreshold = number(.batteryThreshold, d.batteryThreshold, 5...50)
     notifyIdle = value(.notifyIdle, d.notifyIdle)
     idleNotifyAfter = number(.idleNotifyAfter, d.idleNotifyAfter, 60...3600)
+    idleRepeatEvery = number(.idleRepeatEvery, d.idleRepeatEvery, 0...3600)
+    idleVibration =
+      IdleVibration(rawValue: value(.idleVibration, d.idleVibration.rawValue)) ?? d.idleVibration
     notifySignature = value(.notifySignature, d.notifySignature)
     signatureDaysBefore = number(.signatureDaysBefore, d.signatureDaysBefore, 1...6)
     liveActivity = value(.liveActivity, d.liveActivity)
@@ -264,6 +284,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(batteryThreshold, forKey: .batteryThreshold)
     try c.encode(notifyIdle, forKey: .notifyIdle)
     try c.encode(idleNotifyAfter, forKey: .idleNotifyAfter)
+    try c.encode(idleRepeatEvery, forKey: .idleRepeatEvery)
+    try c.encode(idleVibration.rawValue, forKey: .idleVibration)
     try c.encode(notifySignature, forKey: .notifySignature)
     try c.encode(signatureDaysBefore, forKey: .signatureDaysBefore)
     try c.encode(liveActivity, forKey: .liveActivity)
@@ -281,7 +303,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     case gestures, vibrationConfirm, pauseVibration, resumeVibration, ledPolicy, ledBrightness
     case offlinePolicy, pingInterval, reconnectMaxDelay, spoolSeconds, notifyDisconnect
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
-    case notifyIdle, idleNotifyAfter, notifySignature, signatureDaysBefore, liveActivity,
+    case notifyIdle, idleNotifyAfter, idleRepeatEvery, idleVibration, notifySignature,
+      signatureDaysBefore, liveActivity,
       liveActivityPauseEnd, liveActivityAlways
     case resumeGrace, pendantName, appearance, displayStyle, accentStyle
   }

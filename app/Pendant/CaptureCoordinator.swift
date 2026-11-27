@@ -25,6 +25,12 @@ final class CaptureCoordinator {
   /// When the warning of a pendant on without recording fired, until it is dismissed, the
   /// recording starts or the pendant goes.
   private(set) var idleWarnedAt: Date?
+  /// Since when the pendant is on without recording, while the warnings are armed.
+  private var idleStartedAt: Date?
+
+  /// Since when the pendant is on without recording, once a warning fired and until it is
+  /// dismissed.
+  var idleSince: Date? { idleWarnedAt == nil ? nil : idleStartedAt }
 
   var config: Configuration {
     didSet {
@@ -32,7 +38,7 @@ final class CaptureCoordinator {
       link.config = config
       applyLed()
       if config.notifyIdle != oldValue.notifyIdle
-        || config.idleNotifyAfter != oldValue.idleNotifyAfter
+        || IdleSchedule(config: config) != IdleSchedule(config: oldValue)
       {
         armIdleWarning()
       }
@@ -48,6 +54,8 @@ final class CaptureCoordinator {
   private var meterPCM = Data()
   private var lastMeter = Date.distantPast
   private var idleTask: Task<Void, Never>?
+  /// The warnings stopped from the notification, until the pendant connects again.
+  private var idleSnoozed = false
 
   private static let pausedKey = "pendant.paused"
   private static let pausedSinceKey = "pendant.pausedSince"
@@ -113,31 +121,55 @@ final class CaptureCoordinator {
     idleWarnedAt = nil
   }
 
-  /// Warns when the pendant stays connected without recording, from now.
+  /// Stops the warnings of a pendant on without recording until it connects again.
+  func snoozeIdleWarning() {
+    idleSnoozed = true
+    cancelIdleWarning()
+    log.record("idle", "snoozed until the next connection")
+  }
+
+  /// Warns when the pendant stays connected without recording, from now, and again at each
+  /// repetition of the schedule.
   ///
-  /// The notification is scheduled ahead, so it arrives even if iOS suspends the app; the
-  /// vibration needs the app awake, which the audio of a connected pendant keeps it.
+  /// Each notification is scheduled ahead, so it arrives even if iOS suspends the app; the
+  /// vibration and the next notification need the app awake, which the audio of a connected
+  /// pendant keeps it, paused or not.
   private func armIdleWarning() {
     cancelIdleWarning()
-    guard config.notifyIdle, link.ready, !controller.recording else { return }
-    let after = config.idleNotifyAfter
-    let minutes = DurationFormat.words(after)
-    notifier.schedule(
-      .pendantIdle, after: after, title: "Il ciondolo è acceso da \(minutes) senza registrare",
-      body: "Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare.")
+    guard config.notifyIdle, !idleSnoozed, link.ready, !controller.recording else { return }
+    let schedule = IdleSchedule(config: config)
+    let start = Date()
+    idleStartedAt = start
+    scheduleIdleNotification(schedule, index: 0, from: start)
     idleTask = Task { [weak self] in
-      try? await Task.sleep(for: .seconds(after))
-      guard !Task.isCancelled, let self, self.link.ready, !self.controller.recording else { return }
-      self.idleWarnedAt = Date()
-      self.link.vibrate(.long)
-      self.log.record("idle", "on for \(minutes) without recording")
+      var index = 0
+      while let offset = schedule.offset(of: index) {
+        try? await Task.sleep(for: .seconds(start.addingTimeInterval(offset).timeIntervalSinceNow))
+        guard !Task.isCancelled, let self, self.link.ready, !self.controller.recording else {
+          return
+        }
+        self.idleWarnedAt = Date()
+        if schedule.vibrates(index) { self.link.vibrate(.long) }
+        self.log.record("idle", "on for \(DurationFormat.words(offset)) without recording")
+        index += 1
+        self.scheduleIdleNotification(schedule, index: index, from: start)
+      }
     }
+  }
+
+  private func scheduleIdleNotification(_ schedule: IdleSchedule, index: Int, from start: Date) {
+    guard let offset = schedule.offset(of: index) else { return }
+    notifier.schedule(
+      .pendantIdle, after: start.addingTimeInterval(offset).timeIntervalSinceNow,
+      title: "Il ciondolo è acceso da \(DurationFormat.words(offset)) senza registrare",
+      body: "Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare.")
   }
 
   private func cancelIdleWarning() {
     idleTask?.cancel()
     idleTask = nil
     idleWarnedAt = nil
+    idleStartedAt = nil
     notifier.cancel(.pendantIdle)
   }
 
@@ -155,6 +187,7 @@ final class CaptureCoordinator {
     if ready {
       notifier.cancel(.pendantDisconnected)
       applyLed()
+      idleSnoozed = false
       armIdleWarning()
     } else {
       cancelIdleWarning()

@@ -216,7 +216,7 @@ final class AppModel {
     s.queuedSeconds = uplink.spooledSeconds
     s.level = capture.level
     s.resumesUntil = capture.controller.resumesUntil(config: config)
-    s.idleSince = capture.idleWarnedAt
+    s.idleSince = capture.idleSince
     s.notice = HomeNotice.top(noticeInputs(s))
     return s
   }
@@ -394,6 +394,9 @@ final class AppModel {
 
   private func wireCallbacks() {
     notifier.onOpen = { [weak self] kind in self?.open(kind) }
+    notifier.onSnooze = { [weak self] kind in
+      if kind == .pendantIdle { self?.capture.snoozeIdleWarning() }
+    }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
   }

@@ -208,3 +208,31 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
     #expect(dark.appearance == .dark)
   }
 }
+
+@Suite struct IdleScheduleTests {
+  @Test func repeatsAfterTheFirstWarning() {
+    let schedule = IdleSchedule(config: .defaults)
+    #expect(schedule.offset(of: 0) == 300)
+    #expect(schedule.offset(of: 1) == 1200)
+    #expect(schedule.offset(of: 2) == 2100)
+  }
+
+  @Test func warnsOnceWithoutRepetition() throws {
+    let config = try JSONDecoder().decode(
+      Configuration.self, from: Data(#"{"idleRepeatEvery": 0}"#.utf8))
+    let schedule = IdleSchedule(config: config)
+    #expect(schedule.offset(of: 0) == 300)
+    #expect(schedule.offset(of: 1) == nil)
+  }
+
+  @Test func vibratesAsConfigured() throws {
+    #expect(IdleSchedule(config: .defaults).vibrates(3))
+    let first = try JSONDecoder().decode(
+      Configuration.self, from: Data(#"{"idleVibration": "first"}"#.utf8))
+    #expect(IdleSchedule(config: first).vibrates(0))
+    #expect(!IdleSchedule(config: first).vibrates(1))
+    let unknown = try JSONDecoder().decode(
+      Configuration.self, from: Data(#"{"idleVibration": "loud"}"#.utf8))
+    #expect(unknown.idleVibration == .every)
+  }
+}

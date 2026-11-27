@@ -351,7 +351,8 @@ struct NoticeCard: View {
         [("Ho capito", { model.dismiss(.firmwareUnsupported) })]
       )
     case .idle:
-      let minutes = DurationFormat.words(model.config.idleNotifyAfter)
+      let on = s.idleSince.map { model.now.timeIntervalSince($0) } ?? model.config.idleNotifyAfter
+      let minutes = DurationFormat.words(max(60, (on / 60).rounded(.down) * 60))
       return (
         "Il ciondolo è acceso da \(minutes) senza registrare",
         "Forse un tocco in tasca. Consuma batteria anche così: tienilo premuto 3 secondi per spegnerlo, o registra.",

@@ -170,7 +170,7 @@ enum DemoScene: String, CaseIterable {
     case .homeIdle:
       s.mode = .paused
       s.since = n.addingTimeInterval(-312)
-      s.idleSince = n.addingTimeInterval(-12)
+      s.idleSince = n.addingTimeInterval(-312)
       s.notice = .idle
     case .homeCut:
       s.mode = .disconnected

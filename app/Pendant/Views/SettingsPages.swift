@@ -245,13 +245,21 @@ struct NotificationsPage: View {
         CellGroup(
           header: "Acceso senza registrare",
           footer:
-            "Quando il ciondolo si collega e non registri entro questo tempo, vibra e arriva un avviso: di solito è un tocco in tasca, e acceso consuma batteria. Con questo firmware l’app non può spegnerlo."
+            "Quando il ciondolo si collega e non registri entro questo tempo, arriva un avviso, e torna finché non registri o lo spegni: di solito è un tocco in tasca, e acceso consuma batteria. Dalla notifica, Basta per ora lo ferma fino al prossimo collegamento. Con questo firmware l’app non può spegnerlo."
         ) {
           ToggleRow(label: "Avvisa", isOn: $model.config.notifyIdle)
           PickerRow(
             label: "Dopo", title: "Acceso senza registrare, avvisa dopo",
             choices: including(Choices.idle, c.idleNotifyAfter, label: DurationFormat.words),
             selection: $model.config.idleNotifyAfter, disabled: !c.notifyIdle)
+          PickerRow(
+            label: "Ripeti", title: "Acceso senza registrare, ripeti l’avviso",
+            choices: including(Choices.idleRepeat, c.idleRepeatEvery, label: Choices.repeatLabel),
+            selection: $model.config.idleRepeatEvery, disabled: !c.notifyIdle)
+          PickerRow(
+            label: "Vibrazione", title: "Acceso senza registrare, il ciondolo vibra",
+            choices: Choices.idleVibration,
+            selection: $model.config.idleVibration, disabled: !c.notifyIdle)
         }
         CellGroup(header: "Firma in scadenza") {
           ToggleRow(label: "Avvisa", isOn: $model.config.notifySignature)
