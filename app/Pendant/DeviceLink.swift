@@ -62,6 +62,8 @@ final class DeviceLink: NSObject {
   var onButton: ((ButtonEvent) -> Void)?
   /// Called when the battery level changes.
   var onBattery: ((Int) -> Void)?
+  /// Called when the pendant starts or stops charging.
+  var onChargingChanged: ((Bool) -> Void)?
   /// Called with the ring pointers each time the pendant reports them.
   var onRingInfo: ((Storage.Info) -> Void)?
   /// Called when the characteristics a setting writes become available.
@@ -346,8 +348,11 @@ final class DeviceLink: NSObject {
       }
     case OmiGatt.Settings.charging:
       guard let flag = value.first else { return }
-      if charging != (flag == 1) { log.record("charging", flag == 1 ? "yes" : "no") }
-      charging = flag == 1
+      let now = flag == 1
+      guard charging != now else { return }
+      log.record("charging", now ? "yes" : "no")
+      charging = now
+      onChargingChanged?(now)
     case OmiGatt.Settings.micGain:
       micGain = value.first
       log.record("micGain", value.first.map(String.init) ?? "?")

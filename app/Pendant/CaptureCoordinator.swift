@@ -102,6 +102,7 @@ final class CaptureCoordinator {
     link.onButton = { [weak self] event in self?.button(event) }
     link.onAudio = { [weak self] packet, maxPiece in self?.audio(packet, maxPiece: maxPiece) }
     link.onSettingsAvailable = { [weak self] in self?.applyLed() }
+    link.onChargingChanged = { [weak self] _ in self?.armIdleWarning() }
     if controller.paused { log.record("capture", "starting paused") }
     applyAudioWanted()
   }
@@ -138,7 +139,11 @@ final class CaptureCoordinator {
   /// pendant keeps it, paused or not.
   private func armIdleWarning() {
     cancelIdleWarning()
-    guard config.notifyIdle, !idleSnoozed, link.ready, !controller.recording else { return }
+    // On the charger the pendant is neither draining nor in a pocket: no warning, and the
+    // count starts again when it comes off.
+    guard config.notifyIdle, !idleSnoozed, link.ready, link.charging != true,
+      !controller.recording
+    else { return }
     let schedule = IdleSchedule(config: config)
     let start = Date()
     idleStartedAt = start
@@ -147,7 +152,9 @@ final class CaptureCoordinator {
       var index = 0
       while let offset = schedule.offset(of: index) {
         try? await Task.sleep(for: .seconds(start.addingTimeInterval(offset).timeIntervalSinceNow))
-        guard !Task.isCancelled, let self, self.link.ready, !self.controller.recording else {
+        guard !Task.isCancelled, let self, self.link.ready, self.link.charging != true,
+          !self.controller.recording
+        else {
           return
         }
         self.idleWarnedAt = Date()

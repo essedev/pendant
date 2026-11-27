@@ -282,7 +282,8 @@ spezza la conversazione. Riscrive la registrazione continua di M6, in cui ogni c
 fuori pausa registrava: un'accensione in tasca diventava una registrazione. Se il ciondolo
 resta collegato senza registrare per un tempo configurabile, vibra e arriva una notifica, che
 si ripete a intervallo configurabile (15 minuti, vibrazione a ogni avviso) finché non registri,
-lo spegni o fermi le ripetizioni dalla notifica fino al prossimo collegamento;
+lo spegni o fermi le ripetizioni dalla notifica fino al prossimo collegamento; sul
+caricatore non avvisa, perché non consuma e non è in tasca;
 spegnerlo dall'app richiede il 3.0.24 (DECISIONS 2026-11-26, firmware di serie). Scartato
 partire in pausa anche dopo un taglio breve: ogni caduta del Bluetooth avrebbe chiesto un
 doppio tocco.

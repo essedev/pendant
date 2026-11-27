@@ -246,7 +246,7 @@ struct NotificationsPage: View {
         CellGroup(
           header: "Acceso senza registrare",
           footer:
-            "Quando il ciondolo si collega e non registri entro questo tempo, arriva un avviso, e torna finché non registri o lo spegni: di solito è un tocco in tasca, e acceso consuma batteria. Dalla notifica, Basta per ora lo ferma fino al prossimo collegamento. Con questo firmware l’app non può spegnerlo."
+            "Quando il ciondolo si collega e non registri entro questo tempo, arriva un avviso, e torna finché non registri o lo spegni: di solito è un tocco in tasca, e acceso consuma batteria. Dalla notifica, Basta per ora lo ferma fino al prossimo collegamento. Sul caricatore non avvisa, e quando lo stacchi il conto riparte. Con questo firmware l’app non può spegnerlo."
         ) {
           ToggleRow(label: "Avvisa", isOn: $model.config.notifyIdle)
           PickerRow(
