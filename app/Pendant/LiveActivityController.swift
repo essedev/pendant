@@ -28,6 +28,16 @@ final class LiveActivityController {
 
   init(log: ProbeLog) {
     self.log = log
+    // An activity outlives the app: after a relaunch (closed from the switcher, reinstalled,
+    // ended by iOS) it is still on screen. Adopt one and end the others, or each launch adds
+    // a copy.
+    let open = Activity<RecordingAttributes>.activities.filter { $0.activityState == .active }
+    activity = open.first
+    for extra in open.dropFirst() {
+      nonisolated(unsafe) let ending = extra
+      Task { @MainActor in await ending.end(nil, dismissalPolicy: .immediate) }
+    }
+    if !open.isEmpty { log.record("liveActivity", "adopted 1 of \(open.count) after launch") }
   }
 
   /// Shows the state; `enabled` false ends any activity, and `endAfterPause` nil keeps it
@@ -50,6 +60,10 @@ final class LiveActivityController {
       log.record("liveActivity", "ended by iOS: \(activity.activityState)")
       self.activity = nil
       shown = nil
+    }
+    // The server is fixed in the attributes: a new server needs a new activity.
+    if let activity, activity.attributes.server != server {
+      end()
     }
     let next = Shown(state: state, endAfterPause: endAfterPause)
     let content = ActivityContent(state: state, staleDate: nil)
