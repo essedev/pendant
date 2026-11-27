@@ -14,20 +14,20 @@ struct ThemePage: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
         ThemePreview()
-          .padding(.horizontal, 16)
-          .padding(.top, 8)
+          .padding(.horizontal, Theme.Gutter.surface)
+          .padding(.top, Theme.pageTop)
         Picker("Aspetto", selection: $model.config.appearance) {
           Text("Automatico").tag(AppAppearance.system)
           Text("Chiaro").tag(AppAppearance.light)
           Text("Scuro").tag(AppAppearance.dark)
         }
         .pickerStyle(.segmented)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, 20)
         Text("Temi")
           .type(13, 18, .medium)
           .foregroundStyle(Theme.ink2)
-          .padding(.horizontal, 32)
+          .padding(.horizontal, Theme.Gutter.text)
           .padding(.top, 28)
           .padding(.bottom, 8)
         LazyVGrid(
@@ -46,11 +46,11 @@ struct ThemePage: View {
             .buttonStyle(.plain)
           }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.surface)
         Text("Personalizza")
           .type(13, 18, .medium)
           .foregroundStyle(Theme.ink2)
-          .padding(.horizontal, 32)
+          .padding(.horizontal, Theme.Gutter.text)
           .padding(.top, 28)
           .padding(.bottom, 8)
         VStack(alignment: .leading, spacing: 18) {
@@ -76,13 +76,13 @@ struct ThemePage: View {
         }
         .padding(.vertical, 16)
         .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.surface)
         Text(
           "Il rosso resta quello della registrazione e l’ambra quello degli avvisi, in ogni tema. Il tema vale anche per l’attività in tempo reale."
         )
         .type(13, 18)
         .foregroundStyle(Theme.ink2)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Theme.Gutter.text)
         .padding(.top, 8)
       }
       .padding(.bottom, 32)

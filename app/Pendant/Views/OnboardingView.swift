@@ -22,12 +22,12 @@ struct OnboardingView: View {
     VStack(alignment: .leading, spacing: 0) {
       StepTicks(index: Self.order.firstIndex(of: step == .denied ? .bluetooth : step) ?? 0)
         .padding(.top, 22)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, Theme.Gutter.title)
       ScrollView {
         VStack(alignment: .leading, spacing: 0) {
           content
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, Theme.Gutter.title)
         .padding(.top, 32)
         .padding(.bottom, 24)
       }
@@ -35,7 +35,7 @@ struct OnboardingView: View {
     }
     .safeAreaInset(edge: .bottom) {
       actions
-        .padding(.horizontal, 24)
+        .padding(.horizontal, Theme.Gutter.surface)
         .padding(.bottom, 14)
     }
     .background(Theme.background.ignoresSafeArea())
@@ -58,6 +58,7 @@ struct OnboardingView: View {
       )
       .allowsHitTesting(false)
       .accessibilityHidden(true)
+      .onboardingSurface()
       Heading(
         title: "Registra le conversazioni col ciondolo",
         text:
@@ -74,6 +75,7 @@ struct OnboardingView: View {
         title: "“Pendant” vorrebbe usare il Bluetooth",
         text: "Serve per ricevere l’audio dal ciondolo.", buttons: ["Non consentire", "Consenti"]
       )
+      .onboardingSurface()
       .padding(.top, 28)
     case .denied:
       Heading(
@@ -85,6 +87,7 @@ struct OnboardingView: View {
         "Tocca Apri Impostazioni qui sotto.", "Tocca Bluetooth.",
         "Accendi l’interruttore e torna qui.",
       ])
+      .onboardingSurface()
       .padding(.top, 28)
     case .search:
       SearchStep()
@@ -96,7 +99,7 @@ struct OnboardingView: View {
         text:
           "Pendant ti avvisa se il ciondolo si scollega, se il server non risponde o se la batteria è bassa. Quando e quali lo scegli dalle impostazioni."
       )
-      NotificationPreview().padding(.top, 28)
+      NotificationPreview().onboardingSurface().padding(.top, 28)
     case .done:
       Heading(
         title: "È tutto pronto",
@@ -115,13 +118,14 @@ struct OnboardingView: View {
           value: model.notificationStatus == .authorized ? "Consentite" : "Non consentite")
       }
       .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
+      .onboardingSurface()
       .padding(.top, 28)
       Text(
         "Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Fuori dall’app."
       )
       .type(13, 18)
       .foregroundStyle(Theme.ink2)
-      .padding(.horizontal, 16)
+      .padding(.horizontal, Theme.Gutter.text - Theme.Gutter.title)
       .padding(.top, 8)
     }
   }
@@ -315,14 +319,17 @@ private struct SearchStep: View {
               "Mettilo in carica qualche minuto e tienilo accanto al telefono.")
           }
           .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
+          .onboardingSurface()
           .padding(.top, 28)
         } else {
           PendantFigure(found: state != .scanning)
+            .onboardingSurface()
             .padding(.top, 28)
           ScanTicks(running: state == .scanning || state == .linking).padding(.top, 16)
           if let row = deviceRow(state) {
             row
               .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
+              .onboardingSurface()
               .padding(.top, 16)
           }
         }
@@ -495,6 +502,7 @@ private struct ServerStep: View {
         }
       }
       .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
+      .onboardingSurface()
       .padding(.top, 28)
       .onChange(of: form.address) { model.clearProbe() }
       .onChange(of: form.token) { model.clearProbe() }
@@ -503,14 +511,14 @@ private struct ServerStep: View {
       )
       .type(13, 18)
       .foregroundStyle(Theme.ink2)
-      .padding(.horizontal, 16)
+      .padding(.horizontal, Theme.Gutter.text - Theme.Gutter.title)
       .padding(.top, 8)
       if model.probing || model.probeOutcome != nil {
         ProbeResult(
           probing: model.probing, outcome: model.probeOutcome,
           host: Credentials.url(fromAddress: form.address)?.host() ?? form.address
         )
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.text - Theme.Gutter.title)
         .padding(.top, 20)
       }
     }
@@ -560,4 +568,12 @@ final class ServerForm {
   static let shared = ServerForm()
   var address = ""
   var token = ""
+}
+
+extension View {
+  /// A surface in the first launch: the content sits at the title margin, and a surface reaches
+  /// out to the app's surface margin, so cells are as wide as in the app.
+  fileprivate func onboardingSurface() -> some View {
+    padding(.horizontal, Theme.Gutter.surface - Theme.Gutter.title)
+  }
 }

@@ -94,7 +94,7 @@ struct SheetHeader: View {
       Spacer()
       CapsuleButton(title: done, action: action)
     }
-    .padding(.horizontal, 24)
+    .padding(.horizontal, Theme.Gutter.title)
     .padding(.top, 24)
   }
 }
@@ -163,12 +163,12 @@ private struct TextSheet: View {
       .padding(.horizontal, 16)
       .frame(height: 52)
       .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
-      .padding(.horizontal, 16)
+      .padding(.horizontal, Theme.Gutter.surface)
       .padding(.top, 20)
       Text(invalid ? "Non sembra un valore valido. \(footer)" : footer)
         .type(13, 18)
         .foregroundStyle(invalid ? Theme.warn : Theme.ink2)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Theme.Gutter.text)
         .padding(.top, 8)
       Spacer(minLength: 0)
     }

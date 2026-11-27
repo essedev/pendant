@@ -319,7 +319,7 @@ struct CellGroup<Content: View>: View {
         Text(header)
           .type(13, 18, .medium)
           .foregroundStyle(Theme.ink2)
-          .padding(.horizontal, 16)
+          .padding(.horizontal, Theme.Gutter.inset)
           .padding(.bottom, 8)
       }
       VStack(spacing: 0) {
@@ -338,12 +338,12 @@ struct CellGroup<Content: View>: View {
         Text(footer)
           .type(13, 18)
           .foregroundStyle(Theme.ink2)
-          .padding(.horizontal, 16)
+          .padding(.horizontal, Theme.Gutter.inset)
           .padding(.top, 8)
           .fixedSize(horizontal: false, vertical: true)
       }
     }
-    .padding(.horizontal, 16)
+    .padding(.horizontal, Theme.Gutter.surface)
     .padding(.top, header == nil ? 20 : 28)
   }
 }
@@ -461,7 +461,7 @@ struct PageTitle<Trailing: View>: View {
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(.horizontal, 24)
+    .padding(.horizontal, Theme.Gutter.title)
   }
 }
 

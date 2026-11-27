@@ -29,15 +29,15 @@ struct PendantPage: View {
           )
           .padding(.top, 10)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.horizontal, Theme.Gutter.surface)
+        .padding(.top, Theme.pageTop)
         if off {
           Text(
             "Da scollegato il ciondolo tiene gli ultimi valori. Spia, microfono e vibrazione si cambiano quando torna vicino."
           )
           .type(13, 18)
           .foregroundStyle(Theme.ink2)
-          .padding(.horizontal, 32)
+          .padding(.horizontal, Theme.Gutter.text)
           .padding(.top, 8)
         }
         CellGroup(
@@ -143,7 +143,8 @@ struct GesturesPage: View {
         CellGroup(header: "Conferma") {
           ToggleRow(
             label: "Vibrazione di conferma",
-            subtitle: "Lunga quando qualcosa parte, breve quando si ferma",
+            subtitle:
+              "Media quando la registrazione parte, breve quando si ferma e quando segni un momento",
             isOn: $model.config.vibrationConfirm)
         }
       }
@@ -341,7 +342,7 @@ struct ServerPage: View {
         }
         if model.probing || model.probeOutcome != nil {
           ProbeResult(probing: model.probing, outcome: model.probeOutcome, host: creds?.host ?? "")
-            .padding(.horizontal, 32)
+            .padding(.horizontal, Theme.Gutter.text)
             .padding(.top, 14)
         }
         Text(
@@ -349,7 +350,7 @@ struct ServerPage: View {
         )
         .type(13, 18)
         .foregroundStyle(Theme.ink2)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Theme.Gutter.text)
         .padding(.top, 8)
       }
       .padding(.top, 8)
@@ -437,10 +438,10 @@ struct SystemControlsPage: View {
         )
         .type(15, 20)
         .foregroundStyle(Theme.ink2)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Theme.Gutter.text)
         .padding(.top, 8)
         ActivityPreview()
-          .padding(.horizontal, 16)
+          .padding(.horizontal, Theme.Gutter.surface)
           .padding(.top, 20)
           .opacity(config.liveActivity && allowed ? 1 : 0.4)
         CellGroup(
@@ -460,7 +461,7 @@ struct SystemControlsPage: View {
         }
         if !allowed {
           CapsuleButton(title: "Apri le impostazioni di iOS") { model.openSystemSettings() }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, Theme.Gutter.text)
             .padding(.top, 4)
         }
         CellGroup(
@@ -556,7 +557,7 @@ private struct ShortcutGuide: View {
           .type(17, 22, .semibold)
           .foregroundStyle(Theme.accent)
       }
-      .padding(.horizontal, 32)
+      .padding(.horizontal, Theme.Gutter.title)
       .padding(.top, 24)
       CellGroup(footer: shortcut.note) { Steps(shortcut.steps) }
       Spacer(minLength: 0)
@@ -594,7 +595,7 @@ private struct ActivityPreview: View {
       .type(13, 18)
       .foregroundStyle(Theme.ink2)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, 16)
+      .padding(.horizontal, Theme.Gutter.inset)
       Group {
         switch surface {
         case .island: island(state, server: server)
@@ -852,8 +853,10 @@ private struct LicenseBlock: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text(title).type(13, 18, .medium).foregroundStyle(Theme.ink2).padding(.horizontal, 32)
-      Text(note).type(13, 18).foregroundStyle(Theme.ink2).padding(.horizontal, 32).padding(.top, 4)
+      Text(title).type(13, 18, .medium).foregroundStyle(Theme.ink2).padding(
+        .horizontal, Theme.Gutter.text)
+      Text(note).type(13, 18).foregroundStyle(Theme.ink2).padding(.horizontal, Theme.Gutter.text)
+        .padding(.top, 4)
       Text(text)
         .font(.system(size: 13, design: .monospaced))
         .lineSpacing(3)
@@ -861,7 +864,7 @@ private struct LicenseBlock: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, 12)
         .textSelection(.enabled)
     }

@@ -16,7 +16,7 @@ struct SettingsView: View {
           DeviceCard(device: d, name: config.pendantName, more: true)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, 20)
         CellGroup {
           link(

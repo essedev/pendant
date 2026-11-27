@@ -36,7 +36,7 @@ struct TodayView: View {
           DayStrip(summary: summary, height: 32, showNow: isToday && model.recording, marks: true)
           Legend(isToday: isToday)
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, Theme.Gutter.title)
         .padding(.top, 20)
         if isToday || !closed.isEmpty {
           CellGroup(
@@ -252,8 +252,8 @@ struct ConversationView: View {
             BookmarkStrip(conversation: c, now: now).padding(.top, 12)
           }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.horizontal, Theme.Gutter.surface)
+        .padding(.top, Theme.pageTop)
         CellGroup(
           header: "Momenti segnati",
           footer: c.bookmarks.isEmpty

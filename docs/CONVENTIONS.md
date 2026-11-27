@@ -19,6 +19,12 @@
 - Il protocollo del ciondolo in un solo modulo, con i riferimenti al codice del firmware
   (`file:riga` al tag della versione).
 - Il codice preso dall'app Omi (licenza MIT) cita file e commit d'origine.
+- Spazi (`Theme.Gutter`, `Theme.pageTop`): tre margini laterali per ruolo, mai un numero a mano.
+  16 punti per ciò che ha un fondo (display, tasti, celle, card), 24 per i titoli di pagina e i
+  blocchi liberi (la giornata), 32 per il testo dentro le celle e per quello che accompagna un
+  gruppo (intestazioni, note, suggerimenti). In verticale 28 prima di un gruppo con intestazione,
+  20 senza e all'inizio di una pagina interna, 8 fra un gruppo e la sua nota. Il primo avvio
+  tiene il contenuto a 24 e allarga le superfici a 16, come nell'app.
 
 ## Prototipi
 

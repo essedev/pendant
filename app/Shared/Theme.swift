@@ -38,6 +38,20 @@ enum ThemeSelection {
 /// same tokens as the screens. Display and accent tokens follow `ThemeSelection`; the rest is
 /// fixed: the red is the recording, the amber a warning, in every theme.
 enum Theme {
+  /// Horizontal margins, one per role (CONVENTIONS, "Spazi"): a surface with a fill (display,
+  /// key, cell, card), a page title or a free block, text that goes with a group or sits in a
+  /// cell (a surface's margin plus its inset).
+  enum Gutter {
+    static let surface: CGFloat = 16
+    static let title: CGFloat = 24
+    static let text: CGFloat = 32
+    /// Inside a surface, from its edge to its text.
+    static let inset: CGFloat = text - surface
+  }
+
+  /// Space above the first surface of a pushed page, as above a cell group without a header.
+  static let pageTop: CGFloat = 20
+
   /// A color that follows light and dark mode.
   private static func dynamic(_ light: UInt32, _ dark: UInt32) -> Color {
     Color(

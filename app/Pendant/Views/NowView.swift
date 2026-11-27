@@ -11,12 +11,12 @@ struct NowView: View {
     ScrollView {
       VStack(spacing: 0) {
         HomeDisplay(snapshot: s, now: model.now)
-          .padding(.horizontal, 16)
+          .padding(.horizontal, Theme.Gutter.surface)
           .padding(.top, 8)
         RecessedKey(mode: s.mode, resumesOnReturn: resumes(s)) {
           model.setPaused(s.mode == .recording)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, 18)
         if let hint = hint(s) {
           Text(hint)
@@ -24,15 +24,14 @@ struct NowView: View {
             .foregroundStyle(Theme.ink2)
             .multilineTextAlignment(.center)
             .padding(.top, 10)
-            .padding(.horizontal, 32)
+            .padding(.horizontal, Theme.Gutter.text)
         }
         if let notice = s.notice {
           NoticeCard(notice: notice, snapshot: s)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Theme.Gutter.surface)
             .padding(.top, 16)
         }
         DaySection()
-          .padding(.horizontal, 24)
           .padding(.top, 28)
           .padding(.bottom, 32)
       }
@@ -374,33 +373,31 @@ private struct DaySection: View {
     let now = model.now
     let summary = log.summary(of: now, now: now)
     let closed = log.conversations(on: now).filter { $0.status != .live }
-    VStack(alignment: .leading, spacing: 12) {
-      HStack(alignment: .firstTextBaseline) {
-        Text("Oggi").type(22, 28, .semibold).foregroundStyle(Theme.ink)
-        Spacer()
-        Text(total(summary, closed: closed.count))
+    VStack(alignment: .leading, spacing: 0) {
+      VStack(alignment: .leading, spacing: 12) {
+        HStack(alignment: .firstTextBaseline) {
+          Text("Oggi").type(22, 28, .semibold).foregroundStyle(Theme.ink)
+          Spacer()
+          Text(total(summary, closed: closed.count))
+            .type(15, 20)
+            .foregroundStyle(Theme.ink2)
+        }
+        DayStrip(summary: summary, showNow: model.recording)
+        if closed.isEmpty {
+          Text(
+            "La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa."
+          )
           .type(15, 20)
           .foregroundStyle(Theme.ink2)
+          .fixedSize(horizontal: false, vertical: true)
+        }
       }
-      DayStrip(summary: summary, showNow: model.recording)
-      if closed.isEmpty {
-        Text(
-          "La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa."
-        )
-        .type(15, 20)
-        .foregroundStyle(Theme.ink2)
-        .fixedSize(horizontal: false, vertical: true)
-      } else {
-        VStack(spacing: 0) {
+      .padding(.horizontal, Theme.Gutter.title)
+      // The same conversations as on Oggi, in a cell as there.
+      if !closed.isEmpty {
+        CellGroup {
           ForEach(closed.prefix(5)) { c in
-            Rectangle().fill(Theme.hairline).frame(height: 1)
-            HStack {
-              Text(Clock.time(c.start)).type(17, 24).monospacedDigit().foregroundStyle(Theme.ink)
-              Spacer()
-              Text(DurationFormat.words(c.duration(now: now)))
-                .type(15, 20).foregroundStyle(Theme.ink2)
-            }
-            .frame(height: 48)
+            Row(Clock.time(c.start), value: DurationFormat.words(c.duration(now: now)))
           }
         }
       }
