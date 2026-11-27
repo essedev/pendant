@@ -35,6 +35,7 @@ back to English. To add or change a UI string:
   a build. Then write the Italian in `app/Shared/Localizable.xcstrings` (the app and the
   widget extension) or `app/PendantKit/Sources/PendantKit/Resources/Localizable.xcstrings`;
   the Info.plist texts are in `app/Pendant/Resources/InfoPlist.xcstrings`.
+- `make lint` runs `scripts/catalogs.py check`, which fails on a string with no Italian.
 - Two gotchas of the extraction. A ternary passed to an optional parameter loses its second
   branch: the compiler does not list it, so move the ternary into a property or function that
   returns `LocalizedStringResource`. The same English with two Italian renderings needs its

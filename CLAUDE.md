@@ -59,7 +59,7 @@ firmware updates. The earlier DIY pendant on ESP32-S3 is superseded and lives in
 - **iOS shares the pendant between apps**: with the Omi app connected, it also gets audio and
   gestures and sends the server a second recording. Keep it with the pendant forgotten.
 - **UI text is English in the code**: after a build (`make strings` needs no iPhone) write the
-  Italian in the catalog (`docs/CONVENTIONS.md #Language`).
+  Italian in the catalog, or `make lint` fails (`docs/CONVENTIONS.md #Language`).
 - **No behaviour values in the app's code**: they go into the configuration schema
   (`ARCHITECTURE.md #Configuration`).
 - **The real iPhone is needed for the pendant**: the simulator has no Bluetooth; screens are
