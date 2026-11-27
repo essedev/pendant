@@ -194,7 +194,7 @@ which on iOS replaced the Flutter plugin.
 | Gestures | Gesture recognition from firmware events, gesture-action map from the configuration |
 | Conversations | On-phone log of the conversations that went through here (start, end, state, bookmarks), 30 days, no audio |
 | Notes | Cutting the audio between open and close, checking there is voice, sending to the server (M10) |
-| State | Pendant events and heartbeat to Nexus, local notifications |
+| State | Local notifications; pendant events and heartbeat to the server come with M8 |
 | Configuration | Settings on the phone, validated against the schema with defaults and limits |
 | System controls | Controls for the Action button, Control Center and Lock Screen, Live Activity, in the `PendantWidgets` extension; state goes through the App Group (`docs/features/system-controls.md`) |
 
@@ -202,8 +202,9 @@ which on iOS replaced the Flutter plugin.
 
 1. The pendant connects. The app writes the time, reads version, features, codec and battery,
    and subscribes to audio, button, battery and charging.
-2. If the version is not among those supported by the configuration, the app reports it and
-   works only with the features the bitmask declares.
+2. If the version is not among those whose protocol was read at their tag (today only
+   3.0.21), the home shows a notice, which can be dismissed for that version, and the app keeps
+   working. The feature bitmask is read and logged, but does not yet gate anything.
 3. It starts paused: it records only from a double tap, the button or a system control. It
    resumes on its own only a recording cut by a disconnection, if the pendant comes back within
    the server's 120 s grace period, or a resume requested while it was away. If it stays
@@ -289,17 +290,16 @@ range, an unknown one is ignored.
 | Group | Examples |
 |---|---|
 | Gestures | Gesture-action map, vibration duration per action |
-| Notes | Maximum duration, voice threshold, pre-roll (seconds taken before the gesture) |
-| Storage | Offline audio policy: send, clear or keep; read size |
-| State | Heartbeat interval, low battery threshold, which local notifications |
+| Notes (M10) | Maximum duration, voice threshold, pre-roll (seconds taken before the gesture) |
+| Storage | Offline audio policy: send (M9), clear or keep, keep by default; read size (M9) |
+| State | Which local notifications and after how long, low battery threshold; heartbeat interval (M8) |
 | Forwarding | Language, ping interval, reconnection time |
 | Transcripts | On or off ("Trascrizioni sul telefono" in Server, on by default; off forgets the ones on the phone), first read after the close (60 s), longest wait between reads (15 min, doubling up to it), give-up time (one day) |
-| Firmware | Supported versions and features to use on each |
 | First launch | How long the connection test waits for the server (`probeTimeout`, 10 s), how long the search scans before showing the likely causes (`searchPatience`, 30 s), how long a connection may stay pending before "Can't connect" (`linkPatience`, 20 s) |
 | Pendant | LED: follows recording (on while recording, off when paused, default), always on, always off; brightness. The firmware picks the colour, the app only the brightness (`led.c`); when disconnected the last saved value applies. The LED on is also the notice for whoever is in front of you |
 
-Only the firmware values stay fixed (button timings, packet format): the app reads them from
-the protocol, it does not choose them.
+Only the firmware values stay fixed (button timings, packet format, the versions whose
+protocol was read): they come from the firmware code, the app does not choose them.
 
 ## Server contract
 
@@ -342,7 +342,9 @@ and red palette: red means only "recording" (solid LED on the display, level lit
 record" (the Riprendi key). Display as a material (aluminium bezel, glass with a reflection),
 warm aluminium as the second tint. A single key, recessed in the same bezel: graphite "Pausa"
 while recording, red "Riprendi" when stopped. Tabs: Now, Today, Settings (Adesso, Oggi,
-Impostazioni). Archivo font. Glass only on the bottom bar, which floats over the content.
+Impostazioni). Archivo font. Glass only on the tab bar, which floats over the content, and on
+the buttons in the page titles: the back button of pushed pages and Oggi's day chevrons
+(DECISIONS 2026-11-27, "Our own bar on every page").
 
 The interface is in English and Italian: it follows the phone's language, or the one chosen
 for Pendant in iOS Settings, and English for any other (DECISIONS 2026-11-27, "The app in
@@ -381,8 +383,8 @@ halfway between the mockup and the background, because on the phone they stood o
 
 The colours in the table are the default theme, Graphite and red. Display and accent are
 chosen in Impostazioni, Tema (DECISIONS 2026-11-27, "Themes"): the catalog with the light and
-dark renderings and the contrast test is in `PendantKit/ThemeCatalog.swift`, and the theme
-reaches the Live Activity through the App Group. Red and amber do not change.
+dark renderings and the contrast test is in `PendantKit/Sources/PendantKit/ThemeCatalog.swift`,
+and the theme reaches the Live Activity through the App Group. Red and amber do not change.
 
 The solid fill red sits under white at 4.6:1 in both themes; the mockup's `#e5402f` stopped at
 4.1:1. The full mockup `docs/concepts/concept-b-app.html` is the specification for texts,
@@ -436,7 +438,11 @@ with the prototype `prototype/omi_stt_probe.py` on 28/10/2026, Omi app 1.0.577.
 
 ## Transcription
 
-The server does it, once the session is closed: the app sends only the audio. With "Trascrizioni sul telefono" on, when the server announces a submission for the conversation, the app reads it after the close, more and more rarely, and keeps the transcript with the conversation on the phone, for as long as the conversation stays (30 days); a server without submissions works as before.
+The server does it, once the session is closed: the app sends only the audio. With
+"Trascrizioni sul telefono" on, when the server announces a submission for the conversation,
+the app reads it after the close, more and more rarely, and keeps the transcript with the
+conversation on the phone, for as long as the conversation stays (30 days); a server without
+submissions works as before.
 
 ## Pendant checks
 
@@ -469,8 +475,8 @@ Still open:
 
 - **Bluetooth in the background on iOS**: if iOS kills the app and restoration does not
   trigger, recording stops silently. The heartbeat to Nexus is there to know it.
-- **Changing firmware**: every new version can change the protocol. The app works only on the
-  versions declared in the configuration and on the feature bitmask.
+- **Changing firmware**: every new version can change the protocol. The app knows the
+  protocol of the versions read at their tag (today 3.0.21) and warns on any other.
 - **Two apps, one pendant**: if the Omi app gets connected again, it records in parallel to
   Nexus and responds to the same gestures, inverting the pause. Keep the pendant forgotten in
   it.

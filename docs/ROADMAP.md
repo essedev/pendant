@@ -29,8 +29,9 @@ the reSpeaker Clip, rewriting only the connection.
 ## Open questions
 
 - Pause that holds even when disconnected: comes with firmware 3.0.24 (saved mute), released
-  on 9/11 but at 0% on 26/11. On 3.0.21 it might be achieved with the microphone gain at 0,
-  to be measured in M5.
+  on 9/11 but at 0% on 27/11. On 3.0.21 it might be achieved with the microphone gain at 0:
+  tried in M5, inconclusive without a speech and silence comparison
+  (`ARCHITECTURE.md #Pendant checks`).
 - Accidental power-ons in a pocket: how many there are is measured in use. Power-off from the
   app comes with 3.0.24: then the idle warning becomes a power-off.
 - Vibration PR [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912):
