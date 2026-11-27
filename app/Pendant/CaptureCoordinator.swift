@@ -27,6 +27,8 @@ final class CaptureCoordinator {
   var config: Configuration {
     didSet {
       uplink.config = config
+      if !config.transcripts, conversations.forgetTranscripts() { save() }
+      if config.transcripts != oldValue.transcripts { onOperationsChanged?() }
       link.config = config
       applyLed()
       applyAudioWanted()

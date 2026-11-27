@@ -254,7 +254,7 @@ struct ConversationView: View {
         }
         .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, Theme.pageTop)
-        if let op = c.operation {
+        if model.config.transcripts, let op = c.operation {
           TranscriptSection(conversation: c, operation: op)
         }
         CellGroup(
@@ -314,7 +314,7 @@ struct ConversationView: View {
         ? "Il server non risponde: l’audio degli ultimi \(DurationFormat.words(seconds)) aspetta sul telefono e parte da solo quando torna in linea."
         : "L’audio arriva al server mentre parli. Sul telefono non resta niente."
     case .sent:
-      c.operation == nil
+      c.operation == nil || !model.config.transcripts
         ? "Sul telefono l’audio non c’è più: la trascrizione si legge sul server."
         : "Sul telefono l’audio non c’è più: è sul server."
     case .queued: "L’audio aspetta sul telefono e parte da solo quando il server torna in linea."

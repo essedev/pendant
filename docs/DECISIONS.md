@@ -205,5 +205,8 @@ generic primitive, not a pendant feature; the contract is in ARCHITECTURE, "Serv
 Rejected: push notifications (the Personal Team has no APNs), webhooks (a phone has no address
 to call), a signed URL as the receipt (it ends up in proxy logs), and giving the stream token
 read access to the server's entities (too wide for one client). A server without operations
-keeps working: the app simply shows no transcript.
+keeps working: the app simply shows no transcript. Receiving them is an option, on by default:
+the transcripts stay on the phone with their conversations (30 days, in the app's file and its
+backups), and turning it off forgets them. Both forms are read: segments with speakers, or
+plain text.
 

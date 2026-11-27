@@ -330,6 +330,13 @@ struct ServerPage: View {
             selection: $model.config.language,
             footer: "Viene comunicata al server a ogni conversazione.")
         }
+        CellGroup(
+          footer: model.config.transcripts
+            ? "Se il server le manda, le trascrizioni si leggono nella pagina della conversazione, con i parlatori quando il server li distingue. Restano sul telefono finché resta la conversazione."
+            : "Le trascrizioni si leggono solo sul server. Sul telefono non ne resta nessuna."
+        ) {
+          ToggleRow(label: "Trascrizioni sul telefono", isOn: $model.config.transcripts)
+        }
         CellGroup {
           Row("Ultimo contatto", value: lastContact)
           Row(label: "Prova la connessione") {

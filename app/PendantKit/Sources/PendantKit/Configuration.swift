@@ -95,6 +95,9 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var reconnectMaxDelay: Double
   /// Seconds of audio kept while the server is unreachable; older audio is dropped past it.
   public var spoolSeconds: Double
+  /// Receive the transcripts the server announces and keep them with the conversations on the
+  /// phone. Off, the app reads nothing back and forgets the transcripts it has.
+  public var transcripts: Bool
   /// Seconds after a conversation closes before the first read of its transcript; the next
   /// reads double the wait.
   public var transcriptCheckFirst: Double
@@ -169,6 +172,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     pingInterval = 20
     reconnectMaxDelay = 30
     spoolSeconds = 1800
+    transcripts = true
     transcriptCheckFirst = 60
     transcriptCheckMax = 900
     transcriptGiveUp = 86400
@@ -254,6 +258,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     pingInterval = number(.pingInterval, d.pingInterval, 5...90)
     reconnectMaxDelay = number(.reconnectMaxDelay, d.reconnectMaxDelay, 1...300)
     spoolSeconds = number(.spoolSeconds, d.spoolSeconds, 60...14400)
+    transcripts = value(.transcripts, d.transcripts)
     transcriptCheckFirst = number(.transcriptCheckFirst, d.transcriptCheckFirst, 10...3600)
     transcriptCheckMax = number(.transcriptCheckMax, d.transcriptCheckMax, 60...7200)
     transcriptGiveUp = number(.transcriptGiveUp, d.transcriptGiveUp, 3600...604800)
@@ -303,6 +308,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(pingInterval, forKey: .pingInterval)
     try c.encode(reconnectMaxDelay, forKey: .reconnectMaxDelay)
     try c.encode(spoolSeconds, forKey: .spoolSeconds)
+    try c.encode(transcripts, forKey: .transcripts)
     try c.encode(transcriptCheckFirst, forKey: .transcriptCheckFirst)
     try c.encode(transcriptCheckMax, forKey: .transcriptCheckMax)
     try c.encode(transcriptGiveUp, forKey: .transcriptGiveUp)
@@ -339,6 +345,6 @@ public struct Configuration: Codable, Equatable, Sendable {
       signatureDaysBefore, liveActivity,
       liveActivityPauseEnd, liveActivityAlways
     case resumeGrace, pendantName, appearance, displayStyle, accentStyle
-    case transcriptCheckFirst, transcriptCheckMax, transcriptGiveUp
+    case transcripts, transcriptCheckFirst, transcriptCheckMax, transcriptGiveUp
   }
 }

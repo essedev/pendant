@@ -123,14 +123,32 @@ public struct ConversationLog: Codable, Equatable, Sendable {
     return true
   }
 
-  /// The closed conversations whose operation is due for a read at `now`.
+  /// The closed conversations whose operation is due for a read at `now`; none while the
+  /// transcripts are off.
   public func dueOperations(now: Date, config: Configuration) -> [Conversation] {
-    conversations.filter { c in
+    guard config.transcripts else { return [] }
+    return conversations.filter { c in
       guard c.status != .live, let end = c.end, let op = c.operation, !op.isFinal else {
         return false
       }
       return (op.nextCheck ?? OperationSchedule.first(closedAt: end, config: config)) <= now
     }
+  }
+
+  /// Forgets every transcript and what was read of the operations, keeping their ids: turned
+  /// back on, the app reads them again from the start. Returns whether anything changed.
+  @discardableResult
+  public mutating func forgetTranscripts() -> Bool {
+    var changed = false
+    for i in conversations.indices {
+      guard let op = conversations[i].operation else { continue }
+      let fresh = ServerOperation(id: op.id, url: op.url)
+      if op != fresh {
+        conversations[i].operation = fresh
+        changed = true
+      }
+    }
+    return changed
   }
 
   /// Replaces the operation of a conversation after a read.

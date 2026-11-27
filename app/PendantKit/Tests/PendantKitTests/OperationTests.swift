@@ -112,6 +112,23 @@ private let closed = Date(timeIntervalSince1970: 1_800_000_000)
     #expect(log.conversations.first?.operation?.id == "op-2")
   }
 
+  @Test func forgetsTheTranscriptsWhenTurnedOff() {
+    var config = Configuration.defaults
+    var op = ServerOperation(id: "op", url: "/x")
+    op.status = .done
+    op.transcript = Transcript(text: "ciao")
+    var log = ConversationLog(conversations: [
+      Conversation(start: closed, end: closed.addingTimeInterval(60), status: .sent, operation: op)
+    ])
+    config.transcripts = false
+    #expect(log.dueOperations(now: closed.addingTimeInterval(3600), config: config).isEmpty)
+    let changed = log.forgetTranscripts()
+    #expect(changed)
+    #expect(log.conversations.first?.operation == ServerOperation(id: "op", url: "/x"))
+    config.transcripts = true
+    #expect(log.dueOperations(now: closed.addingTimeInterval(3600), config: config).count == 1)
+  }
+
   @Test func decodesALogFromBeforeOperations() throws {
     let old =
       #"{"conversations":[{"id":"00000000-0000-0000-0000-000000000001","#
