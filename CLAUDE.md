@@ -40,7 +40,7 @@ firmware updates. The earlier DIY pendant on ESP32-S3 is superseded and lives in
   `app/.logs/`.
 - Simulator, from `app/`: `make sim SCENE=<scene>` launches the app in a demo scene (list in
   `Pendant/Demo.swift`, argument `-demo`), `make screens` shoots every scene in light and dark
-  to `app/.screens/`. To review a UI, compare it with the mockup `concept-b-app.html`.
+  to `app/.screens/`; `LANG=en` or `LANG=it` picks the language. To review a UI, compare it with the mockup `concept-b-app.html`.
 - Prototype: `PROBE_TOKEN=<token> uv run prototype/omi_stt_probe.py` (listens on
   127.0.0.1:8765, writes WAV and `events.jsonl` to `prototype/recordings/`).
 - Exposing it to the iPhone: `cloudflared tunnel --url http://localhost:8765`, then in the app

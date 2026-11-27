@@ -89,8 +89,14 @@ SIM_ID = $(shell xcrun simctl list devices available -j | python3 -I -c "import 
 	print(d[0]['udid'] if d else '')")
 SIM_APP := $(DERIVED)/sim/Build/Products/Debug-iphonesimulator/Pendant.app
 SCENES ?= $(shell sed -n 's/^  case [a-zA-Z]* = "\(.*\)"/\1/p; s/^  case \([a-z]*\)$$/\1/p' Pendant/Demo.swift)
+# LANG=en or LANG=it launches the app in that language, with the region that goes with it (24-hour
+# clock in Italian, 12-hour in English); any other LANG, as the shell's own, leaves the
+# simulator's. The screenshots of a language carry it in their name.
+SIM_LANG := $(filter en it,$(LANG))
+SIM_LOCALE := $(if $(filter it,$(SIM_LANG)),it_IT,en_US)
+LANG_ARGS := $(if $(SIM_LANG),-AppleLanguages "($(SIM_LANG))" -AppleLocale $(SIM_LOCALE))
 
-sim: project ## Build for the simulator and launch a demo scene: SCENE=home.rec THEME=casio.orange
+sim: project ## Build for the simulator and launch a demo scene: SCENE=home.rec THEME=casio.orange LANG=en
 	@test -n "$(SIM_ID)" || (echo "No simulator $(SIMULATOR)" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(SIM_ID)' \
 		-derivedDataPath $(DERIVED)/sim CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
@@ -99,17 +105,19 @@ sim: project ## Build for the simulator and launch a demo scene: SCENE=home.rec 
 	xcrun simctl bootstatus $(SIM_ID) -b >/dev/null
 	xcrun simctl install $(SIM_ID) $(SIM_APP)
 	xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $(or $(SCENE),home.rec) \
-		$(if $(THEME),-theme $(THEME))
+		$(if $(THEME),-theme $(THEME)) $(LANG_ARGS)
 
-screens: sim ## Screenshots of every demo scene in app/.screens, light and dark
+screens: sim ## Screenshots of every demo scene in app/.screens, light and dark: LANG=en
 	mkdir -p .screens
 	xcrun simctl status_bar $(SIM_ID) override --time 17:42 --batteryState charged --batteryLevel 100
 	@for mode in light dark; do \
 		xcrun simctl ui $(SIM_ID) appearance $$mode; \
 		for scene in $(SCENES); do \
-			xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $$scene >/dev/null; \
+			xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $$scene \
+				$(LANG_ARGS) >/dev/null; \
 			sleep 2.5; \
-			xcrun simctl io $(SIM_ID) screenshot .screens/$$scene.$$mode.png >/dev/null 2>&1; \
+			xcrun simctl io $(SIM_ID) screenshot \
+				.screens/$$scene.$$mode$(if $(SIM_LANG),.$(SIM_LANG)).png >/dev/null 2>&1; \
 		done; \
 	done
 	xcrun simctl ui $(SIM_ID) appearance light
