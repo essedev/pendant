@@ -378,8 +378,30 @@ final class AppModel {
   // MARK: Wiring
 
   private func wireCallbacks() {
+    notifier.onOpen = { [weak self] kind in self?.open(kind) }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
+  }
+
+  /// The app came to the foreground.
+  func becameActive() {
+    activities.retry()
+    Task { await refreshNotificationStatus() }
+  }
+
+  /// Takes the user to the page about a tapped notification.
+  private func open(_ kind: Notifier.Kind) {
+    switch kind {
+    case .uplinkUnreachable:
+      tab = .settings
+      settingsPath = [.server]
+    case .signatureExpiring:
+      tab = .settings
+      settingsPath = [.advanced]
+    case .pendantDisconnected, .batteryLow, .pendantIdle:
+      tab = .now
+    }
+    log.record("notificationOpened", kind.rawValue)
   }
 
   private func registerActions() {
@@ -463,12 +485,23 @@ final class AppModel {
       case .protocolMismatch: "protocollo diverso"
       case .notSet: "non impostato"
       }
+    let away: String? =
+      switch s.mode {
+      case .recording, .paused: nil
+      case .disconnected: "Scollegato"
+      case .bluetoothOff: "Bluetooth spento"
+      case .denied: "Senza Bluetooth"
+      case .unpaired: "Nessun ciondolo"
+      }
     let content = RecordingAttributes.ContentState(
       recording: s.mode == .recording, since: s.since,
       queuedSeconds: s.serverState == .online ? 0 : Int(s.queuedSeconds),
-      serverState: serverWords, serverWarning: s.serverState != .online, battery: s.battery)
-    let show = config.liveActivity && (s.mode == .recording || s.mode == .paused)
+      serverState: serverWords, serverWarning: s.serverState != .online, battery: s.battery,
+      away: away)
+    let always = config.liveActivityAlways
+    let show = config.liveActivity && (always || s.mode == .recording || s.mode == .paused)
     activities.show(
-      content, server: s.serverHost, enabled: show, endAfterPause: config.liveActivityPauseEnd)
+      content, server: s.serverHost, enabled: show,
+      endAfterPause: always ? nil : config.liveActivityPauseEnd)
   }
 }

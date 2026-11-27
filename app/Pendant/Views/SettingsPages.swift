@@ -451,11 +451,21 @@ struct SystemControlsPage: View {
             "Aggiungi Pausa e ripresa e Segna questo momento. Sul blocco schermo sostituiscono torcia e fotocamera.",
           ])
         }
-        CellGroup(header: "Mentre registra") {
+        CellGroup(
+          header: "Attività in tempo reale",
+          footer: model.config.liveActivityAlways
+            ? "Resta sul blocco schermo anche in pausa e col ciondolo lontano. iOS la tiene al massimo 8 ore: poi ricompare quando apri l’app."
+            : "Compare quando parte una registrazione e si chiude dopo \(DurationFormat.words(model.config.liveActivityPauseEnd)) di pausa."
+        ) {
           ToggleRow(
             label: "Attività in tempo reale",
             subtitle: "Tempo, server e tasto Pausa sul blocco schermo e nella Dynamic Island",
             isOn: $model.config.liveActivity)
+          ToggleRow(
+            label: "Sempre visibile", subtitle: "Anche in pausa e col ciondolo lontano",
+            isOn: $model.config.liveActivityAlways
+          )
+          .disabled(!model.config.liveActivity)
         }
       }
       .padding(.bottom, 32)

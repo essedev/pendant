@@ -26,7 +26,10 @@ Due controlli dell'app, che si mettono dove si vuole:
   tocco.
 - **Centro di Controllo e blocco schermo**: tutti e due.
 - **Attività in tempo reale** sul blocco schermo e nella Dynamic Island mentre registra: tempo
-  trascorso, stato del server, tasto pausa.
+  trascorso, stato del server, tasto pausa. Con "Sempre visibile" resta anche in pausa e col
+  ciondolo lontano (spia ambra, trattini, ora dell'ultimo contatto). iOS la chiude dopo circa
+  8 ore; se iOS rifiuta di aprirla con l'app in background, l'app riprova quando torna in primo
+  piano.
 
 ## Come
 

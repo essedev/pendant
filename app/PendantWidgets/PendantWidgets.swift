@@ -63,7 +63,7 @@ struct RecordingLiveActivity: Widget {
       let s = context.state
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          RecordingTag(recording: s.recording, compact: true)
+          RecordingTag(recording: s.recording, away: s.away)
         }
         DynamicIslandExpandedRegion(.trailing) {
           if let battery = s.battery {
@@ -81,16 +81,20 @@ struct RecordingLiveActivity: Widget {
           }
         }
         DynamicIslandExpandedRegion(.bottom) {
-          HStack(spacing: 8) {
-            ActivityKey(recording: s.recording)
-            Button(intent: BookmarkIntent()) {
-              Label("Segna", systemImage: "bookmark.fill")
-                .font(Theme.font(15, .semibold))
-                .frame(maxWidth: .infinity, minHeight: 44)
+          if s.away != nil {
+            LastSeen(since: s.since)
+          } else {
+            HStack(spacing: 8) {
+              ActivityKey(recording: s.recording)
+              Button(intent: BookmarkIntent()) {
+                Label("Segna", systemImage: "bookmark.fill")
+                  .font(Theme.font(15, .semibold))
+                  .frame(maxWidth: .infinity, minHeight: 44)
+              }
+              .buttonStyle(.plain)
+              .foregroundStyle(.white)
+              .background(Capsule().fill(Theme.tickOff))
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.white)
-            .background(Capsule().fill(Theme.tickOff))
           }
         }
       } compactLeading: {
@@ -115,7 +119,7 @@ private struct LockScreenActivity: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack(spacing: 8) {
-        RecordingTag(recording: state.recording, compact: false)
+        RecordingTag(recording: state.recording, away: state.away)
         if state.queuedSeconds > 0 {
           Text(DurationFormat.words(Double(state.queuedSeconds)) + " in coda")
             .font(Theme.font(15, .semibold))
@@ -131,8 +135,12 @@ private struct LockScreenActivity: View {
       HStack(alignment: .center) {
         ActivityTimer(state: state, size: 34)
         Spacer()
-        ActivityKey(recording: state.recording)
-          .frame(width: 132)
+        if state.away != nil {
+          LastSeen(since: state.since)
+        } else {
+          ActivityKey(recording: state.recording)
+            .frame(width: 132)
+        }
       }
       Rectangle().fill(Theme.displayRule).frame(height: 1)
       HStack {
@@ -147,27 +155,42 @@ private struct LockScreenActivity: View {
   }
 }
 
-/// The REC tag: filled red while recording, outlined in pause.
+/// The REC tag: filled red while recording, outlined in pause, amber with the pendant away.
 private struct RecordingTag: View {
   let recording: Bool
-  let compact: Bool
+  let away: String?
 
   var body: some View {
     HStack(spacing: 6) {
-      if recording { Circle().fill(.white).frame(width: 8, height: 8) }
-      Text(recording ? "Registra" : "In pausa")
+      if recording && away == nil { Circle().fill(.white).frame(width: 8, height: 8) }
+      Text(away ?? (recording ? "Registra" : "In pausa"))
     }
     .font(Theme.font(15, .semibold))
-    .foregroundStyle(recording ? .white : Theme.displayInk)
+    .foregroundStyle(
+      away != nil ? Theme.displayWarn : recording ? .white : Theme.displayInk
+    )
     .padding(.horizontal, 10)
     .frame(height: 28)
     .background {
-      if recording {
+      if away != nil {
+        RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.displayWarn, lineWidth: 1.5)
+      } else if recording {
         RoundedRectangle(cornerRadius: 8).fill(Theme.red)
       } else {
         RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.displayInk, lineWidth: 1.5)
       }
     }
+  }
+}
+
+/// The last contact with the pendant, while it is away.
+private struct LastSeen: View {
+  let since: Date
+
+  var body: some View {
+    Text("Visto alle \(since.formatted(date: .omitted, time: .shortened))")
+      .font(Theme.font(15, .medium))
+      .foregroundStyle(Theme.displayInk2)
   }
 }
 
@@ -177,11 +200,18 @@ private struct ActivityTimer: View {
   let size: CGFloat
 
   var body: some View {
-    Text(timerInterval: state.since...Date.distantFuture, countsDown: false)
-      .font(Theme.font(size, .semibold, wide: true))
-      .monospacedDigit()
-      .foregroundStyle(state.recording ? Theme.displayInk : Theme.displayInk2)
-      .multilineTextAlignment(.leading)
+    if state.away != nil {
+      // Away, a running time says nothing: dashes, as on the home display.
+      Text("--:--")
+        .font(Theme.font(size, .semibold, wide: true))
+        .foregroundStyle(Theme.displayInk2)
+    } else {
+      Text(timerInterval: state.since...Date.distantFuture, countsDown: false)
+        .font(Theme.font(size, .semibold, wide: true))
+        .monospacedDigit()
+        .foregroundStyle(state.recording ? Theme.displayInk : Theme.displayInk2)
+        .multilineTextAlignment(.leading)
+    }
   }
 }
 

@@ -326,7 +326,9 @@ fotografa nel simulatore ogni sua scena (`app/Pendant/Demo.swift`) in chiaro e s
   da solo quando Mac e iPhone sono sulla stessa rete.
 - **Limiti**: niente notifiche push (bastano le locali e Telegram per quelle da Nexus), al
   massimo 3 app firmate così. Il Bluetooth in background va verificato col primo build.
-  L'App Group fra app ed estensione funziona anche col Personal Team (firma del 27/11/2026).
+  L'App Group fra app ed estensione funziona anche col Personal Team (firma del 27/11/2026);
+  le notifiche Time Sensitive no: Xcode rifiuta il profilo, quindi una notifica non passa la
+  modalità Concentrazione finché l'app è firmata con l'account gratuito.
 - **Se l'app passa la prova**: account sviluppatore a 99 $ l'anno, il certificato dura un anno.
 - **App Omi**: resta installata, col ciondolo dimenticato e le azioni al tocco spente. Per un
   aggiornamento del firmware si ricollega, mettendo in pausa l'app nostra, e la si scollega

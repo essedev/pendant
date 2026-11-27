@@ -6,14 +6,43 @@ import UserNotifications
 /// Scheduling at the moment the problem starts lets the notification fire even if iOS has
 /// suspended the app meanwhile, which is exactly when the pendant or the server went silent.
 /// One identifier per kind: a new one replaces the old.
+///
+/// It is also the notification centre's delegate: notifications show while the app is open, and
+/// a tap hands the kind to `onOpen`, which takes the user to the page about it.
 @MainActor
-final class Notifier {
+final class Notifier: NSObject, UNUserNotificationCenterDelegate {
   /// The conditions the app can warn about, one pending notification each.
   enum Kind: String {
     case pendantDisconnected, uplinkUnreachable, batteryLow, pendantIdle, signatureExpiring
   }
 
   private let center = UNUserNotificationCenter.current()
+
+  /// Called with the kind of a notification the user tapped.
+  var onOpen: ((Kind) -> Void)?
+
+  /// A notifier, set as delegate at once: iOS hands a tap that launched the app only to a
+  /// delegate that is in place before launch ends.
+  override init() {
+    super.init()
+    center.delegate = self
+  }
+
+  nonisolated func userNotificationCenter(
+    _ center: UNUserNotificationCenter, willPresent notification: UNNotification
+  ) async -> UNNotificationPresentationOptions {
+    [.banner, .list, .sound]
+  }
+
+  nonisolated func userNotificationCenter(
+    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
+  ) async {
+    let id = response.notification.request.identifier
+    await MainActor.run {
+      guard let kind = Kind(rawValue: id) else { return }
+      onOpen?(kind)
+    }
+  }
 
   /// The permission as iOS has it now.
   func authorization() async -> UNAuthorizationStatus {
@@ -56,7 +85,8 @@ final class Notifier {
     content.body = body
     content.sound = .default
     // Time sensitive only for what stops the recording. Breaking through a Focus also needs the
-    // Time Sensitive entitlement, which a free account may not grant; the level is set anyway.
+    // Time Sensitive entitlement, which the free account does not grant (Xcode refuses it,
+    // 27/11/2026): the level is set for when the app is signed with a paid account.
     content.interruptionLevel = timeSensitive ? .timeSensitive : .active
     center.add(UNNotificationRequest(identifier: kind.rawValue, content: content, trigger: trigger))
   }

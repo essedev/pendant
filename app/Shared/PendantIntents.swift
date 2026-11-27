@@ -88,6 +88,9 @@ struct RecordingAttributes: ActivityAttributes {
     var serverWarning: Bool
     /// Pendant battery, nil when unknown.
     var battery: Int?
+    /// Why the pendant is not here ("Scollegato"), nil when it is; `since` is then the last
+    /// contact.
+    var away: String?
   }
 
   /// The server host, for the bottom line.

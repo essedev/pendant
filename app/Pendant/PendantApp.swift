@@ -13,6 +13,7 @@ struct PendantApp: App {
     }
     .onChange(of: scenePhase) { _, phase in
       model.log.record("scene", "\(phase)")
+      if phase == .active { model.becameActive() }
     }
   }
 }

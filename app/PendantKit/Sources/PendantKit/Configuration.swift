@@ -93,6 +93,8 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var liveActivity: Bool
   /// Seconds of pause after which the Live Activity ends.
   public var liveActivityPauseEnd: Double
+  /// Keep the Live Activity also in pause and with the pendant away, instead of ending it.
+  public var liveActivityAlways: Bool
   /// Seconds within which the server resumes a conversation cut by a disconnection; it is the
   /// grace of `audio_stream`, mirrored here to tell the user what happened.
   public var resumeGrace: Double
@@ -131,6 +133,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     signatureDaysBefore = 2
     liveActivity = true
     liveActivityPauseEnd = 600
+    liveActivityAlways = false
     resumeGrace = 120
     pendantName = "Omi"
   }
@@ -205,6 +208,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     signatureDaysBefore = number(.signatureDaysBefore, d.signatureDaysBefore, 1...6)
     liveActivity = value(.liveActivity, d.liveActivity)
     liveActivityPauseEnd = number(.liveActivityPauseEnd, d.liveActivityPauseEnd, 0...28800)
+    liveActivityAlways = value(.liveActivityAlways, d.liveActivityAlways)
     resumeGrace = number(.resumeGrace, d.resumeGrace, 0...3600)
     let name: String = value(.pendantName, d.pendantName)
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -240,6 +244,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(signatureDaysBefore, forKey: .signatureDaysBefore)
     try c.encode(liveActivity, forKey: .liveActivity)
     try c.encode(liveActivityPauseEnd, forKey: .liveActivityPauseEnd)
+    try c.encode(liveActivityAlways, forKey: .liveActivityAlways)
     try c.encode(resumeGrace, forKey: .resumeGrace)
     try c.encode(pendantName, forKey: .pendantName)
   }
@@ -250,7 +255,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     case offlinePolicy, pingInterval, reconnectMaxDelay, spoolSeconds, notifyDisconnect
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
     case notifyIdle, idleNotifyAfter, notifySignature, signatureDaysBefore, liveActivity,
-      liveActivityPauseEnd
+      liveActivityPauseEnd, liveActivityAlways
     case resumeGrace, pendantName
   }
 }
