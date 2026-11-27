@@ -17,8 +17,13 @@ struct TodayView: View {
     let closed = all.filter { $0.status != .live }
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        PageTitle(title: title(day, offset: offset), subtitle: Clock.longDay(day))
-          .padding(.top, 8)
+        PageTitle(title: title(day, offset: offset), subtitle: Clock.longDay(day)) {
+          ChevronPair(
+            backLabel: "Giorno prima", forwardLabel: "Giorno dopo",
+            canGoBack: offset < ConversationLog.retentionDays, canGoForward: !isToday,
+            back: { offset += 1 }, forward: { offset -= 1 })
+        }
+        .padding(.top, 8)
         VStack(alignment: .leading, spacing: 12) {
           HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(closed.isEmpty ? "Niente" : DurationFormat.words(summary.totalSeconds))
@@ -64,14 +69,7 @@ struct TodayView: View {
         ConversationView(conversation: c)
       }
     }
-    .toolbar {
-      ToolbarItemGroup(placement: .topBarTrailing) {
-        Button("Giorno prima", systemImage: "chevron.left") { offset += 1 }
-          .disabled(offset >= ConversationLog.retentionDays)
-        Button("Giorno dopo", systemImage: "chevron.right") { offset -= 1 }
-          .disabled(isToday)
-      }
-    }
+    .toolbar(.hidden, for: .navigationBar)
     .gesture(
       DragGesture(minimumDistance: 40).onEnded { drag in
         guard abs(drag.translation.width) > abs(drag.translation.height) else { return }

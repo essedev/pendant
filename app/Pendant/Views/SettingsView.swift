@@ -40,6 +40,7 @@ struct SettingsView: View {
       .padding(.bottom, 32)
     }
     .background(Theme.background.ignoresSafeArea())
+    .toolbar(.hidden, for: .navigationBar)
     .navigationDestination(for: AppModel.Page.self) { page in
       switch page {
       case .pendant: PendantPage()

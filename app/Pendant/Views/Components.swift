@@ -428,23 +428,74 @@ struct CapsuleButton: View {
   }
 }
 
-/// The big title of a scrolling page.
-struct PageTitle: View {
+/// The big title of a tab's root page, with controls on its line.
+///
+/// The roots hide the navigation bar, so every tab's title starts at the same height and the
+/// controls sit centred on the title instead of in a bar above it.
+struct PageTitle<Trailing: View>: View {
   let title: String
   var subtitle: String?
+  @ViewBuilder var trailing: Trailing
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
-      Text(title)
-        .type(34, 40, .semibold)
-        .tracking(-0.68)
-        .foregroundStyle(Theme.ink)
+      HStack(alignment: .center) {
+        Text(title)
+          .type(34, 40, .semibold)
+          .tracking(-0.68)
+          .foregroundStyle(Theme.ink)
+        Spacer(minLength: 12)
+        trailing
+      }
+      // The title's line height: taller controls overflow it, so every title sits at one height.
+      .frame(height: 40)
       if let subtitle {
         Text(subtitle).type(17, 24).foregroundStyle(Theme.ink2)
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.horizontal, 24)
+  }
+}
+
+extension PageTitle where Trailing == EmptyView {
+  init(title: String, subtitle: String? = nil) {
+    self.init(title: title, subtitle: subtitle) { EmptyView() }
+  }
+}
+
+/// Two chevrons in one glass capsule, as iOS draws a pair of toolbar buttons.
+struct ChevronPair: View {
+  let backLabel: String
+  let forwardLabel: String
+  let canGoBack: Bool
+  let canGoForward: Bool
+  let back: () -> Void
+  let forward: () -> Void
+
+  var body: some View {
+    HStack(spacing: 0) {
+      chevron("chevron.left", backLabel, enabled: canGoBack, action: back)
+      chevron("chevron.right", forwardLabel, enabled: canGoForward, action: forward)
+    }
+    .glassEffect(.regular.interactive(), in: Capsule())
+  }
+
+  private func chevron(
+    _ symbol: String, _ label: String, enabled: Bool, action: @escaping () -> Void
+  )
+    -> some View
+  {
+    Button(action: action) {
+      Image(systemName: symbol)
+        .font(.system(size: 17, weight: .semibold))
+        .foregroundStyle(enabled ? Theme.ink : Theme.ink3)
+        .frame(width: 44, height: 44)
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .disabled(!enabled)
+    .accessibilityLabel(label)
   }
 }
 
