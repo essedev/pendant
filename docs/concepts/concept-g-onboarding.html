@@ -10,6 +10,10 @@
 		<!--
 			Concept G: il primo avvio dell'app com'è oggi, per decidere cosa cambiare.
 
+			GIRO 5 (27/11/2026): nell'anteprima della notifica (passo 5) c'è l'icona vera dell'app al
+			posto del quadrato scuro con l'onda, e il testo è quello che l'app manda oggi: il vecchio
+			"Riprende da sola quando torna vicino" non è più vero, ogni collegamento parte in pausa.
+
 			GIRO 4 (27/11/2026): l'esito della prova di connessione è la stessa card degli avvisi di
 			Adesso (NoticeCard): fondo delle celle, titolo in inchiostro, testo grigio, l'icona dice il
 			tipo (anello ambra per un problema, spunta per Collegato, anello che pulsa mentre prova, al
@@ -230,8 +234,8 @@
 
 			/* NotificationPreview. */
 			.notif { margin-top: 28px; padding: 14px; border-radius: 24px; background: var(--cell); display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: start; }
-			.notif .ic { width: 38px; height: 38px; border-radius: 9px; background: var(--d); display: grid; place-items: center; color: var(--redlit); }
-			.notif .ic svg { width: 21px; height: 19px; }
+			.notif .ic { width: 38px; height: 38px; border-radius: 9px; overflow: hidden; display: block; }
+			.notif .ic svg { width: 38px; height: 38px; display: block; }
 			.notif .tt { display: flex; justify-content: space-between; gap: 8px; }
 			.notif .tt b { font: 600 15px/20px var(--font); }
 			.notif .tt span { font-size: 13px; line-height: 18px; color: var(--ink2); white-space: nowrap; }
@@ -253,7 +257,7 @@
 			<button data-zoom="0.5"><kbd>3</kbd> 50%</button>
 		</div>
 		<header class="intro">
-			<h1>Giro 4: il primo avvio, esiti della prova come gli avvisi di Adesso</h1>
+			<h1>Giro 5: il primo avvio, icona vera nell'anteprima della notifica</h1>
 			<p>
 				Ogni schermata del primo avvio come la disegna il codice adesso, per la revisione: nessuna variante, nessun miglioramento.
 				Sotto ogni telefono, il nome del passo e cosa lo fa comparire. Dove il codice e il mock vecchio non coincidono, qui c’è il codice.
@@ -315,6 +319,18 @@
 
 			const HOST = 'server.esempio.it';
 
+			// The app icon (app/Icon/pendant-light.svg), for the notification preview.
+			const APP_ICON = `<svg viewBox="0 0 1024 1024" aria-hidden="true">
+				<defs>
+					<linearGradient id="ai-ground" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#f1f1ef"/><stop offset="1" stop-color="#d6d7d3"/></linearGradient>
+					<radialGradient id="ai-face" cx="0.4" cy="0.36" r="0.75"><stop offset="0" stop-color="#a19f9a"/><stop offset="1" stop-color="#6b6966"/></radialGradient>
+				</defs>
+				<rect width="1024" height="1024" fill="url(#ai-ground)"/>
+				<circle cx="512" cy="512" r="340" fill="#aab2bc"/>
+				<circle cx="512" cy="512" r="332" fill="none" stroke="#cfd5db" stroke-width="6"/>
+				<circle cx="512" cy="512" r="276" fill="url(#ai-face)"/>
+				<circle cx="512" cy="512" r="30" fill="#e5402f"/>
+			</svg>`;
 			// The pendant figure, the same drawing as the app icon.
 			const PENDANT = `<svg class="fig" viewBox="172 172 680 680" aria-hidden="true">
 				<defs>
@@ -418,7 +434,7 @@
 					step: 'notifications',
 					body:
 						heading('Un avviso quando qualcosa si ferma', 'Pendant ti avvisa se il ciondolo si scollega, se il server non risponde o se la batteria è bassa. Quando e quali lo scegli dalle impostazioni.') +
-						`<div class="notif"><span class="ic">${ICON.wave}</span><div><div class="tt"><b>Ciondolo scollegato da 2 min</b><span>adesso</span></div><p>Riprende da sola quando torna vicino.</p></div></div>`,
+						`<div class="notif"><span class="ic">${APP_ICON}</span><div><div class="tt"><b>Ciondolo scollegato da 2 min</b><span>adesso</span></div><p>La registrazione si è fermata alle 17:40. Se il ciondolo torna entro 2 min continua la stessa conversazione, dopo resta in pausa.</p></div></div>`,
 					acts: main('Consenti le notifiche') + text('Non ora')
 				})
 			};
