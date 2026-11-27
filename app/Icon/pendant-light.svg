@@ -1,17 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <!-- Pendant app icon, light: the pendant from above on an aluminium ground (concept-c-icona.html, C). -->
+  <!-- Pendant app icon, light: the pendant as the Omi render shows it, grey disc with the LED at the centre in a clear ring (concept-c-icona.html, C). -->
+  <linearGradient id="ground" x1="0" y1="0" x2="0.3" y2="1">
+    <stop offset="0" stop-color="#f1f1ef"/>
+    <stop offset="1" stop-color="#d6d7d3"/>
+  </linearGradient>
+  <rect width="1024" height="1024" fill="url(#ground)"/>
   <defs>
-    <linearGradient id="ground" x1="0" y1="0" x2="0.3" y2="1">
-      <stop offset="0" stop-color="#f1f1ef"/>
-      <stop offset="1" stop-color="#d6d7d3"/>
-    </linearGradient>
-    <radialGradient id="face" cx="0.38" cy="0.32" r="0.8">
-      <stop offset="0" stop-color="#454952"/>
-      <stop offset="1" stop-color="#2b2e34"/>
+    <radialGradient id="face" cx="0.4" cy="0.36" r="0.75">
+      <stop offset="0" stop-color="#a19f9a"/>
+      <stop offset="1" stop-color="#6b6966"/>
+    </radialGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#e5402f" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#e5402f" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="1024" height="1024" fill="url(#ground)"/>
-  <circle cx="512" cy="512" r="330" fill="#cfd0cc"/>
-  <circle cx="512" cy="512" r="282" fill="url(#face)"/>
-  <circle cx="512" cy="330" r="34" fill="#ff5a47"/>
+  <circle cx="512" cy="512" r="340" fill="#aab2bc"/>
+  <circle cx="512" cy="512" r="332" fill="none" stroke="#cfd5db" stroke-width="6"/>
+  <circle cx="512" cy="512" r="276" fill="url(#face)"/>
+  <circle cx="512" cy="512" r="78" fill="url(#glow)"/>
+  <circle cx="512" cy="512" r="30" fill="#e5402f"/>
 </svg>

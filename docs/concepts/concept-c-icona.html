@@ -17,7 +17,7 @@
 			B  Tacche: cinque barre rosse, le stesse della Dynamic Island. Scommette sulla forma più
 			   semplice, quella che si legge meglio da piccola.
 			C  Ciondolo: l'oggetto visto dall'alto, un disco grafite con l'anello d'alluminio e il
-			   LED rosso. Scommette sul ciondolo, non sul suono. È disegnato, non è il render di Omi.
+			   LED rosso (giro 1; dal giro 3 grigio col LED al centro, come il vero). Scommette sul ciondolo, non sul suono. È disegnato, non è il render di Omi.
 
 			Per ogni variante: le quattro resa di iOS 26 (chiara, scura, tinta, trasparente), la
 			schermata Home a grandezza vera, una notifica e la riga delle Impostazioni.
@@ -46,6 +46,10 @@
 			telefono, non dall'app. Per seguire l'Aspetto scelto nell'app servono icone alternative
 			(setAlternateIconName): si può, ma a ogni cambio iOS mostra l'avviso "Hai cambiato l'icona
 			di Pendant". La sezione in fondo mostra le due icone che l'app userebbe.
+			Giro 3: il ciondolo vero è grigio, col LED al centro (render di Omi in inspo/). C ed E
+			ridisegnate dal render: disco di metallo grigio, anello trasparente grigio-azzurro, LED al
+			centro; il LED resta rosso, il colore della registrazione nell'app. E diventa "Ciondolo e
+			accento": il ciondolo vero con un anello nel colore della palette.
 		-->
 		<style>
 			:root {
@@ -194,7 +198,7 @@
 				b: 'Tacche: cinque barre rosse come nella Dynamic Island, la forma più semplice',
 				c: 'Ciondolo: l’oggetto visto dall’alto, disco grafite con anello e LED rosso',
 				d: 'Finestra: una finestra LCD nella cornice, spia rossa e tacche a segmenti',
-				e: 'Ciondolo LCD: la C con la faccia color LCD e l’anello nell’accento',
+				e: 'Ciondolo e accento: il ciondolo vero con un anello nel colore della palette',
 				f: 'Tasto: il tasto incassato, capsula rossa col punto bianco nel pozzetto'
 			};
 			// Palettes of the display round (concept-b-app.html, giro 2): LCD in light, accent in both.
@@ -215,6 +219,23 @@
 				if (mode === 'tinted') return { bg: ['#1b1712', '#0f0d0a'], lit: '#f0b45a', off: 'rgb(240 180 90 / 0.28)', metal: 'rgb(240 180 90 / 0.4)', disc: '#211b13', face: '#f0b45a' };
 				if (mode === 'clear') return { bg: null, lit: 'rgb(255 255 255 / 0.95)', off: 'rgb(255 255 255 / 0.3)', metal: 'rgb(255 255 255 / 0.5)', disc: 'rgb(255 255 255 / 0.12)', face: '#fff' };
 				return { bg: ['#3a3e45', T.display], lit: T.red, off: T.tickOff, metal: T.alu, disc: T.display, face: T.bgLight };
+			};
+
+			// The pendant as the Omi render shows it: grey metal disc with the LED at the centre, in a
+			// clear blue-grey ring. `accent` adds a coloured ring between the two (variant E).
+			const PENDANT = {
+				light: { ring: '#aab2bc', rim: '#cfd5db', faceA: '#a19f9a', faceB: '#6b6966', led: '#e5402f' },
+				dark: { ring: '#4d5661', rim: '#65707b', faceA: '#6d6b67', faceB: '#3e3d3a', led: '#ff5a47' },
+				tinted: { ring: 'rgb(240 180 90 / 0.3)', rim: 'rgb(240 180 90 / 0.45)', faceA: '#3a2f20', faceB: '#211b13', led: '#f0b45a' },
+				clear: { ring: 'rgb(255 255 255 / 0.3)', rim: 'rgb(255 255 255 / 0.55)', faceA: 'rgb(255 255 255 / 0.55)', faceB: 'rgb(255 255 255 / 0.3)', led: 'rgb(20 24 30 / 0.7)' }
+			};
+			const pendant = (mode, id, accent) => {
+				const c = PENDANT[mode];
+				const ring = accent ? `<circle cx="512" cy="512" r="296" fill="none" stroke="${accent}" stroke-width="22"/>` : '';
+				return `<defs><radialGradient id="${id}" cx="0.4" cy="0.36" r="0.75"><stop offset="0" stop-color="${c.faceA}"/><stop offset="1" stop-color="${c.faceB}"/></radialGradient><radialGradient id="${id}g"><stop offset="0" stop-color="${c.led}" stop-opacity="0.45"/><stop offset="1" stop-color="${c.led}" stop-opacity="0"/></radialGradient></defs>`
+					+ `<circle cx="512" cy="512" r="340" fill="${c.ring}"/><circle cx="512" cy="512" r="332" fill="none" stroke="${c.rim}" stroke-width="6"/>`
+					+ `<circle cx="512" cy="512" r="276" fill="url(#${id})"/>${ring}`
+					+ `<circle cx="512" cy="512" r="78" fill="url(#${id}g)"/><circle cx="512" cy="512" r="30" fill="${c.led}"/>`;
 			};
 
 			const bgRect = (p, id, light) => {
@@ -246,10 +267,9 @@
 					const id = `g${uid++}`;
 					const ground =
 						mode === 'light'
-							? `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#f1f1ef"/><stop offset="1" stop-color="#d6d7d3"/></linearGradient><radialGradient id="${id}f" cx="0.38" cy="0.32" r="0.8"><stop offset="0" stop-color="#454952"/><stop offset="1" stop-color="${T.display}"/></radialGradient></defs><rect width="1024" height="1024" fill="url(#${id})"/>`
+							? `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#f1f1ef"/><stop offset="1" stop-color="#d6d7d3"/></linearGradient></defs><rect width="1024" height="1024" fill="url(#${id})"/>`
 							: bgRect(p, id);
-					const face = mode === 'light' ? `url(#${id}f)` : p.disc;
-					return `<svg viewBox="0 0 1024 1024">${ground}<circle cx="512" cy="512" r="330" fill="${p.metal}"/><circle cx="512" cy="512" r="282" fill="${face}"/><circle cx="512" cy="330" r="34" fill="${p.lit}"/></svg>`;
+					return `<svg viewBox="0 0 1024 1024">${ground}${pendant(mode, `${id}p`)}</svg>`;
 				}
 			};
 
@@ -270,11 +290,11 @@
 					const ticks = Array.from({ length: 7 }, (_, i) => `<rect x="${262 + i * 74}" y="560" width="44" height="150" rx="8" fill="${i < 4 ? p.ink : p.dim}"/>`).join('');
 					return `<svg viewBox="0 0 1024 1024">${ground(p, id)}<rect x="150" y="220" width="724" height="584" rx="110" fill="${p.frame}"/><rect x="186" y="256" width="652" height="512" rx="74" fill="${p.lcd}"/><circle cx="322" cy="410" r="62" fill="${p.red}"/><rect x="430" y="384" width="300" height="52" rx="26" fill="${p.acc}"/>${ticks}</svg>`;
 				},
-				// E: the pendant with an LCD face and an accent ring.
+				// E: the pendant as it is, with a ring in the palette's accent.
 				e: (mode) => {
 					const p = lcdPalette(mode);
 					const id = `g${uid++}`;
-					return `<svg viewBox="0 0 1024 1024">${ground(p, id)}<circle cx="512" cy="512" r="338" fill="${p.frame}"/><circle cx="512" cy="512" r="300" fill="${p.acc}"/><circle cx="512" cy="512" r="268" fill="${p.lcd}"/><circle cx="512" cy="340" r="40" fill="${p.red}"/></svg>`;
+					return `<svg viewBox="0 0 1024 1024">${ground(p, id)}${pendant(mode, `${id}p`, p.acc)}</svg>`;
 				},
 				// F: the recessed key: a well in the LCD colour, a red capsule, the white dot.
 				f: (mode) => {
