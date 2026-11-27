@@ -92,7 +92,9 @@ final class CaptureCoordinator {
     self.conversations = saved
     self.uplink = StreamUplink(config: config, log: log, notifier: notifier)
     uplink.onDrained = { [weak self] in self?.markQueuedAsSent() }
-    uplink.onSubmission = { [weak self] id, url in self?.submissionAnnounced(id, url: url) }
+    uplink.onSubmission = { [weak self] id, url, expiresAt in
+      self?.submissionAnnounced(id, url: url, expiresAt: expiresAt)
+    }
     link.onReadyChanged = { [weak self] ready in self?.deviceReadyChanged(ready) }
     link.onButton = { [weak self] event in self?.button(event) }
     link.onAudio = { [weak self] packet, maxPiece in self?.audio(packet, maxPiece: maxPiece) }
@@ -120,8 +122,15 @@ final class CaptureCoordinator {
     save()
   }
 
-  private func submissionAnnounced(_ id: String, url: String?) {
-    guard conversations.attach(submissionID: id, url: url) else { return }
+  /// Removes a closed conversation from this phone.
+  func removeConversation(_ id: UUID) {
+    guard conversations.remove(id) else { return }
+    save()
+    log.record("conversationRemoved", id.uuidString)
+  }
+
+  private func submissionAnnounced(_ id: String, url: String?, expiresAt: Date?) {
+    guard conversations.attach(submissionID: id, url: url, expiresAt: expiresAt) else { return }
     save()
     onSubmissionsChanged?()
   }

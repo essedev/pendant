@@ -113,13 +113,14 @@ public struct ConversationLog: Codable, Equatable, Sendable {
   /// A resumed conversation gets the same id again and keeps what it has. Returns whether
   /// anything changed.
   @discardableResult
-  public mutating func attach(submissionID id: String, url: String?) -> Bool {
+  public mutating func attach(submissionID id: String, url: String?, expiresAt: Date? = nil) -> Bool
+  {
     if conversations.contains(where: { $0.submission?.id == id }) { return false }
     guard
       let i = conversations.firstIndex(where: { $0.status == .live })
         ?? conversations.firstIndex(where: { $0.submission == nil })
     else { return false }
-    conversations[i].submission = Submission(id: id, url: url)
+    conversations[i].submission = Submission(id: id, url: url, expiresAt: expiresAt)
     return true
   }
 
@@ -142,7 +143,7 @@ public struct ConversationLog: Codable, Equatable, Sendable {
     var changed = false
     for i in conversations.indices {
       guard let op = conversations[i].submission else { continue }
-      let fresh = Submission(id: op.id, url: op.url)
+      let fresh = Submission(id: op.id, url: op.url, expiresAt: op.expiresAt)
       if op != fresh {
         conversations[i].submission = fresh
         changed = true
@@ -155,6 +156,15 @@ public struct ConversationLog: Codable, Equatable, Sendable {
   public mutating func setSubmission(_ submission: Submission, of id: UUID) {
     guard let i = conversations.firstIndex(where: { $0.id == id }) else { return }
     conversations[i].submission = submission
+  }
+
+  /// Removes a closed conversation from this phone; the live one stays. Returns whether it did.
+  @discardableResult
+  public mutating func remove(_ id: UUID) -> Bool {
+    guard let i = conversations.firstIndex(where: { $0.id == id }), conversations[i].status != .live
+    else { return false }
+    conversations.remove(at: i)
+    return true
   }
 
   /// Drops conversations older than the retention.

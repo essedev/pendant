@@ -780,6 +780,36 @@
         }
       }
     },
+    "Delete from the server too" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina anche dal server"
+          }
+        }
+      }
+    },
+    "Delete the conversation from %@?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminare la conversazione delle %@?"
+          }
+        }
+      }
+    },
+    "Deletion" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminazione"
+          }
+        }
+      }
+    },
     "Diagnostics" : {
       "localizations" : {
         "it" : {
@@ -980,16 +1010,6 @@
         }
       }
     },
-    "Forget %@?" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dimenticare %@?"
-          }
-        }
-      }
-    },
     "Forget the pendant" : {
       "localizations" : {
         "it" : {
@@ -1052,16 +1072,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gesti"
-          }
-        }
-      }
-    },
-    "Gestures, notifications and advanced values go back to how they were at first launch. The server address and token stay." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
           }
         }
       }
@@ -1226,12 +1236,12 @@
         }
       }
     },
-    "It answered, but not with audio_stream 1. Check the address, or update the server or the app." : {
+    "It answered, but not like a server of this protocol. Check the address, or update the server or the app." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app."
+            "value" : "Ha risposto, ma non come un server di questo protocollo. Controlla l’indirizzo, oppure aggiorna il server o l’app."
           }
         }
       }
@@ -1566,12 +1576,22 @@
         }
       }
     },
-    "Marked while you were recording. They stay on this phone: the server receives them but doesn’t use them yet." : {
+    "Marked while you were recording. The server receives them with the conversation." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Segnati mentre registravi. Restano su questo telefono: il server li riceve ma per ora non li usa."
+            "value" : "Segnati mentre registravi. Il server li riceve con la conversazione."
+          }
+        }
+      }
+    },
+    "Marked while you were recording. They stay on this phone: the server doesn’t use them." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segnati mentre registravi. Restano su questo telefono: il server non li usa."
           }
         }
       }
@@ -2516,32 +2536,12 @@
         }
       }
     },
-    "Read the memory" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Leggi la memoria"
-          }
-        }
-      }
-    },
     "Read the pendant’s memory" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leggi la memoria del ciondolo"
-          }
-        }
-      }
-    },
-    "Read the pendant’s memory?" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Leggere la memoria del ciondolo?"
           }
         }
       }
@@ -2672,22 +2672,22 @@
         }
       }
     },
+    "Remove from this phone only" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togli solo da questo telefono"
+          }
+        }
+      }
+    },
     "Repeat" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ripeti"
-          }
-        }
-      }
-    },
-    "Reset the settings to their defaults?" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riportare le impostazioni ai valori iniziali?"
           }
         }
       }
@@ -3182,16 +3182,6 @@
         }
       }
     },
-    "The app stops looking for it and recording. To use it again, connect it from the search, in a few seconds." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
-          }
-        }
-      }
-    },
     "The app’s signature expires in %lld days" : {
       "localizations" : {
         "it" : {
@@ -3222,6 +3212,16 @@
         }
       }
     },
+    "The audio and the transcript disappear from the server. If you remove it from this phone only, everything stays on the server." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dal server spariscono audio e trascrizione. Togliendola solo da questo telefono, sul server resta tutto."
+          }
+        }
+      }
+    },
     "The audio is no longer on the phone: it’s on the server." : {
       "localizations" : {
         "it" : {
@@ -3248,16 +3248,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’audio arriva al server mentre parli. Sul telefono non resta niente."
-          }
-        }
-      }
-    },
-    "The audio read goes into a file next to the log and no longer stays in the pendant." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’audio letto finisce in un file accanto al log e non resta più nel ciondolo."
           }
         }
       }
@@ -3480,12 +3470,12 @@
         }
       }
     },
-    "The server accepted the token and speaks audio_stream 1." : {
+    "The server accepted the token." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il server ha accettato il token e parla audio_stream 1."
+            "value" : "Il server ha accettato il token."
           }
         }
       }
@@ -3526,6 +3516,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il server non l’ha mandata entro un giorno: si legge sul server."
+          }
+        }
+      }
+    },
+    "The server doesn’t let you delete it from here: I’ll remove it from this phone, and it stays on the server. You can delete it on the server itself." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non permette di eliminarla da qui: la tolgo da questo telefono, sul server resta. Dal server si elimina lì."
           }
         }
       }
@@ -3652,6 +3652,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il tocco singolo arriva circa un terzo di secondo dopo: il ciondolo aspetta di capire se è un doppio tocco."
+          }
+        }
+      }
+    },
+    "The time in which the server lets you delete it from here is over: I’ll remove it from this phone, and it stays on the server. You can delete it on the server itself." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È passato il tempo entro cui il server la lascia eliminare da qui: la tolgo da questo telefono, sul server resta. Dal server si elimina lì."
           }
         }
       }
@@ -4102,6 +4112,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ieri non hai registrato niente."
+          }
+        }
+      }
+    },
+    "base" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "di base"
           }
         }
       }

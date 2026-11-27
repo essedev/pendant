@@ -68,8 +68,10 @@ final class AppModel {
   let log: ProbeLog
   let link: DeviceLink
   let capture: CaptureCoordinator
-  /// Reads the transcripts of the closed conversations from the server.
-  private let transcripts: TranscriptFetcher
+  /// Reads the transcripts of the closed conversations from the server, and deletes them.
+  private let transcripts: SubmissionClient
+  /// What the server said about itself the last time a stream opened; base until a `Hello`.
+  private(set) var serverInfo: ServerInfo
   let notifier = Notifier()
   /// The demo scene, nil in normal use.
   let demo: DemoScene?
@@ -107,6 +109,7 @@ final class AppModel {
   // From launch: a record at once would come before the pendant reports its battery.
   private var lastPowerLog = Date()
 
+  private static let serverInfoKey = "pendant.serverInfo"
   private static let configKey = "pendant.configuration"
   private static let onboardedKey = "pendant.onboarded"
   private static let firmwareDismissedKey = "pendant.firmwareNoticeDismissed"
@@ -145,9 +148,14 @@ final class AppModel {
     let link = DeviceLink(log: log, config: config)
     self.link = link
     capture = CaptureCoordinator(link: link, config: config, log: log, notifier: notifier)
-    transcripts = TranscriptFetcher(capture: capture, log: log)
+    transcripts = SubmissionClient(capture: capture, log: log)
+    serverInfo =
+      UserDefaults.standard.data(forKey: Self.serverInfoKey).flatMap {
+        try? JSONDecoder().decode(ServerInfo.self, from: $0)
+      } ?? .base
     if let demo {
       credentials = demo.credentials
+      serverInfo = demo.serverInfo
       onboarding = demo.onboarding
       tab = demo.tab
       settingsPath = demo.settingsPath
@@ -305,6 +313,11 @@ final class AppModel {
     }
     do {
       try new.save()
+      if new.host != credentials?.host {
+        // Another server: what the old one said about itself no longer holds.
+        serverInfo = .base
+        UserDefaults.standard.removeObject(forKey: Self.serverInfoKey)
+      }
       credentials = new
       probeOutcome = nil
       capture.uplink.credentialsChanged()
@@ -400,8 +413,46 @@ final class AppModel {
     }
     notifier.onRecord = { [weak self] in self?.setPaused(false) }
     capture.onSubmissionsChanged = { [weak self] in self?.transcripts.poke() }
+    capture.uplink.onHello = { [weak self] info in self?.serverIntroduced(info) }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
+  }
+
+  /// The server's `Hello`: kept for the screens, and its grace replaces the copy in the
+  /// configuration, which the recording and the texts use.
+  private func serverIntroduced(_ info: ServerInfo) {
+    if info != serverInfo {
+      serverInfo = info
+      if let data = try? JSONEncoder().encode(info) {
+        UserDefaults.standard.set(data, forKey: Self.serverInfoKey)
+      }
+    }
+    if let grace = info.resumeGrace, grace != config.resumeGrace { config.resumeGrace = grace }
+  }
+
+  /// Whether a conversation can be deleted on the server now.
+  func canDeleteOnServer(_ c: Conversation) -> Bool {
+    guard c.status != .live, let op = c.submission else { return false }
+    return serverInfo.supports(.delete) && op.reachable(now: Date())
+  }
+
+  /// Deletes a closed conversation: on the server too when `onServer`, then from this phone.
+  /// Returns why the server part did not go through, nil when everything was done.
+  func deleteConversation(_ c: Conversation, onServer: Bool) async -> String? {
+    guard demo == nil else { return nil }
+    if onServer {
+      switch await transcripts.delete(c) {
+      case .deleted: break
+      case .notFound:
+        capture.removeConversation(c.id)
+        return
+          "Il server non l’ha trovata, forse è già stata eliminata: l’ho tolta da questo telefono."
+      case .failed(let reason):
+        return "Non l’ho eliminata. \(reason) Riprova più tardi."
+      }
+    }
+    capture.removeConversation(c.id)
+    return nil
   }
 
   /// Reads the transcripts that are due, now: a conversation page opened.

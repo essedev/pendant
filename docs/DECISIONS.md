@@ -211,6 +211,23 @@ the transcripts stay on the phone with their conversations (30 days, in the app'
 backups), and turning it off forgets them. Both forms are read: segments with speakers, or
 plain text.
 
+## 2026-11-27 The server introduces itself; deleting a conversation
+
+Whatever depends on the server is declared by the server, never assumed by the app: a server
+built by someone else may differ from Nexus. Right after the upgrade the server sends `Hello`
+with the protocol version, the additions it supports and its resume grace (the pattern of
+LSP's `initialize` and IMAP's `CAPABILITY`); each submission carries `expires_at`, until when
+the stream's token may act on it. A server that says nothing speaks the base protocol of the
+Omi app. The phone's own choices (ping, queue, read timings) stay in the configuration.
+
+A conversation can be deleted from its page, as in WhatsApp: `Elimina anche dal server`
+deletes audio and transcript on the server for real (an exception to the soft delete, asked for
+privacy towards people recorded by mistake), `Togli solo da questo telefono` leaves the server
+as it is. The first choice appears only when the server declares `delete` and before
+`expires_at`; otherwise the dialogue says why only the phone is offered. Rejected a phone-only
+deletion as the sole option (a false sense of having deleted) and a red button (red means only
+recording).
+
 ## 2026-11-27 The app in English and Italian: English in the code, Italian in String Catalogs
 
 The interface follows the phone's language, or the one chosen for Pendant in iOS Settings, and

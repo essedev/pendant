@@ -99,22 +99,23 @@ struct PendantPage: View {
             Row("Forget the pendant")
           }
           .buttonStyle(.plain)
+          // On iOS 26 the dialog is a popover anchored to the view that carries it.
+          .confirmationDialog(
+            "Dimenticare \(model.config.pendantName)?", isPresented: $confirmForget,
+            titleVisibility: .visible
+          ) {
+            Button("Dimentica il ciondolo") { model.forgetPendant() }
+            Button("Annulla", role: .cancel) {}
+          } message: {
+            Text(
+              "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
+            )
+          }
         }
       }
       .padding(.bottom, 32)
     }
     .page("Pendant")
-    .confirmationDialog(
-      "Forget \(model.config.pendantName)?", isPresented: $confirmForget,
-      titleVisibility: .visible
-    ) {
-      Button("Forget the pendant") { model.forgetPendant() }
-      Button("Cancel", role: .cancel) {}
-    } message: {
-      Text(
-        "The app stops looking for it and recording. To use it again, connect it from the search, in a few seconds."
-      )
-    }
   }
 }
 
@@ -327,7 +328,10 @@ struct ServerPage: View {
           }
         }
         CellGroup {
-          Row("Protocol", value: .verbatim("audio_stream 1"))
+          Row(
+            "Protocol",
+            value: model.serverInfo.protocolVersion.map { .verbatim("audio_stream \($0)") }
+              ?? "base")
           PickerRow(
             label: "Speech language", title: "Speech language",
             choices: including(Choices.language, model.config.language) { $0.uppercased() },
@@ -423,13 +427,13 @@ struct ProbeResult: View {
 
   private func text(_ o: ServerProbeOutcome) -> LocalizedStringResource {
     switch o {
-    case .ok: "The server accepted the token and speaks audio_stream 1."
+    case .ok: "The server accepted the token."
     case .unreachable:
       "Check that the address is spelled right and that the phone is online. If the server is off, try again when it’s on."
     case .tokenRejected:
       "The address is right, the token isn’t. Paste it again: it must be the one created for the audio, in full."
     case .protocolMismatch:
-      "It answered, but not with audio_stream 1. Check the address, or update the server or the app."
+      "It answered, but not like a server of this protocol. Check the address, or update the server or the app."
     }
   }
 }
@@ -748,6 +752,15 @@ struct AdvancedPage: View {
             ) {
               confirmRing = true
             }
+            .confirmationDialog(
+              "Leggere la memoria del ciondolo?", isPresented: $confirmRing,
+              titleVisibility: .visible
+            ) {
+              Button("Leggi la memoria") { model.link.readRing() }
+              Button("Annulla", role: .cancel) {}
+            } message: {
+              Text("L’audio letto finisce in un file accanto al log e non resta più nel ciondolo.")
+            }
           }
         }
         CellGroup(header: "App", footer: signatureFooter) {
@@ -761,31 +774,23 @@ struct AdvancedPage: View {
             Row("Reset to defaults")
           }
           .buttonStyle(.plain)
+          .confirmationDialog(
+            "Riportare le impostazioni ai valori iniziali?", isPresented: $confirmReset,
+            titleVisibility: .visible
+          ) {
+            Button("Riporta ai valori iniziali") { model.resetSettings() }
+            Button("Annulla", role: .cancel) {}
+          } message: {
+            Text(
+              "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
+            )
+          }
         }
       }
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
     .page("Advanced")
-    .confirmationDialog(
-      "Reset the settings to their defaults?", isPresented: $confirmReset,
-      titleVisibility: .visible
-    ) {
-      Button("Reset to defaults") { model.resetSettings() }
-      Button("Cancel", role: .cancel) {}
-    } message: {
-      Text(
-        "Gestures, notifications and advanced values go back to how they were at first launch. The server address and token stay."
-      )
-    }
-    .confirmationDialog(
-      "Read the pendant’s memory?", isPresented: $confirmRing, titleVisibility: .visible
-    ) {
-      Button("Read the memory") { model.link.readRing() }
-      Button("Cancel", role: .cancel) {}
-    } message: {
-      Text("The audio read goes into a file next to the log and no longer stays in the pendant.")
-    }
   }
 
   private var queueUsed: String {

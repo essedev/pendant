@@ -74,7 +74,6 @@ struct TodayView: View {
         ConversationView(conversation: c)
       }
     }
-    .toolbar(.hidden, for: .navigationBar)
     .gesture(
       DragGesture(minimumDistance: 40).onEnded { drag in
         guard abs(drag.translation.width) > abs(drag.translation.height) else { return }
@@ -229,6 +228,11 @@ struct StatusLabel: View {
 struct ConversationView: View {
   let conversation: Conversation
   @Environment(AppModel.self) private var model
+  @Environment(\.dismiss) private var dismiss
+  @State private var askingDelete = false
+  @State private var deleting = false
+  /// What went wrong with a deletion, shown in an alert.
+  @State private var deleteProblem: String?
 
   var body: some View {
     let c = conversation
@@ -278,9 +282,7 @@ struct ConversationView: View {
         }
         CellGroup(
           header: "Marked moments",
-          footer: c.bookmarks.isEmpty
-            ? nil
-            : "Marked while you were recording. They stay on this phone: the server receives them but doesn’t use them yet."
+          footer: bookmarksFooter(c)
         ) {
           if c.bookmarks.isEmpty {
             Text(
@@ -306,11 +308,76 @@ struct ConversationView: View {
             warn: queued || c.status == .queued)
           Row("Server", value: .verbatim(s.serverHost))
         }
+        if !live {
+          CellGroup {
+            Button {
+              askingDelete = true
+            } label: {
+              Row(deleting ? "Elimino…" : "Elimina conversazione", disabled: deleting)
+            }
+            .buttonStyle(.plain)
+            .disabled(deleting)
+          }
+        }
       }
       .padding(.bottom, 32)
     }
+    // Ink, not red: red means only recording (DECISIONS, interface).
+    .confirmationDialog(
+      "Delete the conversation from \(Clock.time(c.start))?", isPresented: $askingDelete,
+      titleVisibility: .visible
+    ) {
+      if model.canDeleteOnServer(c) {
+        Button("Delete from the server too") { delete(c, onServer: true) }
+      }
+      Button("Remove from this phone only") { delete(c, onServer: false) }
+      Button("Cancel", role: .cancel) {}
+    } message: {
+      Text(deleteMessage(c))
+    }
+    .alert(
+      "Deletion", isPresented: Binding(get: { deleteProblem != nil }, set: { _ in })
+    ) {
+      Button("Got it") {
+        deleteProblem = nil
+        if !model.conversations.conversations.contains(where: { $0.id == c.id }) { dismiss() }
+      }
+    } message: {
+      Text(deleteProblem ?? "")
+    }
     .page("Conversation")
     .onAppear { model.refreshTranscripts() }
+  }
+
+  private func delete(_ c: Conversation, onServer: Bool) {
+    deleting = true
+    Task {
+      let problem = await model.deleteConversation(c, onServer: onServer)
+      deleting = false
+      if let problem { deleteProblem = problem } else { dismiss() }
+    }
+  }
+
+  private func bookmarksFooter(_ c: Conversation) -> LocalizedStringResource? {
+    if c.bookmarks.isEmpty { return nil }
+    if model.serverInfo.supports(.mark) {
+      return "Marked while you were recording. The server receives them with the conversation."
+    }
+    return "Marked while you were recording. They stay on this phone: the server doesn’t use them."
+  }
+
+  /// What each choice does, or why only the phone is offered.
+  private func deleteMessage(_ c: Conversation) -> LocalizedStringResource {
+    if model.canDeleteOnServer(c) {
+      return
+        "The audio and the transcript disappear from the server. If you remove it from this phone only, everything stays on the server."
+    }
+    if let op = c.submission, model.serverInfo.supports(.delete), !op.reachable(now: Date()) {
+      return
+        "The time in which the server lets you delete it from here is over: I’ll remove it from this phone, and it stays on the server. You can delete it on the server itself."
+    }
+    return
+      "The server doesn’t let you delete it from here: I’ll remove it from this phone, and it stays on the server. You can delete it on the server itself."
   }
 
   private func markCount(_ n: Int) -> LocalizedStringResource {

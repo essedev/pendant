@@ -9,13 +9,50 @@ private let closed = Date(timeIntervalSince1970: 1_800_000_000)
   @Test func parsesTheSubmissionMessageAndIgnoresUnknownOnes() {
     #expect(
       ServerMessage.parse(#"{"type":"Submission","id":"op-1","url":"/api/submissions/op-1"}"#)
-        == .submission(id: "op-1", url: "/api/submissions/op-1"))
+        == .submission(id: "op-1", url: "/api/submissions/op-1", expiresAt: nil))
     #expect(
       ServerMessage.parse(#"{"type":"Submission","id":"op-2"}"#)
-        == .submission(id: "op-2", url: nil))
+        == .submission(id: "op-2", url: nil, expiresAt: nil))
     #expect(ServerMessage.parse(#"{"type":"Submission","id":""}"#) == nil)
     #expect(ServerMessage.parse(#"{"type":"Something"}"#) == nil)
     #expect(ServerMessage.parse("not json") == nil)
+  }
+
+  @Test func parsesTheHelloAndTheExpiry() throws {
+    let hello = ServerMessage.parse(
+      #"{"type":"Hello","protocol":1,"features":["submission","delete","x"],"resume_grace":300}"#)
+    guard case .hello(let info)? = hello else {
+      Issue.record("no hello")
+      return
+    }
+    #expect(info.protocolVersion == 1 && info.resumeGrace == 300)
+    #expect(info.supports(.delete) && !info.supports(.mark))
+    #expect(ServerMessage.parse(#"{"type":"Hello"}"#) == nil)
+    #expect(!ServerInfo.base.supports(.submission) && ServerInfo.base.protocolVersion == nil)
+    let frame = ServerMessage.parse(
+      #"{"type":"Submission","id":"s","url":"/s","expires_at":"2026-12-27T10:00:00Z"}"#)
+    let expected = ISO8601DateFormatter().date(from: "2026-12-27T10:00:00Z")
+    #expect(frame == .submission(id: "s", url: "/s", expiresAt: expected))
+    let reading = try #require(
+      SubmissionReading.decode(
+        Data(#"{"id":"s","status":"running","expires_at":"2026-12-27T10:00:00.250Z"}"#.utf8)))
+    #expect(reading.expiresAt != nil)
+    var op = Submission(id: "s", url: nil, expiresAt: expected)
+    #expect(op.reachable(now: expected!.addingTimeInterval(-1)))
+    #expect(!op.reachable(now: expected!))
+    op.expiresAt = nil
+    #expect(op.reachable(now: .distantFuture))
+  }
+
+  @Test func removesOnlyClosedConversations() {
+    var log = ConversationLog()
+    log.begin(at: closed)
+    let live = log.conversations[0].id
+    let keptLive = log.remove(live)
+    #expect(!keptLive)
+    log.end(at: closed.addingTimeInterval(60), status: .sent)
+    let removed = log.remove(live)
+    #expect(removed && log.conversations.isEmpty)
   }
 
   @Test func resolvesTheReadURL() {
