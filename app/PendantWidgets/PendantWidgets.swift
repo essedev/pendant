@@ -83,7 +83,7 @@ struct RecordingLiveActivity: Widget {
         DynamicIslandExpandedRegion(.bottom) {
           IslandExpandedBody(state: s, server: context.attributes.server)
             .padding(.horizontal, 4)
-            .padding(.top, 6)
+            .padding(.top, 4)
             .environment(\.colorScheme, .dark)
         }
       } compactLeading: {

@@ -58,37 +58,57 @@ struct LockScreenActivity: View {
   }
 }
 
-/// The body of the expanded Dynamic Island, under the tag and the battery: the status, the
-/// server, the keys.
+/// The body of the expanded Dynamic Island, under the tag and the battery: the status and the
+/// server on the left, the keys on the right. One row, because iOS gives the expanded island
+/// about 160 points and cuts what does not fit.
 struct IslandExpandedBody: View {
   let state: RecordingAttributes.ContentState
   let server: String
 
   var body: some View {
     let phase = ActivityPhase(state)
-    VStack(alignment: .leading, spacing: 10) {
-      ActivityStatus(state: state, size: phase == .recording ? 34 : 24)
-      ActivityServer(state: state, server: server)
+    HStack(alignment: .center, spacing: 12) {
+      VStack(alignment: .leading, spacing: 2) {
+        ActivityStatus(state: state, size: phase == .recording ? 30 : 22)
+        Text("\(server), \(state.serverState)")
+          .font(Theme.font(13))
+          .foregroundStyle(state.serverWarning ? Theme.displayWarn : Theme.displayInk2)
+          .lineLimit(1)
+      }
+      Spacer(minLength: 0)
       switch phase {
       case .recording:
         HStack(spacing: 8) {
-          ActivityKey(recording: true)
-          Button(intent: BookmarkIntent()) {
-            Label("Segna", systemImage: "bookmark.fill")
-              .font(Theme.font(15, .semibold))
-              .frame(maxWidth: .infinity, minHeight: 44)
-          }
-          .buttonStyle(.plain)
-          .foregroundStyle(.white)
-          .background(Capsule().fill(Theme.tickOff))
+          IslandRoundKey(intent: ToggleRecordingIntent(), symbol: "pause.fill", label: "Pausa")
+          IslandRoundKey(intent: BookmarkIntent(), symbol: "bookmark.fill", label: "Segna")
         }
       case .paused:
         ActivityKey(recording: false)
+          .frame(width: 128)
       case .away:
         EmptyView()
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
+  }
+}
+
+/// A round key of the expanded island, an icon with its name for VoiceOver.
+private struct IslandRoundKey<Intent: AppIntent>: View {
+  let intent: Intent
+  let symbol: String
+  let label: String
+
+  var body: some View {
+    Button(intent: intent) {
+      Image(systemName: symbol)
+        .font(.system(size: 17, weight: .semibold))
+        .frame(width: 48, height: 48)
+    }
+    .buttonStyle(.plain)
+    .foregroundStyle(.white)
+    .background(Circle().fill(Theme.tickOff))
+    .accessibilityLabel(label)
   }
 }
 
