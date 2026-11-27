@@ -11,7 +11,7 @@ DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/
 	and x['connectionProperties'].get('pairingState')=='paired' and x['connectionProperties'].get('tunnelState')!='unavailable'),''))" 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help project build install run test lint format check credentials logs devices clean sim screens
+.PHONY: help project build install run test lint format check credentials logs devices clean sim screens icon
 
 help: ## Elenca i comandi
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -97,6 +97,13 @@ screens: sim ## Schermate di tutte le scene demo in app/.screens, chiaro e scuro
 	done
 	xcrun simctl ui $(SIM_ID) appearance light
 	@echo "Schermate in app/.screens"
+
+ICONSET := Pendant/Resources/Assets.xcassets/AppIcon.appiconset
+
+icon: ## Rigenera le PNG dell'icona dagli SVG in Icon/ (serve rsvg-convert, brew install librsvg)
+	rsvg-convert -w 1024 -h 1024 --background-color '#d6d7d3' Icon/pendant-light.svg -o $(ICONSET)/icon-light.png
+	rsvg-convert -w 1024 -h 1024 --background-color '#0e0f12' Icon/pendant-dark.svg -o $(ICONSET)/icon-dark.png
+	rsvg-convert -w 1024 -h 1024 Icon/pendant-tinted.svg -o $(ICONSET)/icon-tinted.png
 
 clean: ## Toglie build e progetto generato
 	rm -rf $(DERIVED) Pendant.xcodeproj

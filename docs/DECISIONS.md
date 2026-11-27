@@ -284,3 +284,12 @@ resta collegato senza registrare per un tempo configurabile, vibra e arriva una 
 spegnerlo dall'app richiede il 3.0.24 (DECISIONS 2026-11-26, firmware di serie). Scartato
 partire in pausa anche dopo un taglio breve: ogni caduta del Bluetooth avrebbe chiesto un
 doppio tocco.
+
+## 2026-11-27 Icona: il ciondolo visto dall'alto
+
+L'icona dell'app è il ciondolo visto dall'alto: disco grafite con l'anello d'alluminio e il LED
+rosso, su fondo chiaro, con le rese scura e tinta (`docs/concepts/concept-c-icona.html`,
+variante C). Scartate la spia col livello (A), che da piccola diventa un puntino e una riga, e
+le barre della Dynamic Island (B), più leggibili ma comuni fra le app che registrano. Il
+limite accettato: sotto i 40 pt nel tema scuro il LED si vede poco. Le PNG nascono dagli SVG
+in `app/Icon/` con `make icon`; Icon Composer (file `.icon` a livelli) resta un passo dopo.
