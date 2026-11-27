@@ -215,18 +215,10 @@ final class CaptureCoordinator {
       cancelIdleWarning()
       // Only a cut recording is worth a warning: a paused pendant is expected to go quiet.
       guard controller.cutAt != nil, config.notifyDisconnect else { return }
-      let at = Date().formatted(date: .omitted, time: .shortened)
+      let text = Notifier.disconnectText(stoppedAt: Date(), config: config)
       notifier.schedule(
-        .pendantDisconnected, after: config.disconnectNotifyAfter,
-        title: String(
-          localized:
-            "Pendant disconnected for \(DurationFormat.words(config.disconnectNotifyAfter))"),
-        body:
-          String(
-            localized:
-              "Recording stopped at \(at). If the pendant comes back within \(DurationFormat.words(config.resumeGrace)) the same conversation continues; after that it stays paused."
-          ),
-        timeSensitive: true)
+        .pendantDisconnected, after: config.disconnectNotifyAfter, title: text.title,
+        body: text.body, timeSensitive: true)
     }
   }
 

@@ -1,4 +1,5 @@
 import Foundation
+import PendantKit
 import UserNotifications
 
 /// Local notifications, scheduled ahead and cancelled when the problem resolves.
@@ -116,5 +117,25 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     // 27/11/2026): the level is set for when the app is signed with a paid account.
     content.interruptionLevel = timeSensitive ? .timeSensitive : .active
     center.add(UNNotificationRequest(identifier: kind.rawValue, content: content, trigger: trigger))
+  }
+}
+
+extension Notifier {
+  /// The title and body of the warning of a recording cut by the pendant going away, from the
+  /// configuration and the time it stopped. The notification and its preview on the first launch
+  /// both read it, so they stay one text.
+  static func disconnectText(stoppedAt: Date, config: Configuration) -> (
+    title: String, body: String
+  ) {
+    let at = stoppedAt.formatted(date: .omitted, time: .shortened)
+    return (
+      String(
+        localized:
+          "Pendant disconnected for \(DurationFormat.words(config.disconnectNotifyAfter))"),
+      String(
+        localized:
+          "Recording stopped at \(at). If the pendant comes back within \(DurationFormat.words(config.resumeGrace)) the same conversation continues; after that it stays paused."
+      )
+    )
   }
 }

@@ -2396,16 +2396,6 @@
         }
       }
     },
-    "Pendant disconnected for 2 min" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ciondolo scollegato da 2 min"
-          }
-        }
-      }
-    },
     "Pendant disconnected, notify after" : {
       "localizations" : {
         "it" : {
@@ -2742,16 +2732,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registra da"
-          }
-        }
-      }
-    },
-    "Recording resumes by itself when it’s back nearby." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riprende da sola quando torna vicino."
           }
         }
       }

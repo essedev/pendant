@@ -280,22 +280,25 @@ private struct SystemAlertPreview: View {
   }
 }
 
-/// A preview of one of the app's notifications.
+/// A preview of the warning of a pendant gone while recording: the app's icon and the text the
+/// notification carries with the current configuration, as if it came now.
 private struct NotificationPreview: View {
+  @Environment(AppModel.self) private var model
+
   var body: some View {
+    let config = model.config
+    let text = Notifier.disconnectText(
+      stoppedAt: model.now.addingTimeInterval(-config.disconnectNotifyAfter), config: config)
     HStack(alignment: .top, spacing: 12) {
-      RoundedRectangle(cornerRadius: 9, style: .continuous)
-        .fill(Theme.display)
-        .frame(width: 38, height: 38)
-        .overlay(Image(systemName: "waveform").foregroundStyle(Theme.redLit))
+      AppIconPreview().frame(width: 38, height: 38)
       VStack(alignment: .leading, spacing: 2) {
-        HStack {
-          Text("Pendant disconnected for 2 min").type(15, 20, .semibold)
+        HStack(alignment: .firstTextBaseline) {
+          Text(verbatim: text.title).type(15, 20, .semibold)
           Spacer()
           Text("now").type(13, 18).foregroundStyle(Theme.ink2)
         }
-        Text("Recording resumes by itself when it’s back nearby.").type(15, 20).foregroundStyle(
-          Theme.ink2)
+        Text(verbatim: text.body).type(15, 20).foregroundStyle(Theme.ink2)
+          .fixedSize(horizontal: false, vertical: true)
       }
       .foregroundStyle(Theme.ink)
     }
@@ -460,6 +463,28 @@ private struct SearchActions: View {
         }
       }
     }
+  }
+}
+
+/// The app's light icon (`app/Icon/pendant-light.svg`): the pendant drawing on its pale ground,
+/// rounded like an icon on the Home Screen.
+private struct AppIconPreview: View {
+  private static let groundTop = Color(UIColor(hex: 0xF1F1EF))
+  private static let groundBottom = Color(UIColor(hex: 0xD6D7D3))
+
+  var body: some View {
+    GeometryReader { proxy in
+      let side = proxy.size.width
+      ZStack {
+        LinearGradient(
+          colors: [Self.groundTop, Self.groundBottom], startPoint: .topLeading,
+          endPoint: UnitPoint(x: 0.3, y: 1))
+        PendantDrawing(ring: side * 680 / 1024)
+      }
+      .clipShape(RoundedRectangle(cornerRadius: side * 0.2237, style: .continuous))
+    }
+    .aspectRatio(1, contentMode: .fit)
+    .accessibilityHidden(true)
   }
 }
 
