@@ -442,75 +442,33 @@ struct CapsuleButton: View {
   }
 }
 
-/// The big title of a tab's root page, with controls on its line.
+/// The navigation bar in Archivo: the big title of a tab's root and the inline title.
 ///
-/// The roots hide the navigation bar, so every tab's title starts at the same height and the
-/// controls sit centred on the title instead of in a bar above it.
-struct PageTitle<Trailing: View>: View {
-  let title: LocalizedStringResource
-  var subtitle: LocalizedStringResource?
-  @ViewBuilder var trailing: Trailing
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      HStack(alignment: .center) {
-        Text(title)
-          .type(34, 40, .semibold)
-          .tracking(-0.68)
-          .foregroundStyle(Theme.ink)
-        Spacer(minLength: 12)
-        trailing
-      }
-      // The title's line height: taller controls overflow it, so every title sits at one height.
-      .frame(height: 40)
-      if let subtitle {
-        Text(subtitle).type(17, 24).foregroundStyle(Theme.ink2)
-      }
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(.horizontal, Theme.Gutter.title)
-  }
-}
-
-extension PageTitle where Trailing == EmptyView {
-  init(title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil) {
-    self.init(title: title, subtitle: subtitle) { EmptyView() }
-  }
-}
-
-/// Two chevrons in one glass capsule, as iOS draws a pair of toolbar buttons.
-struct ChevronPair: View {
-  let backLabel: LocalizedStringResource
-  let forwardLabel: LocalizedStringResource
-  let canGoBack: Bool
-  let canGoForward: Bool
-  let back: () -> Void
-  let forward: () -> Void
-
-  var body: some View {
-    HStack(spacing: 0) {
-      chevron("chevron.left", backLabel, enabled: canGoBack, action: back)
-      chevron("chevron.right", forwardLabel, enabled: canGoForward, action: forward)
-    }
-    .glassEffect(.regular.interactive(), in: Capsule())
-  }
-
-  private func chevron(
-    _ symbol: String, _ label: LocalizedStringResource, enabled: Bool,
-    action: @escaping () -> Void
-  )
-    -> some View
-  {
-    Button(action: action) {
-      Image(systemName: symbol)
-        .font(.system(size: 17, weight: .semibold))
-        .foregroundStyle(enabled ? Theme.ink : Theme.ink3)
-        .frame(width: 44, height: 44)
-        .contentShape(Rectangle())
-    }
-    .buttonStyle(.plain)
-    .disabled(!enabled)
-    .accessibilityLabel(Text(label))
+/// The tab roots carry their title in the system bar, on the line of its buttons: a root with an empty bar
+/// counts as one without a bar, and on a swipe back iOS then slides the pushed page's bar off with
+/// it, back button included (DECISIONS, "Native titles on the tab roots").
+@MainActor
+enum NavigationBarStyle {
+  static func apply() {
+    let ink = UIColor(Theme.ink)
+    // The bar sets the title at its layout margin; the indent brings it to the title gutter,
+    // where the free blocks of the page start.
+    let indent = NSMutableParagraphStyle()
+    indent.firstLineHeadIndent = Theme.Gutter.title - Theme.Gutter.surface
+    indent.headIndent = indent.firstLineHeadIndent
+    let appearance = UINavigationBarAppearance()
+    appearance.configureWithTransparentBackground()
+    appearance.largeTitleTextAttributes = [
+      .font: Theme.uiFont(34, .semibold, wide: false), .foregroundColor: ink, .kern: -0.68,
+      .paragraphStyle: indent,
+    ]
+    appearance.titleTextAttributes = [
+      .font: Theme.uiFont(17, .semibold, wide: false), .foregroundColor: ink,
+    ]
+    let bar = UINavigationBar.appearance()
+    bar.standardAppearance = appearance
+    bar.scrollEdgeAppearance = appearance
+    bar.compactAppearance = appearance
   }
 }
 

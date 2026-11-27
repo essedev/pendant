@@ -241,3 +241,15 @@ Rejected: Italian as the source (the fallback for any other language is the sour
 English is the one more people read; the public repository already keeps its prose in
 English), and a language picker in the app (iOS already offers a language per app, and a
 picker of our own would also have to reach the widget extension and the Live Activity).
+
+## 2026-11-27 Native titles on the tab roots
+
+The roots of Adesso, Oggi and Impostazioni carry their title in the system navigation bar,
+inline and large (`toolbarTitleDisplayMode(.inlineLarge)`), in Archivo through the bar's
+appearance and indented to the title gutter; Oggi's day chevrons are the bar's own buttons, on
+the title's line, and the date is the first line of the page. Drawing the title in the content
+with a hidden or empty bar, as before, broke the swipe back: iOS treats an empty bar as hidden,
+and when the page underneath has no bar it slides the pushed page's bar off with the page, so
+the back button lost its margin as soon as the swipe began. Rejected the classic large title
+(the title moves below the buttons, away from the chevrons) and an invisible bar item over the
+old layout (an empty band of about 50 pt at the top).

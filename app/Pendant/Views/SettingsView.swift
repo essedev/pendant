@@ -11,7 +11,6 @@ struct SettingsView: View {
     let d = model.device
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        PageTitle(title: "Settings").padding(.top, 8)
         NavigationLink(value: AppModel.Page.pendant) {
           DeviceCard(device: d, name: config.pendantName, more: true)
         }
@@ -46,6 +45,8 @@ struct SettingsView: View {
       .padding(.bottom, 32)
     }
     .background(Theme.background.ignoresSafeArea())
+    .navigationTitle("Settings")
+    .toolbarTitleDisplayMode(.inlineLarge)
     .navigationDestination(for: AppModel.Page.self) { page in
       switch page {
       case .pendant: PendantPage()

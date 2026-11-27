@@ -17,15 +17,10 @@ struct TodayView: View {
     let closed = all.filter { $0.status != .live }
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        PageTitle(
-          title: .verbatim(title(day, offset: offset)), subtitle: .verbatim(Clock.longDay(day))
-        ) {
-          ChevronPair(
-            backLabel: "Previous day", forwardLabel: "Next day",
-            canGoBack: offset < ConversationLog.retentionDays, canGoForward: !isToday,
-            back: { offset += 1 }, forward: { offset -= 1 })
-        }
-        .padding(.top, 8)
+        Text(Clock.longDay(day))
+          .type(17, 24)
+          .foregroundStyle(Theme.ink2)
+          .padding(.horizontal, Theme.Gutter.title)
         VStack(alignment: .leading, spacing: 12) {
           HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(
@@ -69,6 +64,16 @@ struct TodayView: View {
       .padding(.bottom, 32)
     }
     .background(Theme.background.ignoresSafeArea())
+    .navigationTitle(title(day, offset: offset))
+    .toolbarTitleDisplayMode(.inlineLarge)
+    .toolbar {
+      ToolbarItemGroup(placement: .topBarTrailing) {
+        Button("Previous day", systemImage: "chevron.left") { offset += 1 }
+          .disabled(offset >= ConversationLog.retentionDays)
+        Button("Next day", systemImage: "chevron.right") { offset -= 1 }
+          .disabled(isToday)
+      }
+    }
     .navigationDestination(for: UUID.self) { id in
       if let c = model.conversations.conversations.first(where: { $0.id == id }) {
         ConversationView(conversation: c)
