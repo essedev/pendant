@@ -1186,12 +1186,42 @@
         }
       }
     },
-    "I looked for 30 seconds. It’s usually one of these three things." : {
+    "I looked for %lld seconds. It’s usually one of these three things." : {
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "I looked for %lld second. It’s usually one of these three things."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "I looked for %lld seconds. It’s usually one of these three things."
+                }
+              }
+            }
+          }
+        },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ho cercato per 30 secondi. Di solito è una di queste tre cose."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ho cercato per %lld secondo. Di solito è una di queste tre cose."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ho cercato per %lld secondi. Di solito è una di queste tre cose."
+                }
+              }
+            }
           }
         }
       }

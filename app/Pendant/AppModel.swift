@@ -353,7 +353,8 @@ final class AppModel {
       probeOutcome = .ok
       return
     }
-    probeOutcome = await probe.run(target, language: config.language)
+    probeOutcome = await probe.run(
+      target, language: config.language, timeout: config.probeTimeout)
     log.record("probe", "\(probeOutcome.map { "\($0)" } ?? "?") for \(target.host)")
   }
 

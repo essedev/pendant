@@ -312,7 +312,7 @@ private struct SearchStep: View {
     TimelineView(.periodic(from: .now, by: 1)) { context in
       let state = SearchState.of(model, now: context.date)
       VStack(alignment: .leading, spacing: 0) {
-        Heading(title: state.title, text: state.text)
+        Heading(title: state.title, text: state.text(model.config))
         if state == .none {
           VStack(alignment: .leading, spacing: 0) {
             cause(1, "It’s off", "Give it a short tap: the LED lights up.")
@@ -394,9 +394,6 @@ private struct SearchStep: View {
 private enum SearchState: Equatable {
   case scanning, found, linking, linked, none
 
-  /// Seconds without results before the causes show.
-  static let patience: Double = 30
-
   @MainActor static func of(_ model: AppModel, now: Date) -> SearchState {
     if let demo = model.demo {
       switch demo.search {
@@ -410,7 +407,11 @@ private enum SearchState: Equatable {
     if link.ready { return .linked }
     if link.phase == .connecting || link.phase == .connected { return .linking }
     if !link.candidates.isEmpty { return .found }
-    if let started = link.scanStartedAt, now.timeIntervalSince(started) > patience { return .none }
+    if let started = link.scanStartedAt,
+      now.timeIntervalSince(started) > model.config.searchPatience
+    {
+      return .none
+    }
     return .scanning
   }
 
@@ -424,13 +425,14 @@ private enum SearchState: Equatable {
     }
   }
 
-  var text: LocalizedStringResource {
+  func text(_ config: Configuration) -> LocalizedStringResource {
     switch self {
     case .scanning: "Keep it on and close to the phone. It usually takes a few seconds."
     case .found: "There’s a pendant nearby. If it’s yours, connect it."
     case .linking: "Reading its version and battery, and setting its clock."
     case .linked: "The pendant is ready. It stays connected even with the app closed."
-    case .none: "I looked for 30 seconds. It’s usually one of these three things."
+    case .none:
+      "I looked for \(Int(config.searchPatience)) seconds. It’s usually one of these three things."
     }
   }
 }

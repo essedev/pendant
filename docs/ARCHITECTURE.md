@@ -275,6 +275,7 @@ range, an unknown one is ignored.
 | Forwarding | Language, ping interval, reconnection time |
 | Transcripts | On or off ("Trascrizioni sul telefono" in Server, on by default; off forgets the ones on the phone), first read after the close (60 s), longest wait between reads (15 min, doubling up to it), give-up time (one day) |
 | Firmware | Supported versions and features to use on each |
+| First launch | How long the connection test waits for the server (`probeTimeout`, 10 s), how long the search scans before showing the likely causes (`searchPatience`, 30 s), how long a connection may stay pending before "Can't connect" (`linkPatience`, 20 s) |
 | Pendant | LED: follows recording (on while recording, off when paused, default), always on, always off; brightness. The firmware picks the colour, the app only the brightness (`led.c`); when disconnected the last saved value applies. The LED on is also the notice for whoever is in front of you |
 
 Only the firmware values stay fixed (button timings, packet format): the app reads them from

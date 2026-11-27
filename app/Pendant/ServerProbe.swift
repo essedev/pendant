@@ -15,16 +15,16 @@ final class ServerProbe: NSObject, URLSessionWebSocketDelegate {
   private var continuation: CheckedContinuation<ServerProbeOutcome, Never>?
   private var timeout: Task<Void, Never>?
 
-  /// Seconds before an attempt with no answer counts as unreachable.
-  static let timeoutSeconds: Double = 10
-
   override init() {
     super.init()
     session = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main)
   }
 
-  /// The outcome of one attempt with these credentials.
-  func run(_ credentials: Credentials, language: String) async -> ServerProbeOutcome {
+  /// The outcome of one attempt with these credentials, unreachable after `timeout` seconds
+  /// with no answer.
+  func run(_ credentials: Credentials, language: String, timeout seconds: Double) async
+    -> ServerProbeOutcome
+  {
     finish(.unreachable)
     return await withCheckedContinuation { continuation in
       self.continuation = continuation
@@ -40,7 +40,7 @@ final class ServerProbe: NSObject, URLSessionWebSocketDelegate {
         }
       }
       timeout = Task { [weak self] in
-        try? await Task.sleep(for: .seconds(Self.timeoutSeconds))
+        try? await Task.sleep(for: .seconds(seconds))
         guard !Task.isCancelled else { return }
         self?.finish(.unreachable)
       }

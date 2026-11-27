@@ -215,6 +215,40 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
   }
 }
 
+@Suite struct FirstLaunchWaitTests {
+  @Test func defaultsToTheWaitsOfTheFirstLaunch() throws {
+    let config = try JSONDecoder().decode(Configuration.self, from: Data("{}".utf8))
+    #expect(config.probeTimeout == 10)
+    #expect(config.searchPatience == 30)
+    #expect(config.linkPatience == 20)
+  }
+
+  @Test func clampsTheWaitsIntoTheirLimits() throws {
+    let low = try JSONDecoder().decode(
+      Configuration.self,
+      from: Data(#"{"probeTimeout": 0, "searchPatience": 1, "linkPatience": -4}"#.utf8))
+    #expect(low.probeTimeout == 3)
+    #expect(low.searchPatience == 10)
+    #expect(low.linkPatience == 5)
+    let high = try JSONDecoder().decode(
+      Configuration.self,
+      from: Data(#"{"probeTimeout": 600, "searchPatience": 9000, "linkPatience": 9000}"#.utf8))
+    #expect(high.probeTimeout == 60)
+    #expect(high.searchPatience == 300)
+    #expect(high.linkPatience == 300)
+  }
+
+  @Test func keepsTheDefaultOnAWrongTypeAndSurvivesARoundTrip() throws {
+    let config = try JSONDecoder().decode(
+      Configuration.self, from: Data(#"{"linkPatience": "soon", "searchPatience": 45}"#.utf8))
+    #expect(config.linkPatience == 20)
+    let again = try JSONDecoder().decode(
+      Configuration.self, from: JSONEncoder().encode(config))
+    #expect(again == config)
+    #expect(again.searchPatience == 45)
+  }
+}
+
 @Suite struct IdleScheduleTests {
   @Test func repeatsAfterTheFirstWarning() {
     let schedule = IdleSchedule(config: .defaults)

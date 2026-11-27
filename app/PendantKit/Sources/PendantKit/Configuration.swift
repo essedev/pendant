@@ -141,6 +141,13 @@ public struct Configuration: Codable, Equatable, Sendable {
   /// Seconds within which the server resumes a conversation cut by a disconnection; it is the
   /// grace of `audio_stream`, mirrored here to tell the user what happened.
   public var resumeGrace: Double
+  /// Seconds the connection test waits for the server before calling it unreachable.
+  public var probeTimeout: Double
+  /// Seconds of scanning without a pendant before the first launch shows the likely causes.
+  public var searchPatience: Double
+  /// Seconds connecting to a pendant that does not get ready before the first launch says it
+  /// can't connect; the connection goes on underneath.
+  public var linkPatience: Double
   /// Light, dark, or as the phone.
   public var appearance: AppAppearance
   /// The display surface of the theme.
@@ -192,6 +199,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     liveActivityPauseEnd = 600
     liveActivityAlways = false
     resumeGrace = 120
+    probeTimeout = 10
+    searchPatience = 30
+    linkPatience = 20
     pendantName = "Omi"
     appearance = .system
     displayStyle = .graphite
@@ -279,6 +289,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     liveActivityPauseEnd = number(.liveActivityPauseEnd, d.liveActivityPauseEnd, 0...28800)
     liveActivityAlways = value(.liveActivityAlways, d.liveActivityAlways)
     resumeGrace = number(.resumeGrace, d.resumeGrace, 0...3600)
+    probeTimeout = number(.probeTimeout, d.probeTimeout, 3...60)
+    searchPatience = number(.searchPatience, d.searchPatience, 10...300)
+    linkPatience = number(.linkPatience, d.linkPatience, 5...300)
     let name: String = value(.pendantName, d.pendantName)
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     pendantName = trimmed.isEmpty ? d.pendantName : String(trimmed.prefix(32))
@@ -328,6 +341,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(liveActivityPauseEnd, forKey: .liveActivityPauseEnd)
     try c.encode(liveActivityAlways, forKey: .liveActivityAlways)
     try c.encode(resumeGrace, forKey: .resumeGrace)
+    try c.encode(probeTimeout, forKey: .probeTimeout)
+    try c.encode(searchPatience, forKey: .searchPatience)
+    try c.encode(linkPatience, forKey: .linkPatience)
     try c.encode(pendantName, forKey: .pendantName)
     try c.encode(appearance.rawValue, forKey: .appearance)
     try c.encode(displayStyle.rawValue, forKey: .displayStyle)
@@ -346,5 +362,6 @@ public struct Configuration: Codable, Equatable, Sendable {
       liveActivityPauseEnd, liveActivityAlways
     case resumeGrace, pendantName, appearance, displayStyle, accentStyle
     case transcripts, transcriptCheckFirst, transcriptCheckMax, transcriptGiveUp
+    case probeTimeout, searchPatience, linkPatience
   }
 }
