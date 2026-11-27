@@ -1,0 +1,4 @@
+# Exceptions to scripts/check-prose.py, one glob per line, each with its reason.
+# docs/archive/ (the superseded DIY pendant) and docs/concepts/ (mockups of the Italian UI) are
+# allowed by default. The app's Italian UI lives in Swift string literals, which the check
+# does not read, so it needs no entry here.
