@@ -257,11 +257,14 @@ struct ConversationView: View {
         CellGroup(
           header: "Momenti segnati",
           footer: c.bookmarks.isEmpty
-            ? nil : "Segnati dal telefono mentre registravi. Il server li riceve insieme all’audio."
+            ? nil
+            : "Segnati mentre registravi. Restano su questo telefono: il server li riceve ma per ora non li usa."
         ) {
           if c.bookmarks.isEmpty {
             Text(
-              "Nessuno. Un momento si segna dal tasto Azione o dal Centro di Controllo, mentre registra."
+              model.config.gestures["singleTap"] == .bookmark
+                ? "Nessuno. Un momento si segna con un tocco sul ciondolo, dal tasto Azione o dal Centro di Controllo, mentre registra."
+                : "Nessuno. Un momento si segna dal tasto Azione o dal Centro di Controllo, mentre registra."
             )
             .type(15, 20)
             .foregroundStyle(Theme.ink2)
