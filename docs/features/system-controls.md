@@ -32,6 +32,8 @@ Due controlli dell'app, che si mettono dove si vuole:
   scorre compare solo mentre registra: una pausa contata come `23:00` si legge come un orario.
   Con "Sempre visibile" resta anche in pausa e da scollegato. iOS la chiude dopo circa 8 ore;
   se iOS rifiuta di aprirla con l'app in background, l'app riprova quando torna in primo piano.
+  L'attività sopravvive all'app: al rilancio l'app riprende quella aperta e chiude le altre,
+  invece di aggiungerne una.
 
 Nell'app stanno in Impostazioni, Fuori dall'app: in cima l'attività in tempo reale in piccolo,
 con le stesse viste dell'estensione (`app/Shared/ActivityViews.swift`) e i suoi due

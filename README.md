@@ -11,8 +11,14 @@ Nato come ciondolo fai-da-te su ESP32-S3, poi sostituito da Omi: il progetto ori
 
 ## Stato
 
-Inoltro dal vivo verso Nexus in uso con l'app iOS dal 26/11/2026. Prossimo: stato del ciondolo e
-configurazione in Nexus.
+Inoltro dal vivo verso Nexus in uso con l'app iOS dal 26/11/2026; dal 27/11 l'app completa (M7),
+in prova sul ciondolo. Prossimo: lo stato del ciondolo verso il server (M8).
+
+## Avvio
+
+Da `app/`: `make help` elenca i comandi, `make run` compila e installa l'app sull'iPhone
+collegato, `make sim SCENE=<scena>` la apre nel simulatore. Il primo setup (XcodeGen, team di
+firma, credenziali) è in `CLAUDE.md`.
 
 ## Documentazione
 
