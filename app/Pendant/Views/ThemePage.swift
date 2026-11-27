@@ -2,7 +2,7 @@ import PendantKit
 import SwiftUI
 
 /// Tema: a live preview, the appearance, the ready-made themes and a free mix of display and
-/// accent (DECISIONS 2026-11-27, "Temi"). The red of the recording and the amber of warnings
+/// accent (DECISIONS 2026-11-27, "Themes"). The red of the recording and the amber of warnings
 /// stay the same in every theme.
 struct ThemePage: View {
   @Environment(AppModel.self) private var model

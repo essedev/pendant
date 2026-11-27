@@ -1,426 +1,438 @@
-# Architettura
+# Architecture
 
-## Visione d'insieme
+## Overview
 
-Omi registra l'audio delle conversazioni a cui partecipo, un'app iOS nostra lo riceve dal
-ciondolo via Bluetooth e lo inoltra a Nexus, e Nexus lo conserva e lo trascrive. L'app Omi
-resta installata solo per aggiornare il firmware: nessun audio, stato o testo passa dal cloud
-Omi.
+Omi records the audio of the conversations I take part in, an iOS app of ours receives it from
+the pendant over Bluetooth and forwards it to Nexus, and Nexus stores and transcribes it. The
+Omi app stays installed only to update the firmware: no audio, state or text goes through the
+Omi cloud.
 
-Fino al 26/11/2026 il trasporto lo faceva l'app Omi con lo "STT personalizzato" (sezione
-[Trasporto precedente](#trasporto-precedente-app-omi-e-stt-personalizzato)). L'app nostra lo
-sostituisce da quel giorno (DECISIONS), e serve anche a decidere se tenere Omi o passare al
-reSpeaker Clip dopo due settimane d'uso.
+Until 26/11/2026 the transport was handled by the Omi app with its "custom STT" (section
+[Previous transport](#previous-transport-omi-app-and-custom-stt)). Our app replaces it from
+that day (DECISIONS), and also serves to decide whether to keep Omi or switch to the reSpeaker
+Clip after two weeks of use.
 
-Il ciondolo fai-da-te su ESP32-S3 progettato prima è superato: architettura, BOM e disegni
-restano in `docs/archive/`.
+The DIY pendant on ESP32-S3 designed earlier is superseded: architecture, BOM and drawings
+remain in `docs/archive/`.
 
-## Flusso
+## Flow
 
 ```
-Omi ──BLE, Opus 16 kHz──> app pendant (iPhone) ──wss──> Nexus audio_stream ──> transcription
-     <── ora, vibrazione,         │                       (sessione = connessione)
-         comandi della memoria    └──> Nexus: stato del ciondolo, segnale periodico, note
+Omi ──BLE, Opus 16 kHz──> pendant app (iPhone) ──wss──> Nexus audio_stream ──> transcription
+     <── time, vibration,         │                       (session = connection)
+         storage commands         └──> Nexus: pendant state, heartbeat, notes
 ```
 
-L'app non conosce Nexus: parla un protocollo (oggi quello di `audio_stream`) verso un server
-che si imposta nell'app, con indirizzo e token. Nexus è il server che uso io.
+The app does not know Nexus: it speaks a protocol (today the `audio_stream` one) to a server
+set in the app, with address and token. Nexus is the server I use.
 
-- **Registrazione continua**: finché il ciondolo è collegato e non sono in pausa, l'app
-  inoltra l'audio a `audio_stream`. Una connessione è una conversazione: si apre alla ripresa
-  e si chiude alla pausa.
-- **Offline**: da scollegato il ciondolo scrive in memoria. Alla connessione l'app la legge, la
-  manda a Nexus e la libera solo dopo la conferma.
-- **Note**: un gesto sul pulsante apre una nota, uno la chiude. L'app ritaglia quel pezzo dal
-  flusso e lo manda a Nexus come nota, separata dalla registrazione continua.
-- **Stato**: batteria, carica, connessione, memoria e un segnale periodico dell'app vanno a
-  Nexus, che avvisa su Telegram quando qualcosa non va.
+- **Continuous recording**: as long as the pendant is connected and I am not paused, the app
+  forwards the audio to `audio_stream`. One connection is one conversation: it opens on resume
+  and closes on pause.
+- **Offline**: when disconnected the pendant writes to storage. On connection the app reads
+  it, sends it to Nexus and frees it only after confirmation.
+- **Notes**: one gesture on the button opens a note, one closes it. The app cuts that piece
+  out of the stream and sends it to Nexus as a note, separate from the continuous recording.
+- **State**: battery, charging, connection, storage and a heartbeat from the app go to Nexus,
+  which alerts on Telegram when something is wrong.
 
 ## Omi: hardware
 
-Modello consumer CV1, dati da docs.omi.me e dal repo `BasedHardware/omi`, rilevati il
+Consumer model CV1, data from docs.omi.me and from the `BasedHardware/omi` repo, collected on
 28/10/2026.
 
-| Parte | Cosa |
+| Part | What |
 |---|---|
-| SoC | nRF5340 (BLE) più nRF7002 (WiFi 6, presente ma spento nel firmware) |
-| Microfoni | 2 TDK T5838 PDM, con rilevamento d'attività acustica in hardware |
-| Batteria | LiPo 150 mAh |
-| Memoria | 512 MB SD NAND saldata, usata come buffer circolare per l'offline |
-| Altro | IMU 6 assi (spenta nel firmware), tasto, motore di vibrazione |
+| SoC | nRF5340 (BLE) plus nRF7002 (WiFi 6, present but off in the firmware) |
+| Microphones | 2 TDK T5838 PDM, with hardware acoustic activity detection |
+| Battery | LiPo 150 mAh |
+| Storage | 512 MB soldered SD NAND, used as a circular buffer for offline audio |
+| Other | 6-axis IMU (off in the firmware), button, vibration motor |
 
-## Consumi
+## Power consumption
 
-Misure con Power Profiler Kit pubblicate nella PR firmware #6950 (unita il 23/04/2026), su
-finestre di 20 s - 2 min. Il firmware è cambiato dopo: sono ordini di grandezza, non garanzie.
+Measurements with Power Profiler Kit published in firmware PR #6950 (merged 23/04/2026), over
+windows of 20 s - 2 min. The firmware has changed since: these are orders of magnitude, not
+guarantees.
 
-| Stato | Corrente media | Durata su 150 mAh |
+| State | Average current | Runtime on 150 mAh |
 |---|---|---|
-| Spento (tasto premuto 3 s) | 0,031 mA | mesi |
-| Silenzio, connesso | 3,10 mA | circa 48 h |
-| Silenzio, offline | 3,26 mA | circa 46 h |
-| Parlato, streaming al telefono | 4,44 mA | circa 34 h |
-| Parlato, offline (scrive in memoria) | 7,03 mA | circa 21 h |
-| Sync della memoria verso il telefono | 9,46 mA | circa 16 h |
+| Off (button held 3 s) | 0.031 mA | months |
+| Silence, connected | 3.10 mA | about 48 h |
+| Silence, offline | 3.26 mA | about 46 h |
+| Speech, streaming to the phone | 4.44 mA | about 34 h |
+| Speech, offline (writes to storage) | 7.03 mA | about 21 h |
+| Storage sync to the phone | 9.46 mA | about 16 h |
 
-Nell'uso reale si ricarica ogni sera: una recensione ha misurato 18-20 h, un utente circa
-11 h con lo streaming attivo (ricerca del 26/11/2026). Dopo 10 s di silenzio il microfono si
-addormenta e si risveglia al primo suono (`mic.c`, `CONFIG_OMI_VAD_HOLD_MS`): la pausa decisa
-dall'app non fa risparmiare batteria. L'unica parte che l'app può togliere col 3.0.21 è la
-trasmissione: collegato ma senza l'app iscritta all'audio, il firmware scarta i pacchetti invece
-di mandarli (`transport.c`, `pusher`). È l'interruttore "Ferma l'audio in pausa" in Avanzate,
-spento di default: aiuta solo nelle pause col suono intorno, e meno della differenza fra
-parlato e silenzio (circa 1,3 mA), che comprende anche microfono e compressione. Il log
-`power` registra le due batterie ogni 10 minuti per misurarlo.
+In real use it gets charged every evening: one review measured 18-20 h, one user about 11 h
+with streaming on (research of 26/11/2026). After 10 s of silence the microphone goes to sleep
+and wakes at the first sound (`mic.c`, `CONFIG_OMI_VAD_HOLD_MS`): a pause decided by the app
+saves no battery. The only part the app can remove with 3.0.21 is the transmission: connected
+but without the app subscribed to audio, the firmware drops the packets instead of sending
+them (`transport.c`, `pusher`). This is the "Ferma l'audio in pausa" toggle in Avanzate, off by
+default: it only helps in pauses with sound around, and by less than the gap between speech
+and silence (about 1.3 mA), which also includes microphone and compression. The `power` log
+records both batteries every 10 minutes to measure it.
 
-## Firmware: il protocollo
+## Firmware: the protocol
 
-Letto nel codice del tag `Omi_CV1_v3.0.21` (il firmware sul mio ciondolo e l'ultimo
-distribuito a tutti, verificato su `api.omi.me` il 26/11/2026). I riferimenti sono a
-`omi/firmware/omi/src/`. La documentazione pubblica (`sdks/device/PROTOCOL.md`) è indietro:
-dice codec 20 e frame da 960 campioni, il codice dice 21 e 320.
+Read in the code at tag `Omi_CV1_v3.0.21` (the firmware on my pendant and the latest one
+distributed to everyone, checked on `api.omi.me` on 26/11/2026). References are to
+`omi/firmware/omi/src/`. The public documentation (`sdks/device/PROTOCOL.md`) is behind: it
+says codec 20 and 960-sample frames, the code says 21 and 320.
 
-### Servizi
+### Services
 
-| Servizio | Caratteristica | Uso nell'app |
+| Service | Characteristic | Use in the app |
 |---|---|---|
-| Audio `19B10000-E8F2-537E-4F6C-D104768A1214` | `19B10001` notify | Flusso audio |
+| Audio `19B10000-E8F2-537E-4F6C-D104768A1214` | `19B10001` notify | Audio stream |
 | | `19B10002` read | Codec: `21` = Opus |
-| Settings `19B10010` | `19B10011` read/write | Luminosità LED, 0-100 |
-| | `19B10012` read/write | Guadagno del microfono, 0-8, salvato |
-| | `19B10013` read/notify | In carica: `1` |
-| Features `19B10020` | `19B10021` read | Bitmask uint32 LE delle funzioni |
-| Ora `19B10030` | `19B10031` write | Epoch in secondi, uint32 |
-| Memoria `30295780-4301-EABD-2904-2849ADFEAE43` | `30295781` write/notify | Comandi e risposte della memoria |
-| | `30295782` read | Byte usati, pacchetti non letti, byte liberi, RTC valido |
-| Pulsante `23BA7924-0000-1000-7450-346EAC492E92` | `23BA7925` notify | Gesti, 8 byte |
-| Vibrazione `CAB1AB95-2EA5-4F4D-BB56-874B72CFC984` | `CAB1AB96` write | `1` = 100 ms, `2` = 300 ms, `3` = 500 ms |
-| Batteria `0x180F` | `0x2A19` read/notify | Percentuale |
-| Device Information `0x180A` | `0x2A26` | Versione firmware, modello `Omi CV 1` |
+| Settings `19B10010` | `19B10011` read/write | LED brightness, 0-100 |
+| | `19B10012` read/write | Microphone gain, 0-8, persisted |
+| | `19B10013` read/notify | Charging: `1` |
+| Features `19B10020` | `19B10021` read | uint32 LE bitmask of the features |
+| Time `19B10030` | `19B10031` write | Epoch in seconds, uint32 |
+| Storage `30295780-4301-EABD-2904-2849ADFEAE43` | `30295781` write/notify | Storage commands and responses |
+| | `30295782` read | Bytes used, unread packets, free bytes, RTC valid |
+| Button `23BA7924-0000-1000-7450-346EAC492E92` | `23BA7925` notify | Gestures, 8 bytes |
+| Vibration `CAB1AB95-2EA5-4F4D-BB56-874B72CFC984` | `CAB1AB96` write | `1` = 100 ms, `2` = 300 ms, `3` = 500 ms |
+| Battery `0x180F` | `0x2A19` read/notify | Percentage |
+| Device Information `0x180A` | `0x2A26` | Firmware version, model `Omi CV 1` |
 
-- **Una sola connessione, ma per telefono** (`CONFIG_BT_MAX_CONN=1`): iOS condivide il
-  collegamento fra le app. Con l'app Omi attiva, anche lei riceve audio e pulsante e reagisce
-  agli stessi gesti (verificato il 26/11/2026: un doppio tocco ha messo in pausa noi e tolto la
-  pausa a lei). L'app Omi va quindi scollegata dal ciondolo.
-- **Nessun pairing richiesto**: gli attributi non chiedono cifratura (`transport.c`).
-- **MTU**: il firmware chiede lo scambio fino a 498. Sotto 100 i frame audio vengono scartati.
+- **One connection only, but per phone** (`CONFIG_BT_MAX_CONN=1`): iOS shares the link among
+  apps. With the Omi app active, it also receives audio and button and reacts to the same
+  gestures (checked on 26/11/2026: a double tap paused us and unpaused it). The Omi app must
+  therefore be disconnected from the pendant.
+- **No pairing required**: the attributes do not require encryption (`transport.c`).
+- **MTU**: the firmware requests an exchange up to 498. Below 100 audio frames are dropped.
 
 ### Audio
 
-- Opus 16 kHz mono, 32 kbit/s VBR, frame da 20 ms (320 campioni), al massimo 160 byte
+- Opus 16 kHz mono, 32 kbit/s VBR, 20 ms frames (320 samples), at most 160 bytes
   (`config.h`, `codec.c`).
-- Ogni notifica ha un'intestazione di 3 byte: contatore uint16 little-endian e indice del pezzo
-  dentro il frame. Un frame si spezza su più notifiche solo se supera l'MTU. Un salto nel
-  contatore è un pacchetto perso: non c'è ritrasmissione (`transport.c:1060-1099`).
-- **Da collegato l'audio va solo via Bluetooth, non in memoria.** Da scollegato va solo in
-  memoria. Connesso ma senza notifiche attive, il frame si perde (`transport.c:1215-1255`).
-  Quindi la memoria contiene solo l'audio offline e non serve deduplicare.
+- Each notification has a 3-byte header: uint16 little-endian counter and index of the piece
+  within the frame. A frame is split across several notifications only if it exceeds the MTU.
+  A gap in the counter is a lost packet: there is no retransmission
+  (`transport.c:1060-1099`).
+- **When connected, audio goes only over Bluetooth, not to storage.** When disconnected it
+  goes only to storage. Connected but without notifications enabled, the frame is lost
+  (`transport.c:1215-1255`). So storage holds only offline audio and no deduplication is
+  needed.
 
-### Pulsante
+### Button
 
-Costanti in `button.c`: tocco sotto 300 ms, doppio tocco entro 600 ms, pressione lunga a
-3000 ms.
+Constants in `button.c`: tap under 300 ms, double tap within 600 ms, long press at 3000 ms.
 
-| Evento inviato | Valore | Quando |
+| Event sent | Value | When |
 |---|---|---|
-| Tocco singolo | `1` | Circa 300 ms dopo un tocco senza secondo tocco |
-| Doppio tocco | `2` | Al secondo tocco entro 600 ms |
-| Rilascio | `5` | Una volta, quando il pulsante torna fermo dopo un gesto, e circa 300 ms dopo l'avvio |
-| Pressione | `4` | **Mai inviato**: la funzione esiste ma nessuno la chiama |
-| Pressione lunga | `3` | **Mai inviato**: a 3 s il ciondolo si spegne |
+| Single tap | `1` | About 300 ms after a tap with no second tap |
+| Double tap | `2` | On the second tap within 600 ms |
+| Release | `5` | Once, when the button goes idle after a gesture, and about 300 ms after boot |
+| Press | `4` | **Never sent**: the function exists but nothing calls it |
+| Long press | `3` | **Never sent**: at 3 s the pendant turns off |
 
-Il rilascio si manda solo se l'ultimo evento non era già un rilascio, e quel ricordo non si
-azzera mai (`button.c:241-251`). Siccome ogni tocco è seguito da un rilascio, una pressione
-tenuta fra 0,3 e 3 s non produce nessun evento.
+The release is sent only if the last event was not already a release, and that memory is
+never reset (`button.c:241-251`). Since every tap is followed by a release, a press held
+between 0.3 and 3 s produces no event.
 
-Conseguenze per l'app: non sa quando inizia una pressione, e tenere premuto oltre 3 s spegne il
-ciondolo. **Il "premi e parla" col firmware di serie non si può fare**, e i gesti utilizzabili
-sono due: tocco singolo e doppio tocco.
+Consequences for the app: it does not know when a press starts, and holding longer than 3 s
+turns the pendant off. **Push-to-talk is not possible with the stock firmware**, and the
+usable gestures are two: single tap and double tap.
 
-### Memoria
+### Storage
 
-Ring buffer sulla SD, a pacchetti da 444 byte: timestamp UTC di 4 byte più 440 byte di frame
-Opus nella forma `[lunghezza][frame]`, senza terminatore (`sd_card.h`). Circa 100 ms d'audio
-per pacchetto, quindi decine di ore di parlato prima di sovrascrivere.
+Ring buffer on the SD, in 444-byte packets: a 4-byte UTC timestamp plus 440 bytes of Opus
+frames in the form `[length][frame]`, with no terminator (`sd_card.h`). About 100 ms of audio
+per packet, so tens of hours of speech before overwriting.
 
-| Comando | Byte | Cosa fa |
+| Command | Bytes | What it does |
 |---|---|---|
-| Info | `0x10` | Risponde con `read_seq`, `write_seq`, capacità, pacchetti persi per sovrascrittura |
-| Lettura | `0x11` + `start_seq` (u64) + `count` (u32, opzionale) | Inizio, dati a flusso, fine con `next_seq` |
-| Avanza | `0x12` + `new_read_seq` (u64) | Sposta il puntatore di lettura: non cancella, rende sovrascrivibile |
-| Svuota | `0x13` | Azzera il ring |
-| Stop | `0x03` | Interrompe una lettura |
+| Info | `0x10` | Replies with `read_seq`, `write_seq`, capacity, packets lost to overwriting |
+| Read | `0x11` + `start_seq` (u64) + `count` (u32, optional) | Start, streamed data, end with `next_seq` |
+| Advance | `0x12` + `new_read_seq` (u64) | Moves the read pointer: does not delete, makes overwritable |
+| Clear | `0x13` | Resets the ring |
+| Stop | `0x03` | Stops a read |
 
-Tutti i numeri sono big-endian, le risposte arrivano su `30295781` (`storage.c`).
+All numbers are big-endian, responses arrive on `30295781` (`storage.c`).
 
-- **Il firmware avanza da solo** durante una lettura, ogni 2 s, in base a quello che lo stack
-  Bluetooth ha spedito, non a quello che l'app ha salvato (`storage.c:380-434`). Poiché
-  avanzare non cancella, l'app tiene l'intervallo di `seq` letto e, se il salvataggio fallisce,
-  lo rilegge finché non è sovrascritto.
-- **Senza ora valida l'offline si perde**: il firmware scarta le scritture se l'RTC non è
-  impostato (`sd_card.c:680-687`). L'app scrive l'ora a ogni connessione.
+- **The firmware advances on its own** during a read, every 2 s, based on what the Bluetooth
+  stack has sent, not on what the app has saved (`storage.c:380-434`). Since advancing does not
+  delete, the app keeps the `seq` range it read and, if saving fails, reads it again until it
+  is overwritten.
+- **Without a valid time, offline audio is lost**: the firmware drops writes if the RTC is not
+  set (`sd_card.c:680-687`). The app writes the time on every connection.
 
-### Cosa aggiunge il 3.0.24
+### What 3.0.24 adds
 
-Pubblicato il 9/11/2026, al 27/11 ancora allo 0% con un solo tester abilitato; il 3.0.23 è
-bloccato. Secondo la doc di Omi (`cv1-manufacturing-and-field-recovery.md`, PR #26199 del
-25/11) i CV1 usciti di fabbrica col 3.0.21 hanno un bootloader che rifiuta gli aggiornamenti
-via Bluetooth; quelli partiti dal 3.0.19 e aggiornati no. Il nostro è stato aggiornato
-all'arrivo, quindi probabilmente installerà la prossima release (3.0.25).
+Published on 9/11/2026, on 27/11 still at 0% with a single tester enabled; 3.0.23 is blocked.
+According to Omi's docs (`cv1-manufacturing-and-field-recovery.md`, PR #26199 of 25/11) CV1s
+that left the factory with 3.0.21 have a bootloader that rejects updates over Bluetooth; those
+that started from 3.0.19 and were updated do not. Ours was updated on arrival, so it will
+probably install the next release (3.0.25).
 
-| Funzione | Effetto per l'app |
+| Feature | Effect for the app |
 |---|---|
-| Muto salvato (`19B10015`, bit 10) | Pausa che vale anche da scollegato e dopo un riavvio: niente audio né in streaming né in memoria |
-| Spegnimento dall'app (bit 11) | L'app spegne un ciondolo acceso per sbaglio |
-| `LIVE_MARK` e custodia | Collega l'audio dal vivo alla memoria |
-| Safe mode | Un aggiornamento finito male si recupera senza J-Link |
+| Persisted mute (`19B10015`, bit 10) | A pause that holds also when disconnected and after a reboot: no audio either streamed or in storage |
+| Power off from the app (bit 11) | The app turns off a pendant switched on by mistake |
+| `LIVE_MARK` and custody | Links live audio to storage |
+| Safe mode | A failed update can be recovered without J-Link |
 
-## L'app
+## The app
 
-App iOS nativa in Swift, nella cartella `app/`. Solo iPhone. Il riferimento per il Bluetooth è
-il codice Swift nativo dell'app Omi (`app/ios/Runner/Ble/OmiBleManager.swift`, licenza MIT),
-che su iOS ha sostituito il plugin Flutter.
+Native iOS app in Swift, in the `app/` folder. iPhone only. The reference for Bluetooth is
+the native Swift code of the Omi app (`app/ios/Runner/Ble/OmiBleManager.swift`, MIT license),
+which on iOS replaced the Flutter plugin.
 
-### Componenti
+### Components
 
-| Componente | Responsabilità |
+| Component | Responsibility |
 |---|---|
-| Collegamento | CoreBluetooth in background, ripristino dello stato dopo che iOS chiude l'app, riconnessione con backoff, lettura di versione e funzioni, scrittura dell'ora |
-| Audio | Ricomposizione dei frame, conteggio dei pacchetti persi, decodifica Opus in PCM |
-| Inoltro | WebSocket verso `audio_stream`, una connessione per conversazione, coda su disco quando la rete manca |
-| Memoria | Per ora tiene o svuota l'offline secondo la politica; lettura, invio al server e avanzamento dopo la conferma arrivano con M9 |
-| Gesti | Riconoscimento dei gesti dagli eventi del firmware, mappa gesto-azione dalla configurazione |
-| Conversazioni | Registro sul telefono delle conversazioni passate da qui (inizio, fine, stato, segnalibri), 30 giorni, senza audio |
-| Note | Ritaglio dell'audio fra apertura e chiusura, controllo che ci sia voce, invio al server (M10) |
-| Stato | Eventi del ciondolo e segnale periodico verso Nexus, notifiche locali |
-| Configurazione | Impostazioni sul telefono, validate contro lo schema con default e limiti |
-| Comandi di sistema | Controlli per tasto Azione, Centro di Controllo e blocco schermo, attività in tempo reale, nell'estensione `PendantWidgets`; lo stato passa dall'App Group (`docs/features/system-controls.md`) |
+| Connection | CoreBluetooth in the background, state restoration after iOS kills the app, reconnection with backoff, reading version and features, writing the time |
+| Audio | Frame reassembly, lost packet count, Opus decoding to PCM |
+| Forwarding | WebSocket to `audio_stream`, one connection per conversation, on-disk queue when the network is down |
+| Storage | For now keeps or clears offline audio according to the policy; reading, sending to the server and advancing after confirmation come with M9 |
+| Gestures | Gesture recognition from firmware events, gesture-action map from the configuration |
+| Conversations | On-phone log of the conversations that went through here (start, end, state, bookmarks), 30 days, no audio |
+| Notes | Cutting the audio between open and close, checking there is voice, sending to the server (M10) |
+| State | Pendant events and heartbeat to Nexus, local notifications |
+| Configuration | Settings on the phone, validated against the schema with defaults and limits |
+| System controls | Controls for the Action button, Control Center and Lock Screen, Live Activity, in the `PendantWidgets` extension; state goes through the App Group (`docs/features/system-controls.md`) |
 
-### Ciclo di una connessione
+### Connection lifecycle
 
-1. Il ciondolo si collega. L'app scrive l'ora, legge versione, funzioni, codec e batteria, e
-   si iscrive ad audio, pulsante, batteria e carica.
-2. Se la versione non è fra quelle supportate dalla configurazione, l'app lo segnala e lavora
-   solo sulle funzioni che il bitmask dichiara.
-3. Parte in pausa: registra solo dal doppio tocco, dal tasto o da un controllo di sistema.
-   Riprende da sola solo una registrazione tagliata da una disconnessione, se il ciondolo
-   torna entro i 120 s di grazia del server, o una ripresa chiesta mentre era lontano. Se resta
-   collegato senza registrare per un tempo configurabile (5 minuti), il ciondolo vibra e arriva
-   una notifica, ripetuta ogni 15 minuti (`idleRepeatEvery`, vibrazione secondo `idleVibration`)
-   finché non si registra o il ciondolo non si scollega. "Basta per ora" nella notifica ferma le
-   ripetizioni fino al prossimo collegamento. In carica non avvisa, perché il ciondolo non
-   consuma e non è in tasca; il conto riparte quando lo si stacca.
-4. Legge l'info della memoria. Se c'è audio offline, lo tratta secondo la politica configurata.
-5. Alla disconnessione chiude la sessione senza `CloseStream`: Nexus la tiene `interrupted` per
-   120 s e la riprende se il ciondolo torna.
+1. The pendant connects. The app writes the time, reads version, features, codec and battery,
+   and subscribes to audio, button, battery and charging.
+2. If the version is not among those supported by the configuration, the app reports it and
+   works only with the features the bitmask declares.
+3. It starts paused: it records only from a double tap, the button or a system control. It
+   resumes on its own only a recording cut by a disconnection, if the pendant comes back within
+   the server's 120 s grace period, or a resume requested while it was away. If it stays
+   connected without recording for a configurable time (5 minutes), the pendant vibrates and a
+   notification arrives, repeated every 15 minutes (`idleRepeatEvery`, vibration according to
+   `idleVibration`) until recording starts or the pendant disconnects. "Basta per ora" in the
+   notification stops the repeats until the next connection. While charging it does not warn,
+   because the pendant draws nothing and is not in a pocket; the count restarts when it is
+   unplugged.
+4. It reads the storage info. If there is offline audio, it handles it according to the
+   configured policy.
+5. On disconnection it closes the session without `CloseStream`: Nexus keeps it `interrupted`
+   for 120 s and resumes it if the pendant comes back.
 
-### Custodia dell'audio
+### Audio custody
 
-Ogni copia si cancella solo quando la successiva è confermata. Nessuna eccezione per comodità.
+Each copy is deleted only when the next one is confirmed. No exceptions for convenience.
 
-| Dove | Si libera quando |
+| Where | Freed when |
 |---|---|
-| Memoria del ciondolo | Nexus ha confermato il pezzo offline: l'app manda l'avanzamento fino a quel `seq` |
-| Coda dell'app | Il frame è stato spedito sulla connessione al server. Oltre la capacità configurata (30 minuti di default) si perde l'audio più vecchio, e l'app lo segnala |
-| Pezzo in memoria su Nexus | Ogni 30 s va in media (comportamento di `audio_stream`) |
+| Pendant storage | Nexus has confirmed the offline piece: the app sends the advance up to that `seq` |
+| App queue | The frame has been sent on the connection to the server. Beyond the configured capacity (30 minutes by default) the oldest audio is lost, and the app reports it |
+| In-memory piece on Nexus | Every 30 s it goes to media (`audio_stream` behaviour) |
 
-L'inoltro dal vivo non ha una conferma per pezzo: un crash di Nexus perde al massimo gli ultimi
-30 s, come oggi con l'app Omi. Una conferma vera richiede un'estensione del contratto.
+Live forwarding has no per-piece confirmation: a Nexus crash loses at most the last 30 s, as
+today with the Omi app. A real confirmation requires an extension of the contract.
 
-### Gesti e azioni
+### Gestures and actions
 
-Il firmware dà due gesti (sezione Pulsante). La mappa gesto-azione sta nella configurazione:
+The firmware provides two gestures (Button section). The gesture-action map lives in the
+configuration:
 
-| Gesto | Azione di default |
+| Gesture | Default action |
 |---|---|
-| Doppio tocco | Pausa e ripresa della registrazione continua |
-| Tocco singolo | Segna questo momento; con le note (M10) potrà aprire e chiudere una nota |
+| Double tap | Pause and resume of the continuous recording |
+| Single tap | Mark this moment; with notes (M10) it will be able to open and close a note |
 
-Sequenze di gesti (tocco seguito da doppio tocco entro un tempo dato) le può riconoscere l'app,
-se due azioni non bastano: è una scelta della configurazione, non del firmware.
+Gesture sequences (a tap followed by a double tap within a given time) can be recognized by
+the app, if two actions are not enough: it is a choice of the configuration, not of the
+firmware.
 
-- **La vibrazione conferma ogni azione**: breve alla pausa e al segnalibro, media alla ripresa,
-  regolabili nella configurazione.
-- **In pausa le note funzionano**: il ciondolo trasmette comunque, l'app scarta il flusso e ne
-  tiene solo le note.
-- **Tocchi accidentali in tasca**: una nota senza voce rilevata si scarta, e dopo un tempo
-  massimo configurabile si chiude da sola.
-- **Accensioni accidentali**: da spento basta un tocco breve per riaccendere il ciondolo.
-  Non registra, perché ogni collegamento parte in pausa, ma consuma: dopo il tempo configurato
-  senza registrare il ciondolo vibra e arriva l'avviso di spegnerlo. Sul 3.0.21 l'app non può
-  spegnerlo (al tag si spegne solo tenendolo premuto, con la batteria critica o dalla console
-  seriale): lo spegnimento dall'app arriva col 3.0.24.
+- **Vibration confirms every action**: short on pause and bookmark, medium on resume,
+  adjustable in the configuration.
+- **Notes work while paused**: the pendant transmits anyway, the app discards the stream and
+  keeps only the notes.
+- **Accidental taps in a pocket**: a note with no detected voice is discarded, and after a
+  configurable maximum time it closes on its own.
+- **Accidental power-ons**: when off, a short tap is enough to turn the pendant back on. It
+  does not record, because every connection starts paused, but it draws power: after the
+  configured time without recording the pendant vibrates and the warning to turn it off
+  arrives. On 3.0.21 the app cannot turn it off (at the tag it turns off only by holding the
+  button, with a critical battery or from the serial console): power off from the app comes
+  with 3.0.24.
 
-### Configurazione
+### Configuration
 
-Nessun valore di comportamento è scritto nel codice. Lo schema della configurazione (chiavi,
-tipi, limiti, default) vive nell'app, i valori si cambiano dalle impostazioni dell'app e
-restano sul telefono. Indirizzo del server e token stanno nel portachiavi di iOS. Un valore
-fuori dai limiti si riporta nei limiti, uno sconosciuto si ignora.
+No behaviour value is written in the code. The configuration schema (keys, types, limits,
+defaults) lives in the app, values are changed from the app settings and stay on the phone.
+Server address and token are in the iOS keychain. An out-of-range value is clamped into
+range, an unknown one is ignored.
 
-| Gruppo | Esempi |
+| Group | Examples |
 |---|---|
-| Gesti | Mappa gesto-azione, durata della vibrazione per azione |
-| Note | Durata massima, soglia di voce, pre-roll (secondi presi prima del gesto) |
-| Memoria | Politica dell'offline: invia, svuota o lascia; dimensione delle letture |
-| Stato | Intervallo del segnale periodico, soglia di batteria bassa, quali notifiche locali |
-| Inoltro | Lingua, intervallo del ping, tempo di riconnessione |
-| Firmware | Versioni supportate e funzioni da usare su ognuna |
-| Ciondolo | LED: segue la registrazione (acceso quando registra, spento in pausa, default), sempre acceso, sempre spento; luminosità. Il firmware decide il colore, l'app solo la luminosità (`led.c`); da scollegato vale l'ultimo valore salvato. Il LED acceso è anche l'avviso per chi ti sta davanti |
+| Gestures | Gesture-action map, vibration duration per action |
+| Notes | Maximum duration, voice threshold, pre-roll (seconds taken before the gesture) |
+| Storage | Offline audio policy: send, clear or keep; read size |
+| State | Heartbeat interval, low battery threshold, which local notifications |
+| Forwarding | Language, ping interval, reconnection time |
+| Firmware | Supported versions and features to use on each |
+| Pendant | LED: follows recording (on while recording, off when paused, default), always on, always off; brightness. The firmware picks the colour, the app only the brightness (`led.c`); when disconnected the last saved value applies. The LED on is also the notice for whoever is in front of you |
 
-Restano fissi solo i valori del firmware (tempi del pulsante, formato dei pacchetti): l'app li
-legge dal protocollo, non li sceglie.
+Only the firmware values stay fixed (button timings, packet format): the app reads them from
+the protocol, it does not choose them.
 
-## Contratto col server
+## Server contract
 
-L'app parla a qualunque server che implementi questo protocollo; oggi è `audio_stream` di
-Nexus, che lo parla come l'app Omi.
+The app talks to any server that implements this protocol; today it is Nexus's
+`audio_stream`, which speaks it like the Omi app.
 
-| Punto | Valore |
+| Item | Value |
 |---|---|
-| Endpoint | `GET /api/audio-stream/ws`, `wss://`. Nell'app si scrive solo il nome del server: il percorso fa parte del protocollo |
-| Autenticazione | Token dedicato in `?token=` o `Authorization: Bearer` |
-| Audio | Frame binari PCM s16le, mono, 16 kHz |
-| Chiusura | `{"type":"CloseStream"}` chiude la conversazione |
-| Interruzione | Senza `CloseStream` la sessione resta `interrupted` 120 s e si riprende |
-| Ping | Ogni 20 s nel silenzio: Cloudflare chiude dopo circa 100 s senza traffico |
-| Sessione vuota | Sotto 2 s d'audio non diventa una trascrizione |
-| Prova della connessione | Apre e chiude senza `CloseStream`, e mai mentre una conversazione è aperta: aprire riprende la sessione interrotta entro la grazia, e `CloseStream` la chiuderebbe |
-| Errori dell'handshake | 401 o 403 token rifiutato, nessuna risposta o 5xx server irraggiungibile, il resto protocollo diverso |
+| Endpoint | `GET /api/audio-stream/ws`, `wss://`. In the app you type only the server name: the path is part of the protocol |
+| Authentication | Dedicated token in `?token=` or `Authorization: Bearer` |
+| Audio | Binary PCM s16le frames, mono, 16 kHz |
+| Close | `{"type":"CloseStream"}` closes the conversation |
+| Interruption | Without `CloseStream` the session stays `interrupted` for 120 s and resumes |
+| Ping | Every 20 s during silence: Cloudflare closes after about 100 s without traffic |
+| Empty session | Under 2 s of audio it does not become a transcription |
+| Connection test | Opens and closes without `CloseStream`, and never while a conversation is open: opening resumes the interrupted session within the grace period, and `CloseStream` would close it |
+| Handshake errors | 401 or 403 token rejected, no response or 5xx server unreachable, anything else a different protocol |
 
-Da aggiungere in Nexus, in proposta, uno alla volta quando la milestone li richiede:
+To add in Nexus, proposed, one at a time when the milestone needs them:
 
-| Aggiunta | Perché |
+| Addition | Why |
 |---|---|
-| Segnalibri | Il messaggio `Mark` dei comandi di sistema: un'ora dentro la conversazione. Oggi `audio_stream` lo ignora senza danni |
-| Eventi del ciondolo e segnale periodico | Storico dello stato e avviso su Telegram se l'app tace |
-| Audio offline | Pezzi con l'ora vera di registrazione, conferma per pezzo e idempotenza su `seq` |
-| Note | Audio di una nota, trascritto e salvato separato dalle conversazioni |
-| Opus invece di PCM | Da circa 115 a circa 7 MB l'ora di dati dal telefono, decodifica su Nexus |
+| Bookmarks | The `Mark` message of the system controls: a time inside the conversation. Today `audio_stream` ignores it harmlessly |
+| Pendant events and heartbeat | State history and a Telegram alert if the app goes quiet |
+| Offline audio | Pieces with the real recording time, per-piece confirmation and idempotency on `seq` |
+| Notes | Audio of a note, transcribed and stored separately from the conversations |
+| Opus instead of PCM | From about 115 to about 7 MB per hour of data from the phone, decoding on Nexus |
 
-## Interfaccia
+## Interface
 
-Scelta il 26/11/2026 sul mock `docs/concepts/concept-a-app-fable.html`, variante L (DECISIONS):
-la home è il display di un registratore, unica superficie tinta, col tempo a unità piccole
-(`12m08s`), il livello a tacche con la scala in dB e la riga del server. Palette grafite e
-rosso: il rosso vuol dire solo "registra" (spia piena sul display, livello acceso) e "fai
-registrare" (il tasto Riprendi). Display come materiale (cornice d'alluminio, vetro con un
-riflesso), alluminio caldo come seconda tinta. Un solo tasto, incassato nella stessa cornice:
-grafite "Pausa" mentre registra, rosso "Riprendi" quando è fermo. Schede: Adesso, Oggi,
-Impostazioni. Font Archivo. Vetro solo sulla barra in basso, che galleggia sul contenuto.
+Chosen on 26/11/2026 from the mockup `docs/concepts/concept-a-app-fable.html`, variant L
+(DECISIONS): the home is the display of a recorder, the only tinted surface, with time in small
+units (`12m08s`), the segmented level meter with its dB scale and the server line. Graphite
+and red palette: red means only "recording" (solid LED on the display, level lit) and "make it
+record" (the Riprendi key). Display as a material (aluminium bezel, glass with a reflection),
+warm aluminium as the second tint. A single key, recessed in the same bezel: graphite "Pausa"
+while recording, red "Riprendi" when stopped. Tabs: Adesso, Oggi, Impostazioni. Archivo font.
+Glass only on the bottom bar, which floats over the content.
 
-Colori, presi dal mock (coppia Grafite e rosso con la seconda tinta); le celle stanno a metà
-strada fra il mock e il fondo, perché sul telefono risaltavano troppo (27/11/2026):
+Colours, taken from the mockup (Graphite and red pair with the second tint); the cells sit
+halfway between the mockup and the background, because on the phone they stood out too much
+(27/11/2026):
 
-| Ruolo | Chiaro | Scuro |
+| Role | Light | Dark |
 |---|---|---|
-| Fondo | `#e4e5e2` | `#141518` |
-| Celle | `#eaebe8` | `#191a1e` |
+| Background | `#e4e5e2` | `#141518` |
+| Cells | `#eaebe8` | `#191a1e` |
 | Display | `#2b2e34` | `#23262b` |
-| Inchiostro del display | `#f1f2f4` | `#eceef1` |
-| Inchiostro secondario del display | `#a9aeb7` | `#9ba0a9` |
-| Tacche spente e righe del display | `#3d4149`, `#464a53` | `#34383f`, `#3a3e45` |
-| Cornice d'alluminio | `#cfd0cc` | `#2c2f34` |
-| Tasto Pausa | `#2b2e34` | `#3a3e46` |
-| Rosso dei fondi pieni (spia, Riprendi, adesso) | `#d93a2b` | `#d93a2b` |
-| Rosso acceso (livello, punto della Dynamic Island) | `#ff5a47` | `#ff5a47` |
-| Tratti registrati della giornata | `#7c818a` | `#6f757f` |
-| Avvisi | `#9a5600`, sul display `#f0a840` | `#f0a840` |
+| Display ink | `#f1f2f4` | `#eceef1` |
+| Display secondary ink | `#a9aeb7` | `#9ba0a9` |
+| Unlit segments and display rules | `#3d4149`, `#464a53` | `#34383f`, `#3a3e45` |
+| Aluminium bezel | `#cfd0cc` | `#2c2f34` |
+| Pausa key | `#2b2e34` | `#3a3e46` |
+| Solid fill red (LED, Riprendi, now) | `#d93a2b` | `#d93a2b` |
+| Bright red (level, Dynamic Island dot) | `#ff5a47` | `#ff5a47` |
+| Recorded stretches of the day | `#7c818a` | `#6f757f` |
+| Warnings | `#9a5600`, on the display `#f0a840` | `#f0a840` |
 
-I colori della tabella sono il tema di default, Grafite e rosso. Display e accento si scelgono
-in Impostazioni, Tema (DECISIONS 2026-11-27, "Temi"): il catalogo con le rese chiara e scura e
-il test di contrasto è in `PendantKit/ThemeCatalog.swift`, e il tema arriva all'attività in
-tempo reale dall'App Group. Rosso e ambra non cambiano.
+The colours in the table are the default theme, Graphite and red. Display and accent are
+chosen in Impostazioni, Tema (DECISIONS 2026-11-27, "Themes"): the catalog with the light and
+dark renderings and the contrast test is in `PendantKit/ThemeCatalog.swift`, and the theme
+reaches the Live Activity through the App Group. Red and amber do not change.
 
-Il rosso dei fondi pieni sta sotto il bianco a 4,6:1 in tutti e due i temi; `#e5402f` del mock
-si fermava a 4,1:1. Il mock completo `docs/concepts/concept-b-app.html` è la specifica di testi,
-stati e misure: l'app lo riproduce con le viste in `app/Pendant/Views/`, e `make screens`
-fotografa nel simulatore ogni sua scena (`app/Pendant/Demo.swift`) in chiaro e scuro.
+The solid fill red sits under white at 4.6:1 in both themes; the mockup's `#e5402f` stopped at
+4.1:1. The full mockup `docs/concepts/concept-b-app.html` is the specification for texts,
+states and measurements: the app reproduces it with the views in `app/Pendant/Views/`, and
+`make screens` captures each of its scenes (`app/Pendant/Demo.swift`) in the simulator in light
+and dark.
 
-## Distribuzione
+## Distribution
 
-- **Account Apple gratuito**: Xcode firma con il "Personal Team" e l'app scade dopo 7 giorni.
-  Il cavo serve solo per il primo abbinamento, poi Xcode installa via Wi-Fi. SideStore rinnova
-  da solo quando Mac e iPhone sono sulla stessa rete.
-- **Limiti**: niente notifiche push (bastano le locali e Telegram per quelle da Nexus), al
-  massimo 3 app firmate così. Il Bluetooth in background va verificato col primo build.
-  L'App Group fra app ed estensione funziona anche col Personal Team (firma del 27/11/2026);
-  le notifiche Time Sensitive no: Xcode rifiuta il profilo, quindi una notifica non passa la
-  modalità Concentrazione finché l'app è firmata con l'account gratuito.
-- **Se l'app passa la prova**: account sviluppatore a 99 $ l'anno, il certificato dura un anno.
-- **App Omi**: resta installata, col ciondolo dimenticato e le azioni al tocco spente. Per un
-  aggiornamento del firmware si ricollega, mettendo in pausa l'app nostra, e la si scollega
-  di nuovo alla fine.
-- **Credenziali**: si scrivono nel primo avvio o nella pagina Server. In sviluppo
-  `make credentials SERVER_WS=<url> TOKEN_FILE=<file>` copia URL e token nei Documenti dell'app, che al primo
-  avvio li sposta nel portachiavi e cancella il file. Il token viaggia nell'header
-  `Authorization`, non nell'URL.
+- **Free Apple account**: Xcode signs with the "Personal Team" and the app expires after 7
+  days. The cable is needed only for the first pairing, then Xcode installs over Wi-Fi.
+  SideStore renews on its own when Mac and iPhone are on the same network.
+- **Limits**: no push notifications (local ones and Telegram for those from Nexus are enough),
+  at most 3 apps signed this way. Bluetooth in the background has to be verified with the
+  first build. The App Group between app and extension works with the Personal Team too
+  (signing of 27/11/2026); Time Sensitive notifications do not: Xcode rejects the profile, so
+  a notification does not get through a Focus mode as long as the app is signed with the free
+  account.
+- **If the app passes the trial**: developer account at $99 a year, the certificate lasts one
+  year.
+- **Omi app**: stays installed, with the pendant forgotten and tap actions off. For a
+  firmware update it is reconnected, pausing our app, and disconnected again at the end.
+- **Credentials**: entered on first launch or in the Server page. In development
+  `make credentials SERVER_WS=<url> TOKEN_FILE=<file>` copies URL and token into the app's
+  Documents, which on first launch moves them into the keychain and deletes the file. The
+  token travels in the `Authorization` header, not in the URL.
 
-## Trasporto precedente: app Omi e STT personalizzato
+## Previous transport: Omi app and custom STT
 
-In uso fino al 26/11/2026, resta il riferimento per il contratto di `audio_stream`. Verificato
-col prototipo
-`prototype/omi_stt_probe.py` il 28/10/2026, app Omi 1.0.577.
+In use until 26/11/2026, it remains the reference for the `audio_stream` contract. Verified
+with the prototype `prototype/omi_stt_probe.py` on 28/10/2026, Omi app 1.0.577.
 
-- L'app accetta solo `wss://`, aggiunge `?language=<lingua>` e autentica col token in query.
-- Manda PCM a 16 bit, mono, 16 kHz (circa 115 MB l'ora), `{"type":"CloseStream"}` alla pausa,
-  e messaggi JSON di stato suoi, da ignorare. Non si aspetta risposte.
-- Senza trascrizioni di ritorno non crea conversazioni sul cloud Omi. Il canale con il backend
-  Omi resta comunque aperto per lo stato dell'app.
-- L'audio offline non arriva a Nexus: resta nell'app, che lo sa sincronizzare solo verso Omi.
-- Ogni frame inviato in diretta resta anche come copia locale, che l'app rilascia solo quando
-  il cloud Omi conferma una trascrizione. Con lo STT personalizzato non succede mai, quindi le
-  copie si accumulano (21 h il 26/11/2026) e si cancellano a mano.
+- The app accepts only `wss://`, appends `?language=<language>` and authenticates with the
+  token in the query.
+- It sends 16-bit PCM, mono, 16 kHz (about 115 MB per hour), `{"type":"CloseStream"}` on
+  pause, and JSON state messages of its own, to be ignored. It expects no responses.
+- Without transcriptions coming back it creates no conversations on the Omi cloud. The channel
+  with the Omi backend stays open anyway for the app's state.
+- Offline audio does not reach Nexus: it stays in the app, which can sync it only to Omi.
+- Every frame sent live also stays as a local copy, which the app releases only when the Omi
+  cloud confirms a transcription. With custom STT that never happens, so the copies pile up
+  (21 h on 26/11/2026) and are deleted by hand.
 
-| Impostazione dell'app Omi | Valore | Perché |
+| Omi app setting | Value | Why |
 |---|---|---|
-| Fonte di trascrizione | Custom, in tempo reale | manda l'audio a Nexus |
-| Invia l'audio grezzo a Omi | Off | altrimenti l'audio va anche al loro backend |
-| Archivia audio nel cloud | Off | conserva sui loro server l'audio che li raggiunge |
-| Sincronizzazione automatica | Off | manderebbe l'audio offline al loro backend |
-| Pulsante "Sincronizza" | Non usare | trascrive l'offline sui server Omi |
+| Transcription source | Custom, real time | sends the audio to Nexus |
+| Send raw audio to Omi | Off | otherwise the audio also goes to their backend |
+| Store audio in the cloud | Off | keeps on their servers the audio that reaches them |
+| Automatic sync | Off | would send offline audio to their backend |
+| "Sync" button | Do not use | transcribes offline audio on Omi's servers |
 
-## Trascrizione
+## Transcription
 
-La fa il server, a sessione chiusa: l'app manda solo l'audio.
+The server does it, once the session is closed: the app sends only the audio.
 
-## Verifiche sul ciondolo
+## Pendant checks
 
-Fatte il 26/11/2026 con l'app di verifica (M5), firmware 3.0.21, iPhone 15 Pro. Il log si
-scarica con `make logs`.
+Done on 26/11/2026 with the check app (M5), firmware 3.0.21, iPhone 15 Pro. The log is
+downloaded with `make logs`.
 
-| Verifica | Esito |
+| Check | Result |
 |---|---|
-| Collegamento e lettura | Modello `Omi CV 1`, firmware `3.0.21`, codec `21`, bitmask `0x1EC` come nel codice |
-| Ora | Scritta a ogni connessione, la memoria la vede valida |
-| Audio | Circa 46 notifiche al secondo da circa 85 B: un frame per notifica, nessuna spezzatura. Zero persi su 7.600 pacchetti. Nel silenzio il flusso si ferma, come previsto |
-| Pulsante | Tocco: `singleTap` più `release`. Doppio tocco: `doubleTap` più `release`. Pressione di 1-2 s, provata due volte: nessun evento. Il premi e parla è escluso |
-| Vibrazione | Le tre durate funzionano |
-| Memoria | Info letta: 53 pacchetti in attesa, capacità 1.115.064 pacchetti da 444 B (circa 30 h di parlato, stima a 100 ms per pacchetto) |
-| Batteria | Da 100% a 84% in 12 minuti: forse il primo valore era vecchio, da seguire |
-| Inoltro a Nexus (M6) | Conversazione di prova: 287 s in 13 pezzi, chiusa col doppio tocco e `CloseStream`, trascritta. Pausa e ripresa aprono e chiudono una sessione sola |
-| Ripristino dello stato | Al riavvio dell'app iOS ha restituito il ciondolo già collegato, e l'inoltro è ripartito da solo |
-| Decodifica Opus | Con il codec di sistema (AudioToolbox): nessuna libreria, testata anche in `swift test` |
+| Connection and reading | Model `Omi CV 1`, firmware `3.0.21`, codec `21`, bitmask `0x1EC` as in the code |
+| Time | Written on every connection, storage sees it as valid |
+| Audio | About 46 notifications per second of about 85 B: one frame per notification, no splitting. Zero lost out of 7,600 packets. During silence the stream stops, as expected |
+| Button | Tap: `singleTap` plus `release`. Double tap: `doubleTap` plus `release`. Press of 1-2 s, tried twice: no event. Push-to-talk is ruled out |
+| Vibration | The three durations work |
+| Storage | Info read: 53 packets pending, capacity 1,115,064 packets of 444 B (about 30 h of speech, estimated at 100 ms per packet) |
+| Battery | From 100% to 84% in 12 minutes: maybe the first value was stale, to be followed up |
+| Forwarding to Nexus (M6) | Test conversation: 287 s in 13 pieces, closed with the double tap and `CloseStream`, transcribed. Pause and resume open and close a single session |
+| State restoration | On app relaunch iOS returned the pendant already connected, and forwarding restarted on its own |
+| Opus decoding | With the system codec (AudioToolbox): no library, also tested in `swift test` |
 
-Ancora aperte:
+Still open:
 
-- Il Bluetooth in background per ore con l'account gratuito, e il rilancio dell'app da parte
-  di iOS dopo che l'ha chiusa. Si misura nell'uso reale.
-- Il guadagno del microfono a `0`: dopo il cambio i pacchetti pesavano ancora circa 80 B, ma
-  senza un confronto fra parlato e silenzio non si sa se è un muto o solo -20 dB.
-- La lettura della memoria: formato dei blocchi da 440 byte e tempo per scaricare un'ora.
-- Quanto spesso il ciondolo si accende da solo in tasca.
+- Bluetooth in the background for hours with the free account, and iOS relaunching the app
+  after killing it. To be measured in real use.
+- Microphone gain at `0`: after the change packets still weighed about 80 B, but without a
+  comparison between speech and silence it is unknown whether it is a mute or just -20 dB.
+- Reading storage: format of the 440-byte blocks and time to download an hour.
+- How often the pendant turns on by itself in a pocket.
 
-## Rischi
+## Risks
 
-- **Bluetooth in background su iOS**: se iOS chiude l'app e il ripristino non scatta, la
-  registrazione si ferma in silenzio. Il segnale periodico verso Nexus serve a saperlo.
-- **Firmware che cambia**: ogni versione nuova può cambiare protocollo. L'app lavora solo sulle
-  versioni dichiarate nella configurazione e sul bitmask delle funzioni.
-- **Due app, un ciondolo**: se l'app Omi torna collegata, registra in parallelo verso Nexus e
-  risponde agli stessi gesti, invertendo la pausa. Resta col ciondolo dimenticato.
-- **Scadenza a 7 giorni**: un rinnovo saltato ferma l'app. Lo copre lo stesso segnale periodico.
-- **Accensioni accidentali**: sul 3.0.21 il ciondolo acceso per sbaglio non registra ma consuma,
-  e l'app può solo avvisare.
-- **Conversazioni altrui**: registrare conversazioni a cui non partecipo è un problema legale in
-  Italia e di GDPR verso i colleghi. La regola d'uso è togliere la pausa solo quando partecipo.
+- **Bluetooth in the background on iOS**: if iOS kills the app and restoration does not
+  trigger, recording stops silently. The heartbeat to Nexus is there to know it.
+- **Changing firmware**: every new version can change the protocol. The app works only on the
+  versions declared in the configuration and on the feature bitmask.
+- **Two apps, one pendant**: if the Omi app gets connected again, it records in parallel to
+  Nexus and responds to the same gestures, inverting the pause. Keep the pendant forgotten in
+  it.
+- **7-day expiry**: a missed renewal stops the app. The same heartbeat covers it.
+- **Accidental power-ons**: on 3.0.21 a pendant switched on by mistake does not record but
+  draws power, and the app can only warn.
+- **Other people's conversations**: recording conversations I do not take part in is a legal
+  problem in Italy and a GDPR one towards colleagues. The usage rule is to unpause only when I
+  take part.

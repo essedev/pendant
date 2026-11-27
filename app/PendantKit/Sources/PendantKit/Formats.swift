@@ -1,6 +1,6 @@
 import Foundation
 
-/// The ways the app writes a duration (ARCHITECTURE, "Interfaccia").
+/// The ways the app writes a duration (ARCHITECTURE, "Interface").
 public enum DurationFormat {
   /// One number of the display and its small unit, such as ("12", "m").
   public struct Part: Equatable, Sendable {

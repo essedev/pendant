@@ -4,7 +4,7 @@ import PendantKit
 
 /// The WebSocket to the server's `audio_stream` for one conversation at a time.
 ///
-/// Speaks the contract of the Omi app (ARCHITECTURE, "Contratto col server"): PCM frames,
+/// Speaks the contract of the Omi app (ARCHITECTURE, "Server contract"): PCM frames,
 /// `CloseStream` to end a conversation, a ping to keep Cloudflare from closing an idle
 /// connection. Audio waits as Opus in a spool and is decoded only when sent, so a network
 /// outage loses nothing until the spool is full.

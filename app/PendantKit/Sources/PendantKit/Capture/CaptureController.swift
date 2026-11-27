@@ -2,7 +2,7 @@ import Foundation
 
 /// The recording state machine: when a conversation stream opens and closes.
 ///
-/// A connection to the server is a conversation (ARCHITECTURE, "Flusso"). Pausing closes it with
+/// A connection to the server is a conversation (ARCHITECTURE, "Flow"). Pausing closes it with
 /// `CloseStream`; a Bluetooth disconnection closes it without, so the server keeps it
 /// `interrupted` for its grace period and resumes it if the pendant comes back.
 ///

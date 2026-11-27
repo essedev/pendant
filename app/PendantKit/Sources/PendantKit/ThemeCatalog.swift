@@ -13,7 +13,7 @@ public enum AppSurface {
 }
 
 /// The surface of the display: the home display, the pendant card, the conversation card, the
-/// Live Activity. Each has a light and a dark rendering (DECISIONS 2026-11-27, "Temi").
+/// Live Activity. Each has a light and a dark rendering (DECISIONS 2026-11-27, "Themes").
 public enum DisplayStyle: String, Codable, Sendable, CaseIterable {
   case graphite, casio, gshock, paper, calculator, navy, petrol, forest, sage, night
 

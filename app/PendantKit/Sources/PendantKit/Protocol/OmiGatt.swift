@@ -1,7 +1,7 @@
 /// GATT services and characteristics of the Omi CV1 firmware, as UUID strings.
 ///
 /// Read from the firmware at tag `Omi_CV1_v3.0.21`, `omi/firmware/omi/src/` (ARCHITECTURE,
-/// "Firmware: il protocollo"). Strings keep this module free of CoreBluetooth; the app maps them
+/// "Firmware: the protocol"). Strings keep this module free of CoreBluetooth; the app maps them
 /// to `CBUUID`.
 public enum OmiGatt {
   /// Audio service (`lib/core/transport.c:136-158`).

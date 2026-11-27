@@ -96,7 +96,7 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
   }
 }
 
-/// The firmware versions this app knows the protocol of (ARCHITECTURE, "Firmware").
+/// The firmware versions this app knows the protocol of (ARCHITECTURE, "Firmware: the protocol").
 public enum SupportedFirmware {
   /// Versions read and verified at their tag.
   public static let versions: Set<String> = ["3.0.21"]

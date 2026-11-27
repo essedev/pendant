@@ -2,7 +2,7 @@ import Foundation
 
 /// One conversation as this phone saw it: from the stream opening to its closing.
 ///
-/// The phone keeps only this record; the audio is on the server (ARCHITECTURE, "Custodia").
+/// The phone keeps only this record; the audio is on the server (ARCHITECTURE, "Audio custody").
 public struct Conversation: Codable, Equatable, Sendable, Identifiable {
   /// How the conversation ended, or that it is still going.
   public enum Status: String, Codable, Sendable {

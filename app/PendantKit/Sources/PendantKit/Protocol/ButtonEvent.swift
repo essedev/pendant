@@ -4,7 +4,7 @@ import Foundation
 ///
 /// The payload is two int32 little-endian and only the first carries the code
 /// (`lib/core/button.c:80-84`). On 3.0.21 only `singleTap`, `doubleTap` and `release` are ever
-/// sent (ARCHITECTURE, "Pulsante").
+/// sent (ARCHITECTURE, "Button").
 public enum ButtonEvent: Equatable, Sendable {
   /// A tap without a second tap within 600 ms.
   case singleTap

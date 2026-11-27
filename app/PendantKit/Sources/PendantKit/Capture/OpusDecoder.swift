@@ -3,7 +3,7 @@ import AVFoundation
 /// Decodes the pendant's Opus frames into the PCM that `audio_stream` expects.
 ///
 /// Uses the system Opus codec (AudioToolbox), so the app needs no third-party library. Output
-/// is signed 16-bit little-endian, mono, 16 kHz (ARCHITECTURE, "Contratto con Nexus"). One
+/// is signed 16-bit little-endian, mono, 16 kHz (ARCHITECTURE, "Server contract"). One
 /// decoder per conversation: Opus keeps state between frames.
 public final class OpusDecoder {
   /// The PCM format sent to Nexus.

@@ -55,7 +55,7 @@ public enum OfflinePolicy: String, Codable, Sendable, CaseIterable {
 ///
 /// A key missing from a stored document keeps its default, a value out of range is clamped and
 /// an unknown enum value falls back to the default, so an older or partial document never
-/// breaks the app (DECISIONS 2026-11-26, "App indipendente").
+/// breaks the app (DECISIONS 2026-11-26, "Independent app").
 public struct Configuration: Codable, Equatable, Sendable {
   /// A forward jump of the audio counter larger than this is a counter restart, not a loss.
   public var audioRestartGap: Int

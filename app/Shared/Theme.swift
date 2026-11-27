@@ -32,7 +32,7 @@ enum ThemeSelection {
   }
 }
 
-/// The palette and the Archivo type of the app (ARCHITECTURE, "Interfaccia").
+/// The palette and the Archivo type of the app (ARCHITECTURE, "Interface").
 ///
 /// Shared by the app and the widget extension, so the Live Activity and the controls use the
 /// same tokens as the screens. Display and accent tokens follow `ThemeSelection`; the rest is
