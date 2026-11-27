@@ -463,32 +463,62 @@ private struct SearchActions: View {
   }
 }
 
-/// The pendant, grey while searching and full when found. A drawing, not the Omi render.
+/// The pendant in its cell: faded with the LED off while searching, full with the LED lit once
+/// found.
 private struct PendantFigure: View {
   let found: Bool
 
   var body: some View {
+    PendantDrawing(ring: 132, lit: found)
+      .opacity(found ? 1 : 0.55)
+      .frame(maxWidth: .infinity)
+      .frame(height: 236)
+      .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(Theme.cell))
+      .animation(.easeOut(duration: 0.3), value: found)
+      .accessibilityElement(children: .ignore)
+      .accessibilityLabel("The Omi pendant")
+  }
+}
+
+/// The pendant as the app icon draws it (`app/Icon/pendant-light.svg`, from the Omi render): a
+/// clear grey-blue ring with a lighter rim, the grey face with its shade, the red LED at the
+/// centre with a soft glow. An object, so its colours stay the same in light and dark. The
+/// icon's units (1024 wide, the ring 680 across) scale to `ring`, the ring's diameter.
+private struct PendantDrawing: View {
+  let ring: CGFloat
+  var lit = true
+
+  private static let ringFill = Color(UIColor(hex: 0xAAB2BC))
+  private static let rim = Color(UIColor(hex: 0xCFD5DB))
+  private static let faceLight = Color(UIColor(hex: 0xA19F9A))
+  private static let faceDark = Color(UIColor(hex: 0x6B6966))
+  private static let led = Color(UIColor(hex: 0xE5402F))
+  private static let ledOff = Color(UIColor(hex: 0x8A8884))
+
+  var body: some View {
+    let u = ring / 680
     ZStack {
+      Circle().fill(Self.ringFill).frame(width: ring, height: ring)
+      Circle().strokeBorder(Self.rim, lineWidth: 6 * u).frame(width: 670 * u, height: 670 * u)
       Circle()
         .fill(
           RadialGradient(
-            colors: found
-              ? [Color(white: 0.32), Color(white: 0.12)] : [Theme.tickEmpty, Theme.recorded],
-            center: UnitPoint(x: 0.35, y: 0.3), startRadius: 4, endRadius: 90)
+            colors: [Self.faceLight, Self.faceDark], center: UnitPoint(x: 0.4, y: 0.36),
+            startRadius: 0, endRadius: 414 * u)
         )
-        .frame(width: 132, height: 132)
-        .overlay(Circle().strokeBorder(Theme.frame, lineWidth: 8))
-      Circle()
-        .fill(found ? Theme.redLit : Theme.ink3)
-        .frame(width: 8, height: 8)
-        .offset(y: -38)
+        .frame(width: 552 * u, height: 552 * u)
+      if lit {
+        Circle()
+          .fill(
+            RadialGradient(
+              colors: [Self.led.opacity(0.45), Self.led.opacity(0)], center: .center,
+              startRadius: 0, endRadius: 78 * u)
+          )
+          .frame(width: 156 * u, height: 156 * u)
+      }
+      Circle().fill(lit ? Self.led : Self.ledOff).frame(width: 60 * u, height: 60 * u)
     }
-    .opacity(found ? 1 : 0.55)
-    .frame(maxWidth: .infinity)
-    .frame(height: 236)
-    .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(Theme.cell))
-    .animation(.easeOut(duration: 0.3), value: found)
-    .accessibilityLabel("The Omi pendant")
+    .frame(width: ring, height: ring)
   }
 }
 
