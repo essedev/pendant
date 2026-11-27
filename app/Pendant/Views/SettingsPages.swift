@@ -566,10 +566,14 @@ private struct ShortcutGuide: View {
   }
 }
 
-/// The Live Activity in small, in the state it shows now: the compact and the expanded Dynamic
-/// Island, then the lock screen. The same views as the activity, with the keys inert.
+/// The Live Activity in small, in the state it shows now, on one surface at a time: the
+/// Dynamic Island (compact and expanded) or the lock screen. The same views as the activity,
+/// with the keys inert.
 private struct ActivityPreview: View {
   @Environment(AppModel.self) private var model
+  @State private var surface = Surface.island
+
+  private enum Surface: Hashable { case island, lockScreen }
 
   var body: some View {
     var state = model.activityContent
@@ -577,6 +581,38 @@ private struct ActivityPreview: View {
     state.since = state.since.addingTimeInterval(Date().timeIntervalSince(model.now))
     let server = model.credentials?.host ?? "server.esempio.it"
     return VStack(spacing: 12) {
+      Picker("Dove", selection: $surface) {
+        Text("Dynamic Island").tag(Surface.island)
+        Text("Blocco schermo").tag(Surface.lockScreen)
+      }
+      .pickerStyle(.segmented)
+      Text(
+        surface == .island
+          ? "Col telefono sbloccato, intorno alla fotocamera. Si apre tenendola premuta."
+          : "Sul blocco schermo e fra le notifiche."
+      )
+      .type(13, 18)
+      .foregroundStyle(Theme.ink2)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 16)
+      Group {
+        switch surface {
+        case .island: island(state, server: server)
+        case .lockScreen:
+          LockScreenActivity(state: state, server: server)
+            .background(
+              RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Theme.display))
+        }
+      }
+      .allowsHitTesting(false)
+      .accessibilityElement(children: .ignore)
+      .accessibilityLabel("Anteprima dell’attività in tempo reale")
+    }
+  }
+
+  /// The island is black on every phone: its contents take the dark tones of the theme.
+  private func island(_ state: RecordingAttributes.ContentState, server: String) -> some View {
+    VStack(spacing: 12) {
       HStack(spacing: 0) {
         IslandCompactLeading(state: state)
         Spacer()
@@ -597,15 +633,9 @@ private struct ActivityPreview: View {
       .padding(.horizontal, 20)
       .padding(.vertical, 16)
       .background(RoundedRectangle(cornerRadius: 40, style: .continuous).fill(.black))
-      .environment(\.colorScheme, .dark)
-      LockScreenActivity(state: state, server: server)
-        .background(
-          RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Theme.display))
     }
     .frame(maxWidth: .infinity)
-    .allowsHitTesting(false)
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Anteprima dell’attività in tempo reale")
+    .environment(\.colorScheme, .dark)
   }
 }
 
