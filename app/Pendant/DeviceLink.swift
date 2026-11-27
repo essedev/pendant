@@ -552,7 +552,12 @@ extension DeviceLink: CBPeripheralDelegate {
       } else if characteristic.uuid.uuidString == OmiGatt.Storage.control {
         requestRingInfo()
       } else if characteristic.uuid.uuidString == OmiGatt.Audio.data {
-        setReady(characteristic.isNotifying)
+        // Ready once audio flows. Unsubscribing in pause does not make the pendant less
+        // connected: only a disconnection clears ready.
+        if characteristic.isNotifying { setReady(true) }
+      } else if characteristic.uuid.uuidString == OmiGatt.Button.event {
+        // With the audio left off in pause, the gestures are what the app listens to.
+        if characteristic.isNotifying && !audioWanted { setReady(true) }
       }
     }
   }
