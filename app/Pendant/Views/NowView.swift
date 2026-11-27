@@ -18,12 +18,14 @@ struct NowView: View {
         }
         .padding(.horizontal, 22)
         .padding(.top, 18)
-        Text(hint(s))
-          .type(13, 18)
-          .foregroundStyle(Theme.ink2)
-          .multilineTextAlignment(.center)
-          .padding(.top, 10)
-          .padding(.horizontal, 32)
+        if let hint = hint(s) {
+          Text(hint)
+            .type(13, 18)
+            .foregroundStyle(Theme.ink2)
+            .multilineTextAlignment(.center)
+            .padding(.top, 10)
+            .padding(.horizontal, 32)
+        }
         if let notice = s.notice {
           NoticeCard(notice: notice, snapshot: s)
             .padding(.horizontal, 16)
@@ -47,20 +49,14 @@ struct NowView: View {
     s.resumesUntil.map { $0 > model.now } ?? false
   }
 
-  private func hint(_ s: AppModel.Snapshot) -> String {
+  /// The line under the key; away from the pendant the display already says it all.
+  private func hint(_ s: AppModel.Snapshot) -> String? {
     let doubleTap = model.config.gestures["doubleTap"] == .toggleRecording
     switch s.mode {
-    case .disconnected, .bluetoothOff, .denied:
-      if let until = s.resumesUntil, until > model.now {
-        return "Se torna entro le \(Clock.time(until)) continua la stessa conversazione."
-      }
-      return doubleTap
-        ? "Quando torna resta in pausa: toccalo due volte per registrare."
-        : "Quando torna resta in pausa."
-    case .unpaired: return "Collega il ciondolo dalle impostazioni."
+    case .disconnected, .bluetoothOff, .denied, .unpaired: return nil
     case .recording where s.charging: return "Il ciondolo è in carica e continua a registrare."
-    case .recording: return doubleTap ? "Oppure tocca due volte il ciondolo." : ""
-    case .paused: return doubleTap ? "Oppure tocca due volte il ciondolo per registrare." : ""
+    case .recording: return doubleTap ? "Oppure tocca due volte il ciondolo." : nil
+    case .paused: return doubleTap ? "Oppure tocca due volte il ciondolo per registrare." : nil
     }
   }
 }
@@ -87,12 +83,19 @@ struct HomeDisplay: View {
               tight: tags(s).count > 1)
           }
         }
-        TimelineView(.periodic(from: .now, by: 1)) { context in
-          DisplayDuration(
-            seconds: elapsedSeconds(context.date),
-            color: live(s) ? Theme.displayInk : Theme.displayInk2)
+        if away(s) {
+          // Away, a running time says nothing to act on: the display shows when the pendant
+          // was last here and what happens when it comes back.
+          AwayTime(snapshot: s, now: now, doubleTap: doubleTap)
+            .padding(.top, 28)
+        } else {
+          TimelineView(.periodic(from: .now, by: 1)) { context in
+            DisplayDuration(
+              seconds: elapsedSeconds(context.date),
+              color: live(s) ? Theme.displayInk : Theme.displayInk2)
+          }
+          .padding(.top, 28)
         }
-        .padding(.top, 28)
         LevelMeterView(decibels: reduceMotion ? -20 : s.level, live: live(s))
           .padding(.top, 20)
         Rectangle().fill(Theme.displayRule).frame(height: 1).padding(.top, 16)
@@ -121,14 +124,22 @@ struct HomeDisplay: View {
 
   private func live(_ s: AppModel.Snapshot) -> Bool { s.mode == .recording }
 
+  private func away(_ s: AppModel.Snapshot) -> Bool {
+    [.disconnected, .bluetoothOff, .denied, .unpaired].contains(s.mode)
+  }
+
+  private var doubleTap: Bool {
+    AppModel.shared.config.gestures["doubleTap"] == .toggleRecording
+  }
+
   private func tags(_ s: AppModel.Snapshot) -> [(Tag.Kind, String)] {
     var out: [(Tag.Kind, String)]
     switch s.mode {
     case .recording: out = [(.rec, "Registra da")]
     case .paused: out = [(.line, "In pausa da")]
-    case .disconnected: out = [(.warn, "Scollegato da")]
-    case .bluetoothOff: out = [(.warn, "Bluetooth spento da")]
-    case .denied: out = [(.warn, "Senza Bluetooth da")]
+    case .disconnected: out = [(.warn, "Scollegato")]
+    case .bluetoothOff: out = [(.warn, "Bluetooth spento")]
+    case .denied: out = [(.warn, "Senza Bluetooth")]
     case .unpaired: out = [(.warn, "Nessun ciondolo")]
     }
     if s.serverState != .online && s.queuedSeconds >= 1 {
@@ -145,6 +156,48 @@ struct HomeDisplay: View {
     case .protocolMismatch: "protocollo diverso"
     case .notSet: "da impostare"
     }
+  }
+}
+
+/// The display away from the pendant: the hour of the last contact in the big figures, and
+/// what happens when the pendant comes back.
+private struct AwayTime: View {
+  let snapshot: AppModel.Snapshot
+  let now: Date
+  let doubleTap: Bool
+
+  var body: some View {
+    let s = snapshot
+    VStack(alignment: .leading, spacing: 6) {
+      Text(s.mode == .unpaired ? "--:--" : Clock.time(s.since))
+        .font(Theme.font(72, .semibold, wide: true))
+        .tracking(-1.44)
+        .monospacedDigit()
+        .foregroundStyle(Theme.displayInk2)
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+      Text(line(s))
+        .type(15, 20)
+        .foregroundStyle(Theme.displayInk2)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+    .accessibilityElement(children: .combine)
+  }
+
+  private func line(_ s: AppModel.Snapshot) -> String {
+    let since: String =
+      switch s.mode {
+      case .bluetoothOff: "Bluetooth spento da allora."
+      case .denied: "Senza permesso da allora."
+      case .unpaired: "Collega il ciondolo dalle impostazioni."
+      default: "Ultimo contatto col ciondolo."
+      }
+    guard s.mode != .unpaired else { return since }
+    if let until = s.resumesUntil, until > now {
+      return "\(since) Se torna entro le \(Clock.time(until)) continua la stessa conversazione."
+    }
+    return "\(since) Al ritorno resta in pausa"
+      + (doubleTap ? ": toccalo due volte per registrare." : ".")
   }
 }
 
