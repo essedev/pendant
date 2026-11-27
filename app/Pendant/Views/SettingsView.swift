@@ -7,6 +7,7 @@ struct SettingsView: View {
 
   var body: some View {
     let config = model.config
+    @Bindable var model = model
     let d = model.device
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
@@ -15,7 +16,7 @@ struct SettingsView: View {
           DeviceCard(device: d, name: config.pendantName, more: true)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 22)
+        .padding(.horizontal, 16)
         .padding(.top, 20)
         CellGroup {
           link(
@@ -31,6 +32,11 @@ struct SettingsView: View {
         CellGroup {
           link(.server, "Server", value: model.credentials?.host ?? "da impostare")
           link(.systemControls, "Comandi di sistema")
+        }
+        CellGroup {
+          PickerRow(
+            label: "Aspetto", title: "Aspetto dell’app", choices: Choices.appearance,
+            selection: $model.config.appearance)
         }
         CellGroup(footer: footer) {
           link(.advanced, "Avanzate")

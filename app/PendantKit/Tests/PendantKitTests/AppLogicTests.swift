@@ -197,3 +197,14 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
     #expect(spool.take(10) == [Data([3]), Data([4])])
   }
 }
+
+@Suite struct AppearanceTests {
+  @Test func fallsBackToTheSystemOnAnUnknownValue() throws {
+    let config = try JSONDecoder().decode(
+      Configuration.self, from: Data(#"{"appearance": "sepia"}"#.utf8))
+    #expect(config.appearance == .system)
+    let dark = try JSONDecoder().decode(
+      Configuration.self, from: Data(#"{"appearance": "dark"}"#.utf8))
+    #expect(dark.appearance == .dark)
+  }
+}

@@ -252,7 +252,7 @@ struct ConversationView: View {
             BookmarkStrip(conversation: c, now: now).padding(.top, 12)
           }
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, 16)
         .padding(.top, 8)
         CellGroup(
           header: "Momenti segnati",

@@ -36,12 +36,25 @@ struct RootView: View {
       }
     }
     .tint(Theme.ink)
+    .preferredColorScheme(model.config.appearance.colorScheme)
     .fullScreenCover(
       isPresented: Binding(
         get: { model.onboarding != nil }, set: { if !$0 { model.onboarding = nil } })
     ) {
       OnboardingView(start: model.onboarding ?? .welcome)
         .environment(model)
+        .preferredColorScheme(model.config.appearance.colorScheme)
+    }
+  }
+}
+
+extension AppAppearance {
+  /// The SwiftUI scheme, nil to follow the phone.
+  var colorScheme: ColorScheme? {
+    switch self {
+    case .system: nil
+    case .light: .light
+    case .dark: .dark
     }
   }
 }

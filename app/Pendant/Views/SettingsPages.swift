@@ -28,7 +28,7 @@ struct PendantPage: View {
           )
           .padding(.top, 10)
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, 16)
         .padding(.top, 8)
         if off {
           Text(

@@ -21,6 +21,16 @@ public enum LedPolicy: String, Codable, Sendable, CaseIterable {
   case alwaysOff
 }
 
+/// The app's appearance.
+public enum AppAppearance: String, Codable, Sendable, CaseIterable {
+  /// Follows the phone.
+  case system
+  /// Always light.
+  case light
+  /// Always dark.
+  case dark
+}
+
 /// What to do with the audio the pendant recorded away from the phone, when it comes back.
 public enum OfflinePolicy: String, Codable, Sendable, CaseIterable {
   /// Send it to the server with its real time, then free the memory (needs the server side, M9).
@@ -98,6 +108,8 @@ public struct Configuration: Codable, Equatable, Sendable {
   /// Seconds within which the server resumes a conversation cut by a disconnection; it is the
   /// grace of `audio_stream`, mirrored here to tell the user what happened.
   public var resumeGrace: Double
+  /// Light, dark, or as the phone.
+  public var appearance: AppAppearance
   /// The pendant's name, only in this app.
   public var pendantName: String
 
@@ -136,6 +148,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     liveActivityAlways = false
     resumeGrace = 120
     pendantName = "Omi"
+    appearance = .system
   }
 
   /// The action mapped to a button event, nil when the event is not a gesture.
@@ -213,6 +226,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     let name: String = value(.pendantName, d.pendantName)
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     pendantName = trimmed.isEmpty ? d.pendantName : String(trimmed.prefix(32))
+    appearance = AppAppearance(rawValue: value(.appearance, d.appearance.rawValue)) ?? d.appearance
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -247,6 +261,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(liveActivityAlways, forKey: .liveActivityAlways)
     try c.encode(resumeGrace, forKey: .resumeGrace)
     try c.encode(pendantName, forKey: .pendantName)
+    try c.encode(appearance.rawValue, forKey: .appearance)
   }
 
   private enum CodingKeys: String, CodingKey {
@@ -256,6 +271,6 @@ public struct Configuration: Codable, Equatable, Sendable {
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
     case notifyIdle, idleNotifyAfter, notifySignature, signatureDaysBefore, liveActivity,
       liveActivityPauseEnd, liveActivityAlways
-    case resumeGrace, pendantName
+    case resumeGrace, pendantName, appearance
   }
 }
