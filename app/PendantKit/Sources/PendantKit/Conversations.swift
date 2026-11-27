@@ -134,8 +134,11 @@ public struct DaySummary: Equatable, Sendable {
   public let totalSeconds: TimeInterval
   /// Closed conversations.
   public let closedCount: Int
+  /// For each quarter hour, the share of it recorded in closed conversations, 0 to 1: the
+  /// strip draws each tick filled from the bottom by this much.
+  public let filled: [Double]
   /// For each quarter hour, whether something was recorded in it.
-  public let recorded: [Bool]
+  public var recorded: [Bool] { filled.map { $0 > 0 } }
   /// The quarter hour of now, when the day is today and now is within the strip.
   public let nowTick: Int?
   /// Bookmark positions along the strip, 0 to 1.
@@ -149,7 +152,7 @@ public struct DaySummary: Equatable, Sendable {
       $0 + $1.duration(now: now)
     }
     closedCount = conversations.filter { $0.status != .live }.count
-    var marks = [Bool](repeating: false, count: Self.ticks)
+    var fill = [Double](repeating: 0, count: Self.ticks)
     var points: [Double] = []
     for c in conversations {
       let a = c.start.timeIntervalSince(stripStart)
@@ -157,13 +160,19 @@ public struct DaySummary: Equatable, Sendable {
       guard b > 0, a < span else { continue }
       let first = max(0, Int(a / 900))
       let last = min(Self.ticks - 1, Int(max(a, b - 1) / 900))
-      if first <= last { for t in first...last where c.status != .live { marks[t] = true } }
+      if first <= last {
+        for t in first...last where c.status != .live {
+          let lo = Double(t) * 900
+          let overlap = min(b, lo + 900) - max(a, lo)
+          if overlap > 0 { fill[t] = min(1, fill[t] + overlap / 900) }
+        }
+      }
       for m in c.bookmarks {
         let x = m.timeIntervalSince(stripStart) / span
         if (0...1).contains(x) { points.append(x) }
       }
     }
-    recorded = marks
+    filled = fill
     bookmarks = points.sorted()
     if calendar.isDate(day, inSameDayAs: now) {
       let n = now.timeIntervalSince(stripStart)

@@ -175,11 +175,19 @@ struct DayStrip: View {
         }
         .frame(height: 7)
       }
-      HStack(spacing: 3) {
+      HStack(alignment: .bottom, spacing: 3) {
         ForEach(0..<DaySummary.ticks, id: \.self) { i in
           RoundedRectangle(cornerRadius: 1)
-            .fill(color(i))
+            .fill(empty(i))
             .frame(height: height)
+            .overlay(alignment: .bottom) {
+              if summary.filled[i] > 0 {
+                // A floor of a quarter, so a minute of recording still shows.
+                RoundedRectangle(cornerRadius: 1)
+                  .fill(Theme.recorded)
+                  .frame(height: height * max(0.25, summary.filled[i]))
+              }
+            }
         }
       }
       HStack {
@@ -195,9 +203,8 @@ struct DayStrip: View {
     .accessibilityLabel("La giornata dalle 8 alle 20")
   }
 
-  private func color(_ i: Int) -> Color {
-    if summary.recorded[i] { return Theme.recorded }
-    if showNow, summary.nowTick == i { return Theme.red }
+  private func empty(_ i: Int) -> Color {
+    if showNow, summary.nowTick == i, summary.filled[i] == 0 { return Theme.red }
     return Theme.tickEmpty
   }
 }

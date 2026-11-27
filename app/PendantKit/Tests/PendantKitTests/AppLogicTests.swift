@@ -55,6 +55,10 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
     #expect(s.closedCount == 1)
     #expect(s.recorded[0] && s.recorded[1] && s.recorded[2])
     #expect(!s.recorded[3])
+    // 8:10 to 8:40: a third of the first quarter hour, all of the second, two thirds of the third.
+    #expect(abs(s.filled[0] - 1.0 / 3) < 1e-9)
+    #expect(s.filled[1] == 1)
+    #expect(abs(s.filled[2] - 2.0 / 3) < 1e-9)
     // The live conversation is drawn by the screen, not as recorded ticks.
     #expect(!s.recorded[12])
     #expect(s.nowTick == 14)
