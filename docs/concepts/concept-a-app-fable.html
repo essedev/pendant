@@ -172,7 +172,7 @@
 			non la fa.
 
 			Dati veri: firmware 3.0.21, batteria 84%, conversazione delle 17:21 da 4 min 47 s,
-			nexus.esse.dev, 3 conversazioni e 1 h 36 min oggi, 53 pacchetti in memoria, versione
+			server.example.com, 3 conversazioni e 1 h 36 min oggi, 53 pacchetti in memoria, versione
 			0.3.0, firma che scade il 3 dicembre. Plausibili: orari e durate delle altre due
 			conversazioni (11:30 da 48 min, 09:04 da 43 min), i minuti nei vari stati.
 
@@ -553,7 +553,7 @@
 					row('Accensione inattesa', '', { toggle: true })
 				],
 				server: () => [
-					row('Indirizzo', 'nexus.esse.dev', { nav: true }),
+					row('Indirizzo', 'server.example.com', { nav: true }),
 					row('Token', 'Nel portachiavi', { nav: true }),
 					row('Protocollo', 'audio_stream 1')
 				],
@@ -593,10 +593,10 @@
 				const head = { rec: 'c-led', pause: 'c-idle', off: 'c-warn hollow', queue: 'c-warn' }[state];
 				// Node and link per stop: where the audio passes, where it stops.
 				const P = {
-					rec: [['c-led', 'flow', 'Omi, batteria 84%'], ['c-led', 'flow', "Invia l'audio mentre arriva"], ['c-led', '', 'nexus.esse.dev, in linea']],
-					pause: [['c-idle', 'idle', 'Omi, batteria 84%'], ['c-idle', 'idle', 'In pausa, non invia niente'], ['c-idle', '', 'nexus.esse.dev, in linea']],
-					off: [['c-warn hollow', 'down', 'Fuori portata da 3 minuti', 1], ['c-idle', 'idle', 'Lo sta cercando'], ['c-idle', '', 'nexus.esse.dev, in linea']],
-					queue: [['c-led', 'flow', 'Omi, batteria 84%'], ['c-led', 'down', '2 minuti di audio in coda'], ['c-warn hollow', '', 'nexus.esse.dev non risponde', 1]]
+					rec: [['c-led', 'flow', 'Omi, batteria 84%'], ['c-led', 'flow', "Invia l'audio mentre arriva"], ['c-led', '', 'server.example.com, in linea']],
+					pause: [['c-idle', 'idle', 'Omi, batteria 84%'], ['c-idle', 'idle', 'In pausa, non invia niente'], ['c-idle', '', 'server.example.com, in linea']],
+					off: [['c-warn hollow', 'down', 'Fuori portata da 3 minuti', 1], ['c-idle', 'idle', 'Lo sta cercando'], ['c-idle', '', 'server.example.com, in linea']],
+					queue: [['c-led', 'flow', 'Omi, batteria 84%'], ['c-led', 'down', '2 minuti di audio in coda'], ['c-warn hollow', '', 'server.example.com non risponde', 1]]
 				}[state];
 				const stop = (name, [node, link, text, warn]) => `<li><span class="dot ${node}"></span>${link ? `<i class="link ${link}"></i>` : ''}<div><b>${name}</b><span class="d${warn ? ' warn' : ''}">${text}</span></div></li>`;
 				return {
@@ -643,7 +643,7 @@
 						<button class="dis-pause" data-toggle-pause${canPause()}>${pauseIcon()}${pauseLabel()}</button>
 						<div class="dis-cells">
 							${row('Ciondolo', ghost ? 'Fuori portata' : 'Omi, 84%', { nav: true })}
-							${row('Server', state === 'queue' ? '<span class="warn" style="color:var(--warn)">Non risponde</span>' : 'nexus.esse.dev', { nav: true })}
+							${row('Server', state === 'queue' ? '<span class="warn" style="color:var(--warn)">Non risponde</span>' : 'server.example.com', { nav: true })}
 							${row('Oggi', '3 conversazioni, 1 h 36 min', { nav: true })}
 						</div>
 					</div>${dock('now')}`,
@@ -693,7 +693,7 @@
 							<div class="lcd-time${s.live ? '' : ' still'}" data-fmt="units">${FMT.units(secs())}</div>
 							<div class="meter" data-meter>${meter}</div>
 							<div class="meter-scale"><span>-40</span><span>-20</span><span>-10</span><span>-6</span><span>-3</span><span>0 dB</span></div>
-							<div class="lcd-foot"><span>nexus.esse.dev</span><span class="${state === 'queue' ? 'warn' : ''}">${state === 'queue' ? 'non risponde' : 'in linea'}</span></div>
+							<div class="lcd-foot"><span>server.example.com</span><span class="${state === 'queue' ? 'warn' : ''}">${state === 'queue' ? 'non risponde' : 'in linea'}</span></div>
 						</section>
 						${pauseControlL()}
 						<section class="sch-day">

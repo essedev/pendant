@@ -92,7 +92,7 @@
 
 			DATI
 			Veri: firmware 3.0.21, batteria 84%, conversazioni di oggi 09:04 da 43 min, 11:30 da 48 min,
-			17:21 da 4 min 47 s, nexus.esse.dev, 53 pacchetti in memoria, versione 0.3.0, firma che scade
+			17:21 da 4 min 47 s, server.example.com, 53 pacchetti in memoria, versione 0.3.0, firma che scade
 			il 3 dicembre. Plausibili: tutto il resto (ieri, i segnalibri, i minuti negli stati).
 
 			COSA IL MOCK NON MOSTRA
@@ -598,7 +598,7 @@
 				name: 'Omi', led: 'follow', bright: 50, gain: 6, dbl: 'pause', single: 'note', vib: true,
 				noteMax: '5 min', preroll: '3 s', discard: true, offline: 'send',
 				nDisc: true, nDiscT: '2 min', nServ: true, nServT: '2 min', nBatt: true, nBattT: '20%', nPower: true, nSign: true, nSignT: '2 giorni prima',
-				addr: 'nexus.esse.dev', token: '••••••••••••7f3a', lang: 'Italiano', ping: '20 s', retry: '30 s', queue: '30 min', liveAct: true
+				addr: 'server.example.com', token: '••••••••••••7f3a', lang: 'Italiano', ping: '20 s', retry: '30 s', queue: '30 min', liveAct: true
 			};
 			const ACTIONS = [['pause', 'Pausa e ripresa', 'Chiude la conversazione, il successivo ne apre una nuova'], ['note', 'Apri e chiudi nota', 'Il primo tocco apre la nota, il successivo la chiude'], ['mark', 'Segna questo momento', 'Un segnalibro nella conversazione in corso'], ['none', 'Niente']];
 			const PICK = {
@@ -799,7 +799,7 @@
 			const RESULT = {
 				testing: `<div class="result" data-n="result"><b style="grid-column:1/-1">Provo a collegarmi a ${cfg.addr}</b><div class="scan run">${Array.from({ length: 36 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div></div>`,
 				ok: `<div class="result" data-n="result">${ICON.check.replace('class="check" ', '')}<div><b>Collegato</b>Il server ha accettato il token e parla audio_stream 1.</div></div>`,
-				unreach: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>nexus.esse.dev non risponde</b>Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso.</div></div>',
+				unreach: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>server.example.com non risponde</b>Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso.</div></div>',
 				token: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>Il server ha rifiutato il token</b>L’indirizzo è giusto, il token no. Incollalo di nuovo: deve essere quello creato per l’audio, intero.</div></div>',
 				proto: '<div class="result warn" data-n="result"><span class="ring"></span><div><b>Il server parla un protocollo diverso</b>Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app.</div></div>'
 			};
@@ -1005,7 +1005,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.</div></section>
 				action: () => `<div class="homebar"></div>${iconGrid}<div class="isl fb" data-n="isl">${ICON.mark}<span>Momento segnato</span><span>17:42</span></div>`,
 				notif: () => `${statusBar()}${lockClock}<div class="banners" data-n="banners">
 					${[['Ciondolo scollegato da 2 minuti', 'adesso', 'L’ultima conversazione arriva fino alle 17:40. Riprende da sola quando il ciondolo torna vicino.'],
-						['Il server non risponde da 2 minuti', '17:17', 'L’audio aspetta sul telefono, fino a 30 minuti. Parte da solo quando nexus.esse.dev torna in linea.'],
+						['Il server non risponde da 2 minuti', '17:17', 'L’audio aspetta sul telefono, fino a 30 minuti. Parte da solo quando server.example.com torna in linea.'],
 						['Batteria del ciondolo al 18%', '16:05', 'Mettilo in carica appena puoi.'],
 						['La firma dell’app scade fra 2 giorni', '09:00', 'Giovedì 3 dicembre Pendant smette di aprirsi. Reinstallala da Xcode prima di allora.']]
 						.map(([t, w, b]) => `<article class="banner"><span class="appicon">${ICON.now}</span><div><b>${t}<span>${w}</span></b><p>${b}</p></div></article>`).join('')}

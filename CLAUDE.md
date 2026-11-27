@@ -22,8 +22,6 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
 - `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app
   Omi.
 - `docs/archive/`: il ciondolo fai-da-te. Si legge, non si aggiorna.
-- Lato Nexus: repo `~/Development/Projects/nexus`, `docs/features/audio-stream.md` (contratto
-  del WebSocket) e `backend/src/extensions/audio_stream/`.
 - Clone di Omi: `~/Development/Projects/omi`, remote `origin` (BasedHardware) e `fork`
   (`essedev/omi`). Una PR = un worktree accanto al clone. Flutter 3.44.5 in
   `~/Development/tools/flutter-3.44.5`.
@@ -34,7 +32,7 @@ superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
   collegato), `make test`, `make check` prima di ogni commit che tocca l'app, `make help` per
   il resto. Primo setup: `brew install xcodegen`, Apple ID in Xcode, `DEVELOPMENT_TEAM` in
   `app/Local.xcconfig` (il Team ID è l'OU del certificato "Apple Development" nel portachiavi),
-  poi `make credentials TOKEN_FILE=<file col token di audio_stream>` (oppure si scrivono nel
+  poi `make credentials SERVER_WS=<url> TOKEN_FILE=<file col token di audio_stream>` (oppure si scrivono nel
   primo avvio). `make logs` scarica il log dell'app in `app/.logs/`.
 - Simulatore, da `app/`: `make sim SCENE=<scena>` avvia l'app in una scena demo (elenco in
   `Pendant/Demo.swift`, argomento `-demo`), `make screens` fotografa tutte le scene in chiaro e

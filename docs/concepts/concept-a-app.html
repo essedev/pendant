@@ -38,7 +38,7 @@
 			SwiftUI, che piega il contenuto ai bordi, l'HTML non la fa.
 
 			Dati: veri quelli di oggi (firmware 3.0.21, batteria 84%, la conversazione delle 17:21 di
-			4 min 47 s, nexus.esse.dev, 53 pacchetti in memoria, scadenza della firma il 3/12).
+			4 min 47 s, server.example.com, 53 pacchetti in memoria, scadenza della firma il 3/12).
 			Inventati, plausibili: le conversazioni del mattino, la nota delle 15:02 (le note arrivano
 			con M9), i minuti nei vari stati.
 
@@ -580,7 +580,7 @@
 					row('Fai vibrare il ciondolo', '', { button: true })
 				]),
 				group('Server', [
-					row('Indirizzo', 'nexus.esse.dev', { chev: true }),
+					row('Indirizzo', 'server.example.com', { chev: true }),
 					row('Token', 'Nel portachiavi', { chev: true }),
 					row('Protocollo', 'audio_stream 1')
 				], "L'app manda l'audio a qualunque server che parli questo protocollo."),
@@ -822,7 +822,7 @@
 				nexus: { line: 'Registra', sub: 'Il server non risponde: 2 minuti in coda sul telefono.', t: [6, 12] }
 			};
 			const ms = (t) => `${t[0]}<span class="units">m</span>${String(t[1]).padStart(2, '0')}<span class="units">s</span>`;
-			const serverRow = () => (state === 'nexus' ? 'nexus.esse.dev, non risponde' : 'nexus.esse.dev');
+			const serverRow = () => (state === 'nexus' ? 'server.example.com, non risponde' : 'server.example.com');
 			const pendantRow = () => (state === 'off' ? 'non collegato' : 'collegato, 84%');
 
 			// G: one display, like a recorder's.

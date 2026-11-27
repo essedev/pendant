@@ -48,14 +48,15 @@ format: ## Formatta il codice Swift
 
 check: lint test build ## Giro completo: formattazione, test, build per l'iPhone
 
-NEXUS_WS ?= wss://nexus.esse.dev/api/audio-stream/ws
+SERVER_WS ?=
 
-credentials: ## Porta URL e token di Nexus nel portachiavi dell'app: TOKEN_FILE=<file col token>
+credentials: ## Porta URL e token del server nel portachiavi dell'app: SERVER_WS=<url> TOKEN_FILE=<file col token>
 	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
+	@test -n "$(SERVER_WS)" || (echo "Serve SERVER_WS=wss://<server>/api/audio-stream/ws" && exit 1)
 	@test -f "$(TOKEN_FILE)" || (echo "Serve TOKEN_FILE=<file col token>" && exit 1)
 	@tmp=$$(mktemp -d) && trap 'rm -rf "$$tmp"' EXIT && \
 		python3 -I -c "import json,sys; print(json.dumps({'url': sys.argv[1], 'token': open(sys.argv[2]).read().strip()}))" \
-			"$(NEXUS_WS)" "$(TOKEN_FILE)" > "$$tmp/bootstrap.json" && \
+			"$(SERVER_WS)" "$(TOKEN_FILE)" > "$$tmp/bootstrap.json" && \
 		xcrun devicectl device copy to --device $(DEVICE) --domain-type appDataContainer \
 			--domain-identifier $(BUNDLE_ID) --source "$$tmp/bootstrap.json" \
 			--destination Documents/bootstrap.json >/dev/null && \

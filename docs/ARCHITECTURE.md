@@ -274,8 +274,7 @@ legge dal protocollo, non li sceglie.
 ## Contratto col server
 
 L'app parla a qualunque server che implementi questo protocollo; oggi è `audio_stream` di
-Nexus, che lo parla come l'app Omi. Contratto completo nel repo `nexus`,
-`docs/features/audio-stream.md`.
+Nexus, che lo parla come l'app Omi.
 
 | Punto | Valore |
 |---|---|
@@ -353,7 +352,7 @@ fotografa nel simulatore ogni sua scena (`app/Pendant/Demo.swift`) in chiaro e s
   aggiornamento del firmware si ricollega, mettendo in pausa l'app nostra, e la si scollega
   di nuovo alla fine.
 - **Credenziali**: si scrivono nel primo avvio o nella pagina Server. In sviluppo
-  `make credentials TOKEN_FILE=<file>` copia URL e token nei Documenti dell'app, che al primo
+  `make credentials SERVER_WS=<url> TOKEN_FILE=<file>` copia URL e token nei Documenti dell'app, che al primo
   avvio li sposta nel portachiavi e cancella il file. Il token viaggia nell'header
   `Authorization`, non nell'URL.
 
@@ -383,9 +382,7 @@ col prototipo
 
 ## Trascrizione
 
-La fa Nexus, a sessione chiusa, con la pipeline `transcription`: prima l'Executor remoto sul Mac
-di casa, poi la riserva cloud (Voxtral, scelta col confronto del 28/10, DECISIONS #100 di
-Nexus). Dettagli nel repo `nexus`, `docs/features/transcriptions.md`.
+La fa il server, a sessione chiusa: l'app manda solo l'audio.
 
 ## Verifiche sul ciondolo
 

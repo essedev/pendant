@@ -155,7 +155,7 @@ final class AppModel {
       signatureExpiry = Calendar.current.date(
         from: DateComponents(year: 2026, month: 12, day: 3, hour: 9))
       if demo == .obServer {
-        ServerForm.shared.address = "nexus.esse.dev"
+        ServerForm.shared.address = "server.example.com"
         ServerForm.shared.token = "demo-token-7f3a"
         probeOutcome = .ok
       }

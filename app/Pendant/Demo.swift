@@ -140,7 +140,8 @@ enum DemoScene: String, CaseIterable {
   var config: Configuration { .defaults }
 
   var credentials: Credentials? {
-    Credentials(url: URL(string: "wss://nexus.esse.dev/api/audio-stream/ws")!, token: "demo-7f3a")
+    Credentials(
+      url: URL(string: "wss://server.example.com/api/audio-stream/ws")!, token: "demo-7f3a")
   }
 
   var probeOutcome: ServerProbeOutcome { .ok }
@@ -149,7 +150,7 @@ enum DemoScene: String, CaseIterable {
     let n = now
     var s = AppModel.Snapshot(
       mode: .recording, since: n.addingTimeInterval(-728), battery: 84,
-      serverHost: "nexus.esse.dev", serverState: .online, level: -16.7, firmware: "3.0.21")
+      serverHost: "server.example.com", serverState: .online, level: -16.7, firmware: "3.0.21")
     switch self {
     case .homePause, .pageControlsPause:
       s.mode = .paused
