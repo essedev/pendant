@@ -242,14 +242,18 @@ English is the one more people read; the public repository already keeps its pro
 English), and a language picker in the app (iOS already offers a language per app, and a
 picker of our own would also have to reach the widget extension and the Live Activity).
 
-## 2026-11-27 Native titles on the tab roots
+## 2026-11-27 Our own bar on every page
 
-The roots of Adesso, Oggi and Impostazioni carry their title in the system navigation bar,
-inline and large (`toolbarTitleDisplayMode(.inlineLarge)`), in Archivo through the bar's
-appearance and indented to the title gutter; Oggi's day chevrons are the bar's own buttons, on
-the title's line, and the date is the first line of the page. Drawing the title in the content
-with a hidden or empty bar, as before, broke the swipe back: iOS treats an empty bar as hidden,
-and when the page underneath has no bar it slides the pushed page's bar off with the page, so
-the back button lost its margin as soon as the swipe began. Rejected the classic large title
-(the title moves below the buttons, away from the chevrons) and an invisible bar item over the
-old layout (an empty band of about 50 pt at the top).
+No page shows the system navigation bar: the tab roots draw their big title in the content
+(with Oggi's chevrons on its line), the pushed pages draw a glass back button and their title
+in a bar of their own (`.page()`, a `safeAreaBar`). When the page underneath has no bar and the
+pushed one has it, iOS slides the bar off with the page on a swipe back, and the back button
+lost its margin as soon as the swipe began; an empty bar counts as none. With no system bar the
+back button belongs to the page and slides away with it, at its margin. Hiding the bar also
+turns off the swipe back, edge and full-page: the page hands both recognizers a delegate that
+lets them start when there is a page to go back to and no transition is running. It relies on
+`NavigationStack` being a `UINavigationController` underneath, which Apple does not promise: if
+an iOS release breaks it, the swipe stops and the back button still works. Rejected the system
+bar on every page, with the roots' titles in it (`inlineLarge`): the back button stays still as
+in Apple's apps, but the title loses the app's type and position and Adesso needs a title only
+to keep the bar from being empty.

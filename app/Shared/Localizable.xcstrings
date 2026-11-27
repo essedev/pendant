@@ -460,6 +460,16 @@
         }
       }
     },
+    "Back" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indietro"
+          }
+        }
+      }
+    },
     "Back to today" : {
       "localizations" : {
         "it" : {
