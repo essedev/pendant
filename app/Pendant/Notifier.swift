@@ -10,7 +10,7 @@ import UserNotifications
 final class Notifier {
   /// The conditions the app can warn about, one pending notification each.
   enum Kind: String {
-    case pendantDisconnected, uplinkUnreachable, batteryLow, powerOn, signatureExpiring
+    case pendantDisconnected, uplinkUnreachable, batteryLow, pendantIdle, signatureExpiring
   }
 
   private let center = UNUserNotificationCenter.current()

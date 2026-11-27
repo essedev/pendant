@@ -14,7 +14,8 @@ enum DemoScene: String, CaseIterable {
   case homeCharge = "home.charge"
   case homeLow = "home.low"
   case homeBluetoothOff = "home.btoff"
-  case homePowerOn = "home.poweron"
+  case homeIdle = "home.idle"
+  case homeCut = "home.cut"
   case homeFirst = "home.first"
   case homeDenied = "home.denied"
   case homeToken = "home.token"
@@ -136,9 +137,6 @@ enum DemoScene: String, CaseIterable {
 
   var probeOutcome: ServerProbeOutcome { .ok }
 
-  /// When the pendant turned itself on, for the power-on scene.
-  var powerOnAt: Date? { self == .homePowerOn ? Self.at(16, 58) : nil }
-
   var snapshot: AppModel.Snapshot {
     let n = now
     var s = AppModel.Snapshot(
@@ -167,9 +165,16 @@ enum DemoScene: String, CaseIterable {
       s.since = n.addingTimeInterval(-45)
       s.battery = nil
       s.notice = .bluetoothOff
-    case .homePowerOn:
-      s.since = n.addingTimeInterval(-2652)
-      s.notice = .unexpectedPowerOn
+    case .homeIdle:
+      s.mode = .paused
+      s.since = n.addingTimeInterval(-312)
+      s.idleSince = n.addingTimeInterval(-12)
+      s.notice = .idle
+    case .homeCut:
+      s.mode = .disconnected
+      s.since = n.addingTimeInterval(-48)
+      s.battery = nil
+      s.resumesUntil = n.addingTimeInterval(72)
     case .homeFirst:
       s.since = n.addingTimeInterval(-12)
     case .homeDenied:
@@ -198,7 +203,9 @@ enum DemoScene: String, CaseIterable {
   }
 
   var device: AppModel.Device {
-    let away: Set<DemoScene> = [.homeOff, .homeBluetoothOff, .homeDenied, .pagePendantOff]
+    let away: Set<DemoScene> = [
+      .homeOff, .homeCut, .homeBluetoothOff, .homeDenied, .pagePendantOff,
+    ]
     if away.contains(self) {
       return AppModel.Device(connected: false, lastSeen: Self.at(17, 39))
     }

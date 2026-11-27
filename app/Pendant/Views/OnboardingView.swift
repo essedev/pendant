@@ -99,7 +99,7 @@ struct OnboardingView: View {
       NotificationPreview().padding(.top, 28)
     case .done:
       Heading(
-        title: model.recording || model.demo != nil ? "Sta registrando" : "È tutto pronto",
+        title: "È tutto pronto",
         text: doneText)
       VStack(spacing: 0) {
         let d = model.device
@@ -128,8 +128,10 @@ struct OnboardingView: View {
 
   private var doneText: String {
     let toggle = model.config.gestures["doubleTap"] == .toggleRecording
-    return "Da adesso Pendant lavora anche chiusa."
-      + (toggle ? " Un doppio tocco sul ciondolo mette in pausa, un altro riprende." : "")
+    return "Pendant lavora anche chiusa, e registra solo quando lo chiedi tu: "
+      + (toggle
+        ? "tocca due volte il ciondolo per registrare, e di nuovo due volte per la pausa."
+        : "premi Riprendi in Adesso.")
   }
 
   @ViewBuilder private var actions: some View {

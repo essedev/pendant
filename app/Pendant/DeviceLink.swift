@@ -58,8 +58,6 @@ final class DeviceLink: NSObject {
   var onReadyChanged: ((Bool) -> Void)?
   /// Called for each audio notification, with the largest piece the connection can carry.
   var onAudio: ((AudioPacket, Int) -> Void)?
-  /// Called with the counter of the first audio packet of each connection.
-  var onFirstAudio: ((UInt16) -> Void)?
   /// Called for each button event.
   var onButton: ((ButtonEvent) -> Void)?
   /// Called when the battery level changes.
@@ -85,7 +83,6 @@ final class DeviceLink: NSObject {
   private var lastAudioStats = Date.distantPast
   private var lastStatusPoll = Date.distantPast
   private var ringFile: FileHandle?
-  private var firstAudioSeen = false
   /// The peripherals behind `candidates`: iOS needs the same object to connect.
   private var found: [UUID: CBPeripheral] = [:]
 
@@ -262,7 +259,6 @@ final class DeviceLink: NSObject {
     audio = AudioPacketTracker(restartGap: config.audioRestartGap)
     ringInfo = nil
     ledLevel = nil
-    firstAudioSeen = false
     finishRingRead(reason: "disconnected")
   }
 
@@ -313,11 +309,6 @@ final class DeviceLink: NSObject {
     case OmiGatt.Audio.data:
       guard let packet = AudioPacket(value) else { return }
       audio.record(packet)
-      if !firstAudioSeen {
-        firstAudioSeen = true
-        log.record("firstAudio", "counter \(packet.counter)")
-        onFirstAudio?(packet.counter)
-      }
       if let peripheral {
         // The firmware cuts a frame at MTU - 3 bytes, the same limit iOS reports for writes.
         onAudio?(packet, peripheral.maximumWriteValueLength(for: .withoutResponse))

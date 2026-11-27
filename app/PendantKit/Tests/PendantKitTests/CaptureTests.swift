@@ -58,71 +58,115 @@ import Testing
 
 @Suite struct CaptureControllerTests {
   private let config = Configuration.defaults
+  private let t0 = Date(timeIntervalSince1970: 1_800_000_000)
 
-  @Test func opensTheStreamWhenThePendantConnects() {
-    var capture = CaptureController(paused: false)
-    #expect(capture.deviceConnectionChanged(true) == [.openStream])
-    #expect(capture.recording)
+  /// A controller connected and recording, as after a double tap.
+  private func recording() -> CaptureController {
+    var capture = CaptureController(paused: true)
+    _ = capture.deviceConnectionChanged(true, at: t0, config: config)
+    _ = capture.setPaused(false, config: config)
+    return capture
   }
 
-  @Test func closesWithoutCloseStreamOnDisconnection() {
+  @Test func aConnectionStartsPaused() {
     var capture = CaptureController(paused: false)
-    _ = capture.deviceConnectionChanged(true)
-    #expect(capture.deviceConnectionChanged(false) == [.closeStream(graceful: false)])
+    #expect(capture.deviceConnectionChanged(true, at: t0, config: config) == [.persistPaused(true)])
+    #expect(!capture.recording)
   }
 
-  @Test func doubleTapPausesWithCloseStreamAndAShortVibration() {
-    var capture = CaptureController(paused: false)
-    _ = capture.deviceConnectionChanged(true)
-    #expect(
-      capture.button(.doubleTap, config: config)
-        == [.persistPaused(true), .closeStream(graceful: true), .vibrate(.short)])
+  @Test func aDoubleTapStartsTheRecordingWithAMediumVibration() {
+    var capture = CaptureController(paused: true)
+    _ = capture.deviceConnectionChanged(true, at: t0, config: config)
     #expect(
       capture.button(.doubleTap, config: config)
         == [.persistPaused(false), .openStream, .vibrate(.medium)])
+    #expect(capture.recording)
   }
 
-  @Test func staysPausedAcrossReconnections() {
+  @Test func doubleTapPausesWithCloseStreamAndAShortVibration() {
+    var capture = recording()
+    #expect(
+      capture.button(.doubleTap, config: config)
+        == [.persistPaused(true), .closeStream(graceful: true), .vibrate(.short)])
+  }
+
+  @Test func closesWithoutCloseStreamOnDisconnection() {
+    var capture = recording()
+    #expect(
+      capture.deviceConnectionChanged(false, at: t0, config: config)
+        == [.closeStream(graceful: false)])
+    #expect(capture.cutAt == t0)
+  }
+
+  @Test func resumesACutRecordingWithinTheGrace() {
+    var capture = recording()
+    _ = capture.deviceConnectionChanged(false, at: t0, config: config)
+    let back = t0.addingTimeInterval(config.resumeGrace)
+    #expect(
+      capture.deviceConnectionChanged(true, at: back, config: config)
+        == [.persistPaused(false), .openStream])
+    #expect(capture.recording)
+  }
+
+  @Test func staysPausedWhenTheCutRecordingComesBackLate() {
+    var capture = recording()
+    _ = capture.deviceConnectionChanged(false, at: t0, config: config)
+    let late = t0.addingTimeInterval(config.resumeGrace + 1)
+    #expect(
+      capture.deviceConnectionChanged(true, at: late, config: config) == [.persistPaused(true)])
+    #expect(!capture.recording)
+  }
+
+  @Test func resumesACutRecordingAfterTheAppRestarted() {
+    var capture = CaptureController(paused: false, cutAt: t0)
+    #expect(
+      capture.deviceConnectionChanged(true, at: t0.addingTimeInterval(30), config: config)
+        == [.persistPaused(false), .openStream])
+  }
+
+  @Test func aResumeAskedWhileAwayRecordsOnTheNextConnection() {
     var capture = CaptureController(paused: true)
-    #expect(capture.deviceConnectionChanged(true) == [])
+    #expect(capture.setPaused(false, config: config) == [.persistPaused(false)])
+    #expect(
+      capture.deviceConnectionChanged(true, at: t0, config: config)
+        == [.persistPaused(false), .openStream])
+  }
+
+  @Test func aPauseWhileAwayForgetsTheCutRecording() {
+    var capture = recording()
+    _ = capture.deviceConnectionChanged(false, at: t0, config: config)
+    _ = capture.setPaused(true, config: config)
+    #expect(capture.deviceConnectionChanged(true, at: t0, config: config) == [])
     #expect(!capture.recording)
   }
 
   @Test func ignoresGesturesMappedToNothing() {
     var quiet = config
     quiet.gestures["singleTap"] = GestureAction.none
-    var capture = CaptureController(paused: false)
-    _ = capture.deviceConnectionChanged(true)
+    var capture = recording()
     #expect(capture.button(.singleTap, config: quiet) == [])
     #expect(capture.button(.release, config: quiet) == [])
   }
 
   @Test func singleTapBookmarksWithAShortVibration() {
-    var capture = CaptureController(paused: false)
-    _ = capture.deviceConnectionChanged(true)
+    var capture = recording()
     #expect(capture.button(.singleTap, config: config) == [.bookmark, .vibrate(.short)])
   }
 
   @Test func bookmarksNothingWhilePaused() {
     var capture = CaptureController(paused: true)
-    _ = capture.deviceConnectionChanged(true)
+    _ = capture.deviceConnectionChanged(true, at: t0, config: config)
     #expect(capture.button(.singleTap, config: config) == [])
   }
 
   @Test func confirmsWithoutVibrationWhenTurnedOff() {
     var silent = config
     silent.vibrationConfirm = false
-    var capture = CaptureController(paused: false)
-    _ = capture.deviceConnectionChanged(true)
+    var capture = recording()
     #expect(capture.button(.singleTap, config: silent) == [.bookmark])
     #expect(
       capture.button(.doubleTap, config: silent)
         == [.persistPaused(true), .closeStream(graceful: true)])
-  }
-
-  @Test func pausingWhileDisconnectedOnlySavesTheFlag() {
-    var capture = CaptureController(paused: false)
-    #expect(capture.setPaused(true, config: config) == [.persistPaused(true)])
   }
 }
 

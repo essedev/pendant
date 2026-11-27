@@ -50,6 +50,10 @@ final class AppModel {
     var level: Double = LevelMeter.floor
     var notice: HomeNotice?
     var firmware: String?
+    /// Until when a recording cut by a disconnection resumes by itself.
+    var resumesUntil: Date?
+    /// Since when the pendant is on without recording, once the warning fired.
+    var idleSince: Date?
   }
 
   /// What the pendant pages show.
@@ -89,15 +93,14 @@ final class AppModel {
   private(set) var probeOutcome: ServerProbeOutcome?
   private(set) var probing = false
   private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
-  /// When the pendant turned itself on, until the notice is dismissed.
-  private(set) var powerOnAt: Date?
   /// When the app's signature expires, read from its provisioning profile.
   private(set) var signatureExpiry: Date?
 
   private let probe = ServerProbe()
   private let activities = LiveActivityController()
   private var batteryWarned = false
-  private var clearedRingThisConnection = false
+  /// The connection whose ring was last cleared, so a connection clears it once.
+  private var clearedRingFor: Date?
   private var published: SharedState?
 
   private static let configKey = "pendant.configuration"
@@ -131,7 +134,6 @@ final class AppModel {
       tab = demo.tab
       settingsPath = demo.settingsPath
       todayPath = demo.todayPath
-      powerOnAt = demo.powerOnAt
       notificationStatus = .authorized
       signatureExpiry = Calendar.current.date(
         from: DateComponents(year: 2026, month: 12, day: 3, hour: 9))
@@ -198,6 +200,8 @@ final class AppModel {
     }
     s.queuedSeconds = uplink.spooledSeconds
     s.level = capture.level
+    s.resumesUntil = capture.controller.resumesUntil(config: config)
+    s.idleSince = capture.idleWarnedAt
     s.notice = HomeNotice.top(noticeInputs(s))
     return s
   }
@@ -245,7 +249,7 @@ final class AppModel {
         SupportedFirmware.isSupported(firmware)
         || UserDefaults.standard.string(forKey: Self.firmwareDismissedKey) == firmware
     }
-    i.unexpectedPowerOn = powerOnAt != nil
+    i.idle = s.idleSince != nil
     return i
   }
 
@@ -255,13 +259,12 @@ final class AppModel {
   func setPaused(_ paused: Bool) {
     guard demo == nil else { return }
     capture.setPaused(paused)
-    if paused { powerOnAt = nil }
   }
 
   /// Dismisses the notice shown now, where it can be dismissed.
   func dismiss(_ notice: HomeNotice) {
     switch notice {
-    case .unexpectedPowerOn: powerOnAt = nil
+    case .idle: capture.dismissIdleWarning()
     case .firmwareUnsupported:
       UserDefaults.standard.set(link.firmware, forKey: Self.firmwareDismissedKey)
     default: break
@@ -375,7 +378,6 @@ final class AppModel {
   // MARK: Wiring
 
   private func wireCallbacks() {
-    link.onFirstAudio = { [weak self] counter in self?.firstAudio(counter) }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
   }
@@ -384,19 +386,6 @@ final class AppModel {
     PendantActions.setRecording = { [weak self] on in self?.setPaused(!on) }
     PendantActions.bookmark = { [weak self] in self?.capture.bookmark() }
     PendantActions.isRecording = { [weak self] in self?.capture.controller.recording ?? false }
-  }
-
-  private func firstAudio(_ counter: UInt16) {
-    clearedRingThisConnection = false
-    // Only a boot after the pendant had been away counts: the first pairing is expected.
-    guard link.lastSeen != nil, BootDetector.justBooted(firstCounter: counter) else { return }
-    powerOnAt = Date()
-    log.record("powerOn", "counter \(counter)")
-    guard config.notifyPowerOn else { return }
-    let at = Date().formatted(date: .omitted, time: .shortened)
-    notifier.schedule(
-      .powerOn, after: 1, title: "Il ciondolo si è acceso da solo alle \(at)",
-      body: "Forse un tocco in tasca. Da allora registra. Per spegnerlo tienilo premuto 3 secondi.")
   }
 
   private func battery(_ level: Int) {
@@ -413,10 +402,10 @@ final class AppModel {
   }
 
   private func ringInfo(_ info: Storage.Info) {
-    guard config.offlinePolicy == .clear, info.pendingPackets > 0, !clearedRingThisConnection else {
-      return
-    }
-    clearedRingThisConnection = true
+    guard config.offlinePolicy == .clear, info.pendingPackets > 0,
+      clearedRingFor != link.connectedSince
+    else { return }
+    clearedRingFor = link.connectedSince
     link.clearStorage()
   }
 

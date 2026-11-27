@@ -62,7 +62,7 @@ struct SettingsView: View {
   }
 
   private func activeNotifications(_ c: Configuration) -> Int {
-    [c.notifyDisconnect, c.notifyUplink, c.notifyBattery, c.notifyPowerOn, c.notifySignature]
+    [c.notifyDisconnect, c.notifyUplink, c.notifyBattery, c.notifyIdle, c.notifySignature]
       .filter { $0 }.count
   }
 

@@ -272,3 +272,15 @@ conversazione è aperta non apre una seconda connessione: risponde con quella in
 `audio_stream` aprire riprende la sessione interrotta da meno della grazia e toglie la sessione
 alla connessione che la tiene. Scartato chiudere con `CloseStream`: chiuderebbe proprio quella
 conversazione. La sessione vuota della prova il server la scarta da solo (sotto 2 s d'audio).
+
+## 2026-11-27 Si registra solo su richiesta, e il ciondolo acceso a vuoto avvisa
+
+Ogni collegamento del ciondolo parte in pausa: si registra solo col doppio tocco, il tasto o un
+controllo di sistema. Riprende da sola solo una registrazione tagliata da una disconnessione e
+tornata entro la grazia di `audio_stream` (120 s), così un Bluetooth che cade un attimo non
+spezza la conversazione. Riscrive la registrazione continua di M6, in cui ogni collegamento
+fuori pausa registrava: un'accensione in tasca diventava una registrazione. Se il ciondolo
+resta collegato senza registrare per un tempo configurabile, vibra e arriva una notifica;
+spegnerlo dall'app richiede il 3.0.24 (DECISIONS 2026-11-26, firmware di serie). Scartato
+partire in pausa anche dopo un taglio breve: ogni caduta del Bluetooth avrebbe chiesto un
+doppio tocco.

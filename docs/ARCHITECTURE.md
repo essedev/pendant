@@ -193,7 +193,11 @@ che su iOS ha sostituito il plugin Flutter.
    si iscrive ad audio, pulsante, batteria e carica.
 2. Se la versione non è fra quelle supportate dalla configurazione, l'app lo segnala e lavora
    solo sulle funzioni che il bitmask dichiara.
-3. Se non sono in pausa, apre la sessione su `audio_stream` e inoltra.
+3. Parte in pausa: registra solo dal doppio tocco, dal tasto o da un controllo di sistema.
+   Riprende da sola solo una registrazione tagliata da una disconnessione, se il ciondolo
+   torna entro i 120 s di grazia del server, o una ripresa chiesta mentre era lontano. Se resta
+   collegato senza registrare per un tempo configurabile (5 minuti), il ciondolo vibra e arriva
+   una notifica.
 4. Legge l'info della memoria. Se c'è audio offline, lo tratta secondo la politica configurata.
 5. Alla disconnessione chiude la sessione senza `CloseStream`: Nexus la tiene `interrupted` per
    120 s e la riprende se il ciondolo torna.
@@ -229,8 +233,10 @@ se due azioni non bastano: è una scelta della configurazione, non del firmware.
 - **Tocchi accidentali in tasca**: una nota senza voce rilevata si scarta, e dopo un tempo
   massimo configurabile si chiude da sola.
 - **Accensioni accidentali**: da spento basta un tocco breve per riaccendere il ciondolo.
-  Sul 3.0.21 l'app le vede (riconnessione dopo uno spegnimento) e le notifica, ma non può
-  spegnerlo: serve il 3.0.24.
+  Non registra, perché ogni collegamento parte in pausa, ma consuma: dopo il tempo configurato
+  senza registrare il ciondolo vibra e arriva l'avviso di spegnerlo. Sul 3.0.21 l'app non può
+  spegnerlo (al tag si spegne solo tenendolo premuto, con la batteria critica o dalla console
+  seriale): lo spegnimento dall'app arriva col 3.0.24.
 
 ### Configurazione
 
@@ -396,7 +402,7 @@ Ancora aperte:
 - **Due app, un ciondolo**: se l'app Omi torna collegata, registra in parallelo verso Nexus e
   risponde agli stessi gesti, invertendo la pausa. Resta col ciondolo dimenticato.
 - **Scadenza a 7 giorni**: un rinnovo saltato ferma l'app. Lo copre lo stesso segnale periodico.
-- **Accensioni accidentali**: sul 3.0.21 il ciondolo acceso per sbaglio registra e consuma, e
-  l'app non può spegnerlo.
+- **Accensioni accidentali**: sul 3.0.21 il ciondolo acceso per sbaglio non registra ma consuma,
+  e l'app può solo avvisare.
 - **Conversazioni altrui**: registrare conversazioni a cui non partecipo è un problema legale in
   Italia e di GDPR verso i colleghi. La regola d'uso è togliere la pausa solo quando partecipo.

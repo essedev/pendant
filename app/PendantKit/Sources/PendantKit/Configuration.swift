@@ -79,8 +79,12 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var notifyBattery: Bool
   /// Battery percentage under which to notify.
   public var batteryThreshold: Int
-  /// Notify when the pendant turns itself on, usually a tap in a pocket.
-  public var notifyPowerOn: Bool
+  /// Warn, with a notification and a vibration, when the pendant stays on without recording:
+  /// it drains its battery for nothing, as after a tap in a pocket. Firmware 3.0.21 cannot be
+  /// switched off from the app; 3.0.24 can.
+  public var notifyIdle: Bool
+  /// Seconds connected without recording before that warning.
+  public var idleNotifyAfter: Double
   /// Notify before the app signature expires.
   public var notifySignature: Bool
   /// Days before the expiry for that notification.
@@ -121,7 +125,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     uplinkNotifyAfter = 120
     notifyBattery = true
     batteryThreshold = 20
-    notifyPowerOn = true
+    notifyIdle = true
+    idleNotifyAfter = 300
     notifySignature = true
     signatureDaysBefore = 2
     liveActivity = true
@@ -194,7 +199,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     uplinkNotifyAfter = number(.uplinkNotifyAfter, d.uplinkNotifyAfter, 10...86400)
     notifyBattery = value(.notifyBattery, d.notifyBattery)
     batteryThreshold = number(.batteryThreshold, d.batteryThreshold, 5...50)
-    notifyPowerOn = value(.notifyPowerOn, d.notifyPowerOn)
+    notifyIdle = value(.notifyIdle, d.notifyIdle)
+    idleNotifyAfter = number(.idleNotifyAfter, d.idleNotifyAfter, 60...3600)
     notifySignature = value(.notifySignature, d.notifySignature)
     signatureDaysBefore = number(.signatureDaysBefore, d.signatureDaysBefore, 1...6)
     liveActivity = value(.liveActivity, d.liveActivity)
@@ -228,7 +234,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(uplinkNotifyAfter, forKey: .uplinkNotifyAfter)
     try c.encode(notifyBattery, forKey: .notifyBattery)
     try c.encode(batteryThreshold, forKey: .batteryThreshold)
-    try c.encode(notifyPowerOn, forKey: .notifyPowerOn)
+    try c.encode(notifyIdle, forKey: .notifyIdle)
+    try c.encode(idleNotifyAfter, forKey: .idleNotifyAfter)
     try c.encode(notifySignature, forKey: .notifySignature)
     try c.encode(signatureDaysBefore, forKey: .signatureDaysBefore)
     try c.encode(liveActivity, forKey: .liveActivity)
@@ -242,7 +249,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     case gestures, vibrationConfirm, pauseVibration, resumeVibration, ledPolicy, ledBrightness
     case offlinePolicy, pingInterval, reconnectMaxDelay, spoolSeconds, notifyDisconnect
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
-    case notifyPowerOn, notifySignature, signatureDaysBefore, liveActivity, liveActivityPauseEnd
+    case notifyIdle, idleNotifyAfter, notifySignature, signatureDaysBefore, liveActivity,
+      liveActivityPauseEnd
     case resumeGrace, pendantName
   }
 }

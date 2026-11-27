@@ -230,6 +230,10 @@ enum Choices {
     Choice(value: $0, label: DurationFormat.words($0))
   }
 
+  static let idle: [Choice<Double>] = [120, 300, 600, 900].map {
+    Choice(value: $0, label: DurationFormat.words($0))
+  }
+
   static let battery: [Choice<Int>] = [10, 15, 20, 30].map { Choice(value: $0, label: "\($0)%") }
 
   static let signatureDays: [Choice<Int>] = [1, 2, 3].map {

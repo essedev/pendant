@@ -142,15 +142,10 @@ private func at(_ hour: Int, _ minute: Int, day: Int = 26) -> Date {
     #expect(SignatureExpiry.date(fromProfile: Data("garbage".utf8)) == nil)
   }
 
-  @Test func detectsABootFromALowCounter() {
-    #expect(BootDetector.justBooted(firstCounter: 12))
-    #expect(!BootDetector.justBooted(firstCounter: 40_000))
-  }
-
   @Test func showsTheMostSevereNotice() {
     var i = HomeNotice.Inputs()
     #expect(HomeNotice.top(i) == nil)
-    i.unexpectedPowerOn = true
+    i.idle = true
     i.batteryPercent = 10
     #expect(HomeNotice.top(i) == .batteryLow)
     i.queueFill = 0.9

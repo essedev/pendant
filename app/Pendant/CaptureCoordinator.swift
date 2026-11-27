@@ -22,11 +22,20 @@ final class CaptureCoordinator {
     didSet { if !meterEnabled { level = LevelMeter.floor } }
   }
 
+  /// When the warning of a pendant on without recording fired, until it is dismissed, the
+  /// recording starts or the pendant goes.
+  private(set) var idleWarnedAt: Date?
+
   var config: Configuration {
     didSet {
       uplink.config = config
       link.config = config
       applyLed()
+      if config.notifyIdle != oldValue.notifyIdle
+        || config.idleNotifyAfter != oldValue.idleNotifyAfter
+      {
+        armIdleWarning()
+      }
     }
   }
 
@@ -38,6 +47,7 @@ final class CaptureCoordinator {
   private var meterDecoder: OpusDecoder?
   private var meterPCM = Data()
   private var lastMeter = Date.distantPast
+  private var idleTask: Task<Void, Never>?
 
   private static let pausedKey = "pendant.paused"
   private static let pausedSinceKey = "pendant.pausedSince"
@@ -59,7 +69,10 @@ final class CaptureCoordinator {
     self.log = log
     self.notifier = notifier
     let paused = UserDefaults.standard.bool(forKey: Self.pausedKey)
-    self.controller = CaptureController(paused: paused)
+    // Not paused at launch means iOS ended the app while it recorded: the recording was cut at
+    // the last audio seen, and resumes if the pendant is back within the grace.
+    self.controller = CaptureController(
+      paused: paused, cutAt: UserDefaults.standard.object(forKey: Self.lastAudioKey) as? Date)
     self.pausedSince =
       paused ? UserDefaults.standard.object(forKey: Self.pausedSinceKey) as? Date ?? Date() : nil
     var saved =
@@ -95,6 +108,39 @@ final class CaptureCoordinator {
     apply(controller.bookmark(config: config))
   }
 
+  /// Hides the warning of a pendant on without recording.
+  func dismissIdleWarning() {
+    idleWarnedAt = nil
+  }
+
+  /// Warns when the pendant stays connected without recording, from now.
+  ///
+  /// The notification is scheduled ahead, so it arrives even if iOS suspends the app; the
+  /// vibration needs the app awake, which the audio of a connected pendant keeps it.
+  private func armIdleWarning() {
+    cancelIdleWarning()
+    guard config.notifyIdle, link.ready, !controller.recording else { return }
+    let after = config.idleNotifyAfter
+    let minutes = DurationFormat.words(after)
+    notifier.schedule(
+      .pendantIdle, after: after, title: "Il ciondolo è acceso da \(minutes) senza registrare",
+      body: "Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare.")
+    idleTask = Task { [weak self] in
+      try? await Task.sleep(for: .seconds(after))
+      guard !Task.isCancelled, let self, self.link.ready, !self.controller.recording else { return }
+      self.idleWarnedAt = Date()
+      self.link.vibrate(.long)
+      self.log.record("idle", "on for \(minutes) without recording")
+    }
+  }
+
+  private func cancelIdleWarning() {
+    idleTask?.cancel()
+    idleTask = nil
+    idleWarnedAt = nil
+    notifier.cancel(.pendantIdle)
+  }
+
   private func save() {
     do {
       try JSONEncoder().encode(conversations).write(to: Self.logFile, options: .atomic)
@@ -105,17 +151,21 @@ final class CaptureCoordinator {
 
   private func deviceReadyChanged(_ ready: Bool) {
     assembler.reset()
-    apply(controller.deviceConnectionChanged(ready))
+    apply(controller.deviceConnectionChanged(ready, at: Date(), config: config))
     if ready {
       notifier.cancel(.pendantDisconnected)
       applyLed()
-    } else if !controller.paused && config.notifyDisconnect {
+      armIdleWarning()
+    } else {
+      cancelIdleWarning()
+      // Only a cut recording is worth a warning: a paused pendant is expected to go quiet.
+      guard controller.cutAt != nil, config.notifyDisconnect else { return }
       let at = Date().formatted(date: .omitted, time: .shortened)
       notifier.schedule(
         .pendantDisconnected, after: config.disconnectNotifyAfter,
         title: "Ciondolo scollegato da \(DurationFormat.words(config.disconnectNotifyAfter))",
         body:
-          "L’ultima conversazione arriva fino alle \(at). Riprende da sola quando il ciondolo torna vicino.",
+          "La registrazione si è fermata alle \(at). Se il ciondolo torna entro \(DurationFormat.words(config.resumeGrace)) continua la stessa conversazione, dopo resta in pausa.",
         timeSensitive: true)
     }
   }
@@ -167,6 +217,7 @@ final class CaptureCoordinator {
       switch effect {
       case .openStream:
         log.record("capture", "conversation start")
+        cancelIdleWarning()
         assembler.reset()
         meterDecoder = nil
         let now = Date()

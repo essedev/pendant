@@ -243,11 +243,15 @@ struct NotificationsPage: View {
             selection: $model.config.batteryThreshold, disabled: !c.notifyBattery)
         }
         CellGroup(
-          header: "Accensione inattesa",
+          header: "Acceso senza registrare",
           footer:
-            "Quando il ciondolo si riaccende da solo dopo uno spegnimento, di solito per un tocco in tasca."
+            "Quando il ciondolo si collega e non registri entro questo tempo, vibra e arriva un avviso: di solito è un tocco in tasca, e acceso consuma batteria. Con questo firmware l’app non può spegnerlo."
         ) {
-          ToggleRow(label: "Avvisa", isOn: $model.config.notifyPowerOn)
+          ToggleRow(label: "Avvisa", isOn: $model.config.notifyIdle)
+          PickerRow(
+            label: "Dopo", title: "Acceso senza registrare, avvisa dopo",
+            choices: including(Choices.idle, c.idleNotifyAfter, label: DurationFormat.words),
+            selection: $model.config.idleNotifyAfter, disabled: !c.notifyIdle)
         }
         CellGroup(header: "Firma in scadenza") {
           ToggleRow(label: "Avvisa", isOn: $model.config.notifySignature)

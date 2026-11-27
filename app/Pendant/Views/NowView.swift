@@ -13,9 +13,11 @@ struct NowView: View {
         HomeDisplay(snapshot: s, now: model.now)
           .padding(.horizontal, 22)
           .padding(.top, 8)
-        RecessedKey(mode: s.mode) { model.setPaused(s.mode == .recording) }
-          .padding(.horizontal, 22)
-          .padding(.top, 18)
+        RecessedKey(mode: s.mode, resumesOnReturn: resumes(s)) {
+          model.setPaused(s.mode == .recording)
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 18)
         Text(hint(s))
           .type(13, 18)
           .foregroundStyle(Theme.ink2)
@@ -40,18 +42,25 @@ struct NowView: View {
     .onChange(of: scenePhase) { _, phase in model.capture.meterEnabled = phase == .active }
   }
 
+  /// Whether a recording cut by a disconnection resumes when the pendant comes back now.
+  private func resumes(_ s: AppModel.Snapshot) -> Bool {
+    s.resumesUntil.map { $0 > model.now } ?? false
+  }
+
   private func hint(_ s: AppModel.Snapshot) -> String {
+    let doubleTap = model.config.gestures["doubleTap"] == .toggleRecording
     switch s.mode {
-    case .disconnected: "Riprende da sola quando il ciondolo torna vicino."
-    case .bluetoothOff: "Riprende da sola quando riaccendi il Bluetooth."
-    case .denied: "Riprende da sola quando ridai il permesso."
-    case .unpaired: "Collega il ciondolo dalle impostazioni."
-    case .recording where s.charging: "Il ciondolo è in carica e continua a registrare."
-    default:
-      switch (model.config.gestures["doubleTap"], s.mode) {
-      case (.toggleRecording, _): "Oppure tocca due volte il ciondolo."
-      default: ""
+    case .disconnected, .bluetoothOff, .denied:
+      if let until = s.resumesUntil, until > model.now {
+        return "Se torna entro le \(Clock.time(until)) continua la stessa conversazione."
       }
+      return doubleTap
+        ? "Quando torna resta in pausa: toccalo due volte per registrare."
+        : "Quando torna resta in pausa."
+    case .unpaired: return "Collega il ciondolo dalle impostazioni."
+    case .recording where s.charging: return "Il ciondolo è in carica e continua a registrare."
+    case .recording: return doubleTap ? "Oppure tocca due volte il ciondolo." : ""
+    case .paused: return doubleTap ? "Oppure tocca due volte il ciondolo per registrare." : ""
     }
   }
 }
@@ -143,15 +152,18 @@ struct HomeDisplay: View {
 /// the pendant.
 struct RecessedKey: View {
   let mode: AppModel.Snapshot.Mode
+  /// Away from the pendant: whether the recording continues when it comes back.
+  var resumesOnReturn = false
   let action: () -> Void
 
   var body: some View {
-    let resume = mode == .paused
     let enabled = mode == .recording || mode == .paused
+    // Away, the key shows what happens on return, greyed: it acts only with the pendant here.
+    let resume = enabled ? mode == .paused : !resumesOnReturn
     Button(action: action) {
       HStack(spacing: 10) {
         if resume {
-          Circle().fill(.white).frame(width: 12, height: 12)
+          Circle().fill(enabled ? .white : Theme.ink2).frame(width: 12, height: 12)
         } else {
           Image(systemName: "pause.fill").font(.system(size: 18, weight: .semibold))
         }
@@ -281,14 +293,14 @@ struct NoticeCard: View {
         "Questa versione dell’app conosce il \(supported). Registra e mette in pausa come prima; le funzioni nuove del ciondolo restano spente finché non aggiorni l’app.",
         [("Ho capito", { model.dismiss(.firmwareUnsupported) })]
       )
-    case .unexpectedPowerOn:
-      let at = model.powerOnAt.map { " alle \(Clock.time($0))" } ?? ""
+    case .idle:
+      let minutes = DurationFormat.words(model.config.idleNotifyAfter)
       return (
-        "Il ciondolo si è acceso da solo\(at)",
-        "Forse un tocco in tasca. Da allora registra. Per spegnerlo tienilo premuto 3 secondi.",
+        "Il ciondolo è acceso da \(minutes) senza registrare",
+        "Forse un tocco in tasca. Consuma batteria anche così: tienilo premuto 3 secondi per spegnerlo, o registra.",
         [
-          ("Metti in pausa", { model.setPaused(true) }),
-          ("Ho capito", { model.dismiss(.unexpectedPowerOn) }),
+          ("Registra", { model.setPaused(false) }),
+          ("Ho capito", { model.dismiss(.idle) }),
         ]
       )
     }

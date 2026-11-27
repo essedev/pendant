@@ -20,8 +20,8 @@ fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. L'app vera (M7) è scritta e
   primo avvio, Adesso, Oggi, Impostazioni con server configurabile e prova della connessione,
   LED che segue la registrazione, segnalibri, comandi di sistema e attività in tempo reale,
   iOS 26. Verificata nel simulatore su ogni scena (`make screens`); resta la prova sul
-  ciondolo: spia, segnalibro al tocco, controlli, attività in tempo reale, accensione
-  inattesa.
+  ciondolo: spia, segnalibro al tocco, controlli, attività in tempo reale, partenza in pausa
+  e avviso del ciondolo acceso senza registrare.
 - [ ] M8 Stato verso il server: eventi del ciondolo e segnale periodico, avviso su Telegram se
   l'app tace o il ciondolo resta scollegato. Aggiunta lato Nexus.
 - [ ] M9 Offline dalla memoria: lettura alla connessione, invio al server con l'ora vera,
@@ -36,8 +36,9 @@ reSpeaker Clip riscrivendo solo il collegamento.
 - Pausa che vale anche da scollegato: arriva col firmware 3.0.24 (muto salvato), pubblicato il
   9/11 ma al 0% il 26/11. Sul 3.0.21 forse si ottiene col guadagno del microfono a 0, da
   misurare in M5.
-- Accensioni accidentali in tasca: quante sono si misura in M5 e M6. Lo spegnimento dall'app
-  arriva col 3.0.24.
+- Accensioni accidentali in tasca: quante sono si misura nell'uso. Lo spegnimento dall'app
+  arriva col 3.0.24: allora l'avviso del ciondolo acceso senza registrare diventa uno
+  spegnimento.
 - PR vibrazione [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912):
   aperta senza revisione, in conflitto con `main` dal 26/11. Con l'app nostra la vibrazione la
   comandiamo noi: si decide se chiuderla o tenerla per chi usa l'app Omi.

@@ -46,21 +46,6 @@ public enum SignatureExpiry {
   }
 }
 
-/// Tells whether the pendant has just booted, from the first audio counter after a connection.
-///
-/// The firmware's audio counter is a static that starts at 0 at boot and never resets between
-/// connections (`lib/core/transport.c:1060`): a low first counter means a fresh boot. Combined
-/// with a previous disconnection, it is an unexpected power-on, usually a tap in a pocket.
-public enum BootDetector {
-  /// Counter values within this from 0 count as a boot: about 20 seconds of speech.
-  public static let threshold: UInt16 = 1000
-
-  /// Whether the first counter seen on a connection means the pendant just booted.
-  public static func justBooted(firstCounter: UInt16) -> Bool {
-    firstCounter < threshold
-  }
-}
-
 /// The notices the home screen can show under the key, one at a time.
 ///
 /// The order is the severity (concept-b-app.html, decision 2): the first that applies wins.
@@ -77,8 +62,8 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
   case batteryLow
   /// The pendant runs a firmware this app does not know.
   case firmwareUnsupported
-  /// The pendant turned itself on.
-  case unexpectedPowerOn
+  /// The pendant has been on and connected for a while without recording.
+  case idle
 
   /// The inputs that decide the notice.
   public struct Inputs: Equatable, Sendable {
@@ -90,7 +75,7 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
     public var batteryPercent: Int?
     public var batteryThreshold = 20
     public var firmwareSupported = true
-    public var unexpectedPowerOn = false
+    public var idle = false
 
     public init() {}
   }
@@ -106,7 +91,7 @@ public enum HomeNotice: Equatable, Sendable, CaseIterable {
     if i.queueFill >= queueWarning { return .queueNearlyFull }
     if let b = i.batteryPercent, b < i.batteryThreshold { return .batteryLow }
     if !i.firmwareSupported { return .firmwareUnsupported }
-    if i.unexpectedPowerOn { return .unexpectedPowerOn }
+    if i.idle { return .idle }
     return nil
   }
 }
