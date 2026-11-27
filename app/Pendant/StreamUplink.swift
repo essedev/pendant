@@ -218,13 +218,17 @@ final class StreamUplink: NSObject {
     if unreachableSince == nil {
       unreachableSince = Date()
       if config.notifyUplink {
-        let host = Credentials.load()?.host ?? "il server"
+        let host = Credentials.load()?.host ?? String(localized: "the server")
         notifier.schedule(
           .uplinkUnreachable, after: config.uplinkNotifyAfter,
-          title: "Il server non risponde da \(DurationFormat.words(config.uplinkNotifyAfter))",
+          title: String(
+            localized:
+              "The server hasn’t responded for \(DurationFormat.words(config.uplinkNotifyAfter))"),
           body:
-            "L’audio aspetta sul telefono, fino a \(DurationFormat.words(config.spoolSeconds)). "
-            + "Parte da solo quando \(host) torna in linea.",
+            String(
+              localized:
+                "The audio waits on the phone, for up to \(DurationFormat.words(config.spoolSeconds)). It goes out by itself when \(host) is back online."
+            ),
           timeSensitive: true)
       }
     }

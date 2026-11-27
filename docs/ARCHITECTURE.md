@@ -318,8 +318,15 @@ units (`12m08s`), the segmented level meter with its dB scale and the server lin
 and red palette: red means only "recording" (solid LED on the display, level lit) and "make it
 record" (the Riprendi key). Display as a material (aluminium bezel, glass with a reflection),
 warm aluminium as the second tint. A single key, recessed in the same bezel: graphite "Pausa"
-while recording, red "Riprendi" when stopped. Tabs: Adesso, Oggi, Impostazioni. Archivo font.
-Glass only on the bottom bar, which floats over the content.
+while recording, red "Riprendi" when stopped. Tabs: Now, Today, Settings (Adesso, Oggi,
+Impostazioni). Archivo font. Glass only on the bottom bar, which floats over the content.
+
+The interface is in English and Italian: it follows the phone's language, or the one chosen
+for Pendant in iOS Settings, and English for any other (DECISIONS 2026-11-27, "The app in
+English and Italian"). English is written in the code, Italian is in String Catalogs
+(CONVENTIONS, Language), and the widget extension shares the app's catalog. Times, days and
+durations follow the phone's locale: `17:42` and `giovedì 26 novembre` in Italian, `5:42 PM`
+and `Thursday, November 26` in US English.
 
 The display shows the running time and the level only while recording. Still (paused or away
 from the pendant) it shows the day's counter: recorded today (`1h36m`, hours from the first),

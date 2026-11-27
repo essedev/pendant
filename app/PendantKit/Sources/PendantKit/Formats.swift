@@ -27,11 +27,15 @@ public enum DurationFormat {
     let s = max(0, Int(seconds))
     if s >= 3600 {
       let m = s % 3600 / 60
-      return m == 0 ? "\(s / 3600) h" : "\(s / 3600) h \(m) min"
+      return m == 0
+        ? String(localized: "\(s / 3600) h", bundle: .module)
+        : String(localized: "\(s / 3600) h \(m) min", bundle: .module)
     }
-    if s >= 600 || s % 60 == 0 { return "\(max(s / 60, s >= 60 ? 1 : 0)) min" }
-    if s < 60 { return "\(s) s" }
-    return "\(s / 60) min \(s % 60) s"
+    if s >= 600 || s % 60 == 0 {
+      return String(localized: "\(max(s / 60, s >= 60 ? 1 : 0)) min", bundle: .module)
+    }
+    if s < 60 { return String(localized: "\(s) s", bundle: .module) }
+    return String(localized: "\(s / 60) min \(s % 60) s", bundle: .module)
   }
 
   /// The clock form of the Live Activity: `12:08`, `1:02:03`.

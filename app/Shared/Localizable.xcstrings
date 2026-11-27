@@ -520,6 +520,16 @@
         }
       }
     },
+    "Bluetooth off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth spento"
+          }
+        }
+      }
+    },
     "Bluetooth off %@" : {
       "localizations" : {
         "it" : {
@@ -546,6 +556,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non trovo il ciondolo"
+          }
+        }
+      }
+    },
+    "Charge it as soon as you can." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettilo in carica appena puoi."
           }
         }
       }
@@ -780,6 +800,16 @@
         }
       }
     },
+    "Disconnected" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scollegato"
+          }
+        }
+      }
+    },
     "Disconnected %@" : {
       "localizations" : {
         "it" : {
@@ -856,6 +886,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inglese"
+          }
+        }
+      }
+    },
+    "Enough for now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basta per ora"
           }
         }
       }
@@ -1072,6 +1112,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Più alto sente meglio le voci lontane, e anche il rumore. Il ciondolo lo ricorda da solo."
+          }
+        }
+      }
+    },
+    "Hold it for 3 seconds to turn it off, or double-tap it to record." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare."
           }
         }
       }
@@ -1486,6 +1536,16 @@
         }
       }
     },
+    "Mark" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segna"
+          }
+        }
+      }
+    },
     "Mark this moment" : {
       "localizations" : {
         "it" : {
@@ -1606,6 +1666,16 @@
         }
       }
     },
+    "No Bluetooth" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senza Bluetooth"
+          }
+        }
+      }
+    },
     "No Bluetooth %@" : {
       "localizations" : {
         "it" : {
@@ -1622,6 +1692,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessun ciondolo"
+          }
+        }
+      }
+    },
+    "No server" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun server"
           }
         }
       }
@@ -1792,6 +1872,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omi, di Based Hardware"
+          }
+        }
+      }
+    },
+    "On %@ Pendant stops opening. Reinstall it from Xcode before then." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Pendant smette di aprirsi. Reinstallala da Xcode prima di allora."
           }
         }
       }
@@ -2086,12 +2176,42 @@
         }
       }
     },
+    "Pause or resume" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa o riprendi"
+          }
+        }
+      }
+    },
     "Paused" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "In pausa"
+          }
+        }
+      }
+    },
+    "Pauses or resumes the pendant’s recording." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mette in pausa o riprende la registrazione del ciondolo."
+          }
+        }
+      }
+    },
+    "Pauses or resumes the recording." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mette in pausa o riprende la registrazione."
           }
         }
       }
@@ -2126,6 +2246,16 @@
         }
       }
     },
+    "Pendant battery %lld%%" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria del ciondolo %lld%%"
+          }
+        }
+      }
+    },
     "Pendant battery at %lld%%" : {
       "localizations" : {
         "it" : {
@@ -2142,6 +2272,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ciondolo scollegato"
+          }
+        }
+      }
+    },
+    "Pendant disconnected for %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciondolo scollegato da %@"
           }
         }
       }
@@ -2286,6 +2426,16 @@
         }
       }
     },
+    "Press and hold to mark the moment in the conversation in progress." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni premuto per segnare il momento nella conversazione in corso."
+          }
+        }
+      }
+    },
     "Press and hold to mark the moment or pause" : {
       "localizations" : {
         "it" : {
@@ -2322,6 +2472,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Protocollo"
+          }
+        }
+      }
+    },
+    "Puts a bookmark in the conversation in progress. The pendant vibrates to confirm." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mette un segnalibro nella conversazione in corso. Il ciondolo vibra per conferma."
           }
         }
       }
@@ -2392,6 +2552,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leggo versione e batteria e gli scrivo l’ora."
+          }
+        }
+      }
+    },
+    "Record" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra"
           }
         }
       }
@@ -2476,6 +2646,22 @@
         }
       }
     },
+    "Recording stopped at %@. If the pendant comes back within %@ the same conversation continues; after that it stays paused." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recording stopped at %1$@. If the pendant comes back within %2$@ the same conversation continues; after that it stays paused."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La registrazione si è fermata alle %1$@. Se il ciondolo torna entro %2$@ continua la stessa conversazione, dopo resta in pausa."
+          }
+        }
+      }
+    },
     "Red stays the color of recording and amber the color of warnings, in every theme. The theme applies to the Live Activity too." : {
       "localizations" : {
         "it" : {
@@ -2552,6 +2738,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cerca Pendant e aggiungi Pausa e ripresa e Segna questo momento."
+          }
+        }
+      }
+    },
+    "Seen at %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visto alle %@"
           }
         }
       }
@@ -2996,6 +3192,26 @@
         }
       }
     },
+    "The app’s signature expires in %lld days" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La firma dell’app scade fra %lld giorni"
+          }
+        }
+      }
+    },
+    "The app’s signature expires tomorrow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La firma dell’app scade domani"
+          }
+        }
+      }
+    },
     "The app’s typeface. SIL Open Font License 1.1." : {
       "localizations" : {
         "it" : {
@@ -3062,6 +3278,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’audio aspetta sul telefono e parte da solo quando il server torna in linea."
+          }
+        }
+      }
+    },
+    "The audio waits on the phone, for up to %@. It goes out by itself when %@ is back online." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The audio waits on the phone, for up to %1$@. It goes out by itself when %2$@ is back online."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio aspetta sul telefono, fino a %1$@. Parte da solo quando %2$@ torna in linea."
           }
         }
       }
@@ -3138,6 +3370,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il ciondolo si è scollegato e non è tornato entro %1$@, quindi il server ha chiuso la conversazione. L’audio fino alle %2$@ è arrivato tutto, se il server era in linea."
+          }
+        }
+      }
+    },
+    "The pendant has been on for %@ without recording" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo è acceso da %@ senza registrare"
           }
         }
       }
@@ -3288,6 +3530,16 @@
         }
       }
     },
+    "The server hasn’t responded for %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non risponde da %@"
+          }
+        }
+      }
+    },
     "The server hasn’t responded since %@. In %lld minutes the oldest audio starts to be lost. Check the server or make the queue longer." : {
       "localizations" : {
         "en" : {
@@ -3340,6 +3592,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il server non risponde: l’audio degli ultimi %@ aspetta sul telefono e parte da solo quando torna in linea."
+          }
+        }
+      }
+    },
+    "The server no longer knows this conversation." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non conosce più questa conversazione."
           }
         }
       }
@@ -4024,6 +4286,16 @@
         }
       }
     },
+    "not set" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "non impostato"
+          }
+        }
+      }
+    },
     "not set up" : {
       "localizations" : {
         "it" : {
@@ -4147,6 +4419,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "da %@"
+          }
+        }
+      }
+    },
+    "the server" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "il server"
           }
         }
       }

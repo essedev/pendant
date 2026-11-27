@@ -189,7 +189,7 @@ final class AppModel {
   var snapshot: Snapshot {
     if let demo { return demo.snapshot }
     let uplink = capture.uplink
-    let host = credentials?.host ?? "Nessun server"
+    let host = credentials?.host ?? String(localized: "No server")
     var s = Snapshot(
       mode: .recording, since: Date(), serverHost: host, serverState: serverState,
       serverFailingSince: uplink.unreachableSince)
@@ -446,8 +446,8 @@ final class AppModel {
     guard level < config.batteryThreshold, config.notifyBattery, !batteryWarned else { return }
     batteryWarned = true
     notifier.schedule(
-      .batteryLow, after: 1, title: "Batteria del ciondolo al \(level)%",
-      body: "Mettilo in carica appena puoi.")
+      .batteryLow, after: 1, title: String(localized: "Pendant battery at \(level)%"),
+      body: String(localized: "Charge it as soon as you can."))
   }
 
   private func ringInfo(_ info: Storage.Info) {
@@ -476,9 +476,12 @@ final class AppModel {
     notifier.schedule(
       .signatureExpiring, at: at,
       title: days == 1
-        ? "La firma dell’app scade domani" : "La firma dell’app scade fra \(days) giorni",
-      body: "\(date.prefix(1).uppercased() + date.dropFirst()) Pendant smette di aprirsi. "
-        + "Reinstallala da Xcode prima di allora.")
+        ? String(localized: "The app’s signature expires tomorrow")
+        : String(localized: "The app’s signature expires in \(days) days"),
+      body: String(
+        localized:
+          "On \(date.prefix(1).uppercased() + date.dropFirst()) Pendant stops opening. Reinstall it from Xcode before then."
+      ))
   }
 
   /// Publishes the recording state to the controls and the Live Activity, once a second.
@@ -519,19 +522,19 @@ final class AppModel {
     let s = snapshot
     let serverWords: String =
       switch s.serverState {
-      case .online: "in linea"
-      case .unreachable: "non risponde"
-      case .tokenRejected: "token rifiutato"
-      case .protocolMismatch: "protocollo diverso"
-      case .notSet: "non impostato"
+      case .online: String(localized: "online")
+      case .unreachable: String(localized: "not responding")
+      case .tokenRejected: String(localized: "token rejected")
+      case .protocolMismatch: String(localized: "different protocol")
+      case .notSet: String(localized: "not set")
       }
     let away: String? =
       switch s.mode {
       case .recording, .paused: nil
-      case .disconnected: "Scollegato"
-      case .bluetoothOff: "Bluetooth spento"
-      case .denied: "Senza Bluetooth"
-      case .unpaired: "Nessun ciondolo"
+      case .disconnected: String(localized: "Disconnected")
+      case .bluetoothOff: String(localized: "Bluetooth off")
+      case .denied: String(localized: "No Bluetooth")
+      case .unpaired: String(localized: "No pendant")
       }
     return RecordingAttributes.ContentState(
       recording: s.mode == .recording, since: s.since,

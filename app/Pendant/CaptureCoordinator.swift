@@ -170,8 +170,9 @@ final class CaptureCoordinator {
     guard let offset = schedule.offset(of: index) else { return }
     notifier.schedule(
       .pendantIdle, after: start.addingTimeInterval(offset).timeIntervalSinceNow,
-      title: "Il ciondolo è acceso da \(DurationFormat.words(offset)) senza registrare",
-      body: "Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare.")
+      title: String(
+        localized: "The pendant has been on for \(DurationFormat.words(offset)) without recording"),
+      body: String(localized: "Hold it for 3 seconds to turn it off, or double-tap it to record."))
   }
 
   private func cancelIdleWarning() {
@@ -208,9 +209,14 @@ final class CaptureCoordinator {
       let at = Date().formatted(date: .omitted, time: .shortened)
       notifier.schedule(
         .pendantDisconnected, after: config.disconnectNotifyAfter,
-        title: "Ciondolo scollegato da \(DurationFormat.words(config.disconnectNotifyAfter))",
+        title: String(
+          localized:
+            "Pendant disconnected for \(DurationFormat.words(config.disconnectNotifyAfter))"),
         body:
-          "La registrazione si è fermata alle \(at). Se il ciondolo torna entro \(DurationFormat.words(config.resumeGrace)) continua la stessa conversazione, dopo resta in pausa.",
+          String(
+            localized:
+              "Recording stopped at \(at). If the pendant comes back within \(DurationFormat.words(config.resumeGrace)) the same conversation continues; after that it stays paused."
+          ),
         timeSensitive: true)
     }
   }

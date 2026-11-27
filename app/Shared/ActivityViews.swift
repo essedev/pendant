@@ -30,7 +30,7 @@ struct LockScreenActivity: View {
       HStack(spacing: 8) {
         RecordingTag(state: state)
         if state.queuedSeconds > 0 {
-          Text(DurationFormat.words(Double(state.queuedSeconds)) + " in coda")
+          Text("\(DurationFormat.words(Double(state.queuedSeconds))) queued")
             .font(Theme.font(15, .semibold))
             .foregroundStyle(Theme.displayWarn)
             .padding(.horizontal, 10)
@@ -70,7 +70,7 @@ struct IslandExpandedBody: View {
     HStack(alignment: .center, spacing: 12) {
       VStack(alignment: .leading, spacing: 2) {
         ActivityStatus(state: state, size: phase == .recording ? 30 : 22)
-        Text("\(server), \(state.serverState)")
+        Text(verbatim: "\(server), \(state.serverState)")
           .font(Theme.font(13))
           .foregroundStyle(state.serverWarning ? Theme.displayWarn : Theme.displayInk2)
           .lineLimit(1)
@@ -79,8 +79,8 @@ struct IslandExpandedBody: View {
       switch phase {
       case .recording:
         HStack(spacing: 8) {
-          IslandRoundKey(intent: ToggleRecordingIntent(), symbol: "pause.fill", label: "Pausa")
-          IslandRoundKey(intent: BookmarkIntent(), symbol: "bookmark.fill", label: "Segna")
+          IslandRoundKey(intent: ToggleRecordingIntent(), symbol: "pause.fill", label: "Pause")
+          IslandRoundKey(intent: BookmarkIntent(), symbol: "bookmark.fill", label: "Mark")
         }
       case .paused:
         ActivityKey(recording: false)
@@ -97,7 +97,7 @@ struct IslandExpandedBody: View {
 private struct IslandRoundKey<Intent: AppIntent>: View {
   let intent: Intent
   let symbol: String
-  let label: String
+  let label: LocalizedStringResource
 
   var body: some View {
     Button(intent: intent) {
@@ -108,7 +108,7 @@ private struct IslandRoundKey<Intent: AppIntent>: View {
     .buttonStyle(.plain)
     .foregroundStyle(.white)
     .background(Circle().fill(Theme.tickOff))
-    .accessibilityLabel(label)
+    .accessibilityLabel(Text(label))
   }
 }
 
@@ -138,12 +138,12 @@ struct IslandCompactTrailing: View {
       ActivityTimer(since: state.since, size: 15)
         .frame(maxWidth: 56)
     case .paused:
-      Text("Pausa")
+      Text("Pause")
         .font(Theme.font(15, .semibold))
         .foregroundStyle(Theme.displayPause)
         .fixedSize()
     case .away:
-      Text("--")
+      Text(verbatim: "--")
         .font(Theme.font(15, .semibold))
         .foregroundStyle(Theme.displayWarn)
     }
@@ -175,7 +175,7 @@ struct RecordingTag: View {
     let phase = ActivityPhase(state)
     HStack(spacing: 6) {
       if phase == .recording { Circle().fill(.white).frame(width: 8, height: 8) }
-      Text(state.away ?? (phase == .recording ? "Registra" : "In pausa"))
+      state.away.map { Text($0) } ?? Text(phase == .recording ? "Recording" : "Paused")
     }
     .font(Theme.font(15, .semibold))
     .foregroundStyle(
@@ -211,7 +211,7 @@ struct ActivityBattery: View {
     .foregroundStyle(Theme.displayInk2)
     .fixedSize()
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Batteria del ciondolo \(percent)%")
+    .accessibilityLabel("Pendant battery \(percent)%")
   }
 
   private var symbol: String {
@@ -236,11 +236,11 @@ struct ActivityStatus: View {
     case .recording:
       ActivityTimer(since: state.since, size: size)
     case .paused:
-      Text("dalle \(hour)")
+      Text("since \(hour)")
         .font(Theme.font(size, .semibold))
         .foregroundStyle(Theme.displayInk)
     case .away:
-      Text("Visto alle \(hour)")
+      Text("Seen at \(hour)")
         .font(Theme.font(size, .semibold))
         .foregroundStyle(Theme.displayInk2)
     }
@@ -290,7 +290,7 @@ struct ActivityKey: View {
         } else {
           Circle().fill(.white).frame(width: 10, height: 10)
         }
-        Text(recording ? "Pausa" : "Riprendi")
+        Text(recording ? "Pause" : "Resume")
       }
       .font(Theme.font(15, .semibold))
       .frame(maxWidth: .infinity, minHeight: 44)

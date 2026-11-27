@@ -27,10 +27,10 @@ enum ControlKind {
 
 /// Pause or resume, from the Control Center toggle and the Action button.
 struct SetRecordingIntent: SetValueIntent, LiveActivityIntent {
-  static let title: LocalizedStringResource = "Pausa e ripresa"
-  static let description = IntentDescription("Mette in pausa o riprende la registrazione.")
+  static let title: LocalizedStringResource = "Pause and resume"
+  static let description = IntentDescription("Pauses or resumes the recording.")
 
-  @Parameter(title: "Registra")
+  @Parameter(title: "Recording")
   var value: Bool
 
   init() {}
@@ -48,7 +48,7 @@ struct SetRecordingIntent: SetValueIntent, LiveActivityIntent {
 
 /// Pause or resume from the Live Activity key, which only knows to flip the state.
 struct ToggleRecordingIntent: LiveActivityIntent {
-  static let title: LocalizedStringResource = "Pausa o riprendi"
+  static let title: LocalizedStringResource = "Pause or resume"
   static let isDiscoverable = false
 
   @MainActor
@@ -61,9 +61,9 @@ struct ToggleRecordingIntent: LiveActivityIntent {
 
 /// Marks this moment, from the Control Center button and the Action button.
 struct BookmarkIntent: LiveActivityIntent {
-  static let title: LocalizedStringResource = "Segna questo momento"
+  static let title: LocalizedStringResource = "Mark this moment"
   static let description = IntentDescription(
-    "Mette un segnalibro nella conversazione in corso. Il ciondolo vibra per conferma.")
+    "Puts a bookmark in the conversation in progress. The pendant vibrates to confirm.")
 
   @MainActor
   func perform() async throws -> some IntentResult {

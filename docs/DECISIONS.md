@@ -211,3 +211,16 @@ the transcripts stay on the phone with their conversations (30 days, in the app'
 backups), and turning it off forgets them. Both forms are read: segments with speakers, or
 plain text.
 
+## 2026-11-27 The app in English and Italian: English in the code, Italian in String Catalogs
+
+The interface follows the phone's language, or the one chosen for Pendant in iOS Settings, and
+falls back to English. English is the source: the code holds the English strings, and Italian
+is a translation in String Catalogs, one for the app and the widget extension, one in
+PendantKit for theme names and durations, one for the Info.plist texts. The Italian reproduces
+the interface as it was. Dates, times and durations follow the phone's locale. The app is
+built without opening Xcode, so the Makefile does what Xcode does after a build: it brings the
+catalogs in step with the code, and `make lint` fails on a string with no Italian.
+Rejected: Italian as the source (the fallback for any other language is the source, and
+English is the one more people read; the public repository already keeps its prose in
+English), and a language picker in the app (iOS already offers a language per app, and a
+picker of our own would also have to reach the widget extension and the Live Activity).

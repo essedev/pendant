@@ -39,8 +39,9 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
       UNNotificationCategory(
         identifier: Self.idleCategory,
         actions: [
-          UNNotificationAction(identifier: Self.recordAction, title: "Registra"),
-          UNNotificationAction(identifier: Self.snoozeAction, title: "Basta per ora"),
+          UNNotificationAction(identifier: Self.recordAction, title: String(localized: "Record")),
+          UNNotificationAction(
+            identifier: Self.snoozeAction, title: String(localized: "Enough for now")),
         ],
         intentIdentifiers: [])
     ])

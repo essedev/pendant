@@ -1,7 +1,8 @@
 # pendant - Instructions for Claude
 
 Public repository: code, comments, docs and commits in English; README.md is mirrored in
-README.it.md in the same commit. The app's UI is in Italian (`docs/CONVENTIONS.md #Language`).
+README.it.md in the same commit. The app's UI is in English and Italian: English in the code,
+Italian in the String Catalogs (`docs/CONVENTIONS.md #Language`).
 
 ## What it is
 
@@ -57,6 +58,8 @@ firmware updates. The earlier DIY pendant on ESP32-S3 is superseded and lives in
   the Omi clone, not the Dart.
 - **iOS shares the pendant between apps**: with the Omi app connected, it also gets audio and
   gestures and sends the server a second recording. Keep it with the pendant forgotten.
+- **UI text is English in the code**: after a build (`make strings` needs no iPhone) write the
+  Italian in the catalog (`docs/CONVENTIONS.md #Language`).
 - **No behaviour values in the app's code**: they go into the configuration schema
   (`ARCHITECTURE.md #Configuration`).
 - **The real iPhone is needed for the pendant**: the simulator has no Bluetooth; screens are

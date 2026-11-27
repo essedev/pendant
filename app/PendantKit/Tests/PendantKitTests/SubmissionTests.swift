@@ -41,7 +41,9 @@ private let closed = Date(timeIntervalSince1970: 1_800_000_000)
     let reading = try #require(SubmissionReading.decode(Data(body.utf8)))
     #expect(reading.status == .done)
     let paragraphs = try #require(reading.result?.transcript?.paragraphs)
-    #expect(paragraphs.map(\.speaker) == ["Persona 1", "Anna"])
+    // The numbered speaker in the language the tests run in: "Speaker 1", "Persona 1".
+    #expect(
+      paragraphs.map(\.speaker) == [String(localized: "Speaker \(1)", bundle: .module), "Anna"])
     #expect(paragraphs.first?.text == "Ciao. Come va?")
     #expect(SubmissionReading.decode(Data(#"{"status":"done"}"#.utf8)) == nil)
   }

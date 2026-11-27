@@ -82,11 +82,11 @@ public struct Transcript: Codable, Equatable, Sendable {
       text = try c.decodeIfPresent(String.self, forKey: .text) ?? ""
     }
 
-    /// The speaker as the app names them: "Persona 1" for the first numbered one, a label as
+    /// The speaker as the app names them: "Speaker 1" for the first numbered one, a label as
     /// the server wrote it.
     public var speakerName: String? {
       guard let speaker else { return nil }
-      return Int(speaker).map { "Persona \($0 + 1)" } ?? speaker
+      return Int(speaker).map { String(localized: "Speaker \($0 + 1)", bundle: .module) } ?? speaker
     }
   }
 

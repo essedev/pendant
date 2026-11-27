@@ -25,7 +25,7 @@ e trascritto. Il telefono tiene l'audio solo finché manca la rete.
 - Un avviso quando il ciondolo è acceso senza registrare, perché così consuma batteria.
 - Temi per il display del registratore, in chiaro e in scuro.
 
-L'interfaccia è in italiano.
+L'interfaccia è in inglese e in italiano, secondo la lingua del telefono.
 
 ## Requisiti
 

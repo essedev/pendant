@@ -83,7 +83,7 @@ final class TranscriptFetcher {
         updated = op
         updated.gaveUp = true
         updated.nextCheck = nil
-        updated.error = "Il server non conosce più questa conversazione."
+        updated.error = String(localized: "The server no longer knows this conversation.")
         log.record("submissionGone", op.id)
       default:
         // A rejected token or a server in trouble may get better: ask again later.

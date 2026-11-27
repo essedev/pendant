@@ -29,13 +29,14 @@ struct RecordingControl: ControlWidget {
   var body: some ControlWidgetConfiguration {
     StaticControlConfiguration(kind: ControlKind.recording, provider: RecordingValueProvider()) {
       recording in
-      ControlWidgetToggle("Pendant", isOn: recording, action: SetRecordingIntent()) { on in
-        Label(on ? "Registra" : "In pausa", systemImage: "waveform")
+      ControlWidgetToggle("Pendant" as String, isOn: recording, action: SetRecordingIntent()) {
+        on in
+        Label(on ? "Recording" : "Paused", systemImage: "waveform")
       }
       .tint(Theme.red)
     }
-    .displayName("Pausa e ripresa")
-    .description("Mette in pausa o riprende la registrazione del ciondolo.")
+    .displayName("Pause and resume")
+    .description("Pauses or resumes the pendant’s recording.")
   }
 }
 
@@ -44,11 +45,11 @@ struct BookmarkControl: ControlWidget {
   var body: some ControlWidgetConfiguration {
     StaticControlConfiguration(kind: ControlKind.bookmark) {
       ControlWidgetButton(action: BookmarkIntent()) {
-        Label("Segna questo momento", systemImage: "bookmark.fill")
+        Label("Mark this moment", systemImage: "bookmark.fill")
       }
     }
-    .displayName("Segna questo momento")
-    .description("Tieni premuto per segnare il momento nella conversazione in corso.")
+    .displayName("Mark this moment")
+    .description("Press and hold to mark the moment in the conversation in progress.")
   }
 }
 

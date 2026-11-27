@@ -25,7 +25,7 @@ transcribed. The phone keeps audio only while the network is down.
 - A warning when the pendant is on without recording, since that drains its battery.
 - Themes for the recorder display, light and dark.
 
-The interface is in Italian.
+The interface is in English and Italian, following the phone's language.
 
 ## Requirements
 

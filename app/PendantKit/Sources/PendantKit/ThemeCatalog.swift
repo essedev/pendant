@@ -20,16 +20,16 @@ public enum DisplayStyle: String, Codable, Sendable, CaseIterable {
   /// The name in the theme picker.
   public var name: String {
     switch self {
-    case .graphite: "Grafite"
+    case .graphite: String(localized: "Graphite", bundle: .module)
     case .casio: "Casio"
     case .gshock: "G-Shock"
-    case .paper: "Carta"
-    case .calculator: "Calcolatrice"
-    case .navy: "Blu notte"
-    case .petrol: "Petrolio"
-    case .forest: "Bosco"
-    case .sage: "Salvia"
-    case .night: "Notte"
+    case .paper: String(localized: "Paper", bundle: .module)
+    case .calculator: String(localized: "Calculator", bundle: .module)
+    case .navy: String(localized: "Navy", bundle: .module)
+    case .petrol: String(localized: "Petrol", bundle: .module)
+    case .forest: String(localized: "Forest", bundle: .module)
+    case .sage: String(localized: "Sage", bundle: .module)
+    case .night: String(localized: "Night", bundle: .module)
     }
   }
 
@@ -155,12 +155,12 @@ public enum AccentStyle: String, Codable, Sendable, CaseIterable {
   /// The name in the theme picker.
   public var name: String {
     switch self {
-    case .ink: "Inchiostro"
-    case .orange: "Arancio"
-    case .blue: "Blu"
-    case .petrol: "Petrolio"
-    case .mint: "Menta"
-    case .olive: "Oliva"
+    case .ink: String(localized: "Ink", bundle: .module)
+    case .orange: String(localized: "Orange", bundle: .module)
+    case .blue: String(localized: "Blue", bundle: .module)
+    case .petrol: String(localized: "Petrol", bundle: .module)
+    case .mint: String(localized: "Mint", bundle: .module)
+    case .olive: String(localized: "Olive", bundle: .module)
     }
   }
 
@@ -204,16 +204,24 @@ public struct ThemePreset: Equatable, Sendable, Identifiable {
 
   /// The presets, from the mock rounds (concept-a-app-fable.html, concept-b-app.html giro 2).
   public static let all: [ThemePreset] = [
-    ThemePreset(name: "Grafite e rosso", display: .graphite, accent: .ink),
+    ThemePreset(
+      name: String(localized: "Graphite and red", bundle: .module), display: .graphite, accent: .ink
+    ),
     ThemePreset(name: "Casio", display: .casio, accent: .orange),
     ThemePreset(name: "G-Shock", display: .gshock, accent: .blue),
-    ThemePreset(name: "Carta", display: .paper, accent: .petrol),
-    ThemePreset(name: "Calcolatrice", display: .calculator, accent: .ink),
-    ThemePreset(name: "Blu e arancio", display: .navy, accent: .orange),
-    ThemePreset(name: "Petrolio e menta", display: .petrol, accent: .mint),
-    ThemePreset(name: "Bosco", display: .forest, accent: .orange),
-    ThemePreset(name: "Salvia", display: .sage, accent: .olive),
-    ThemePreset(name: "Notte e menta", display: .night, accent: .mint),
+    ThemePreset(
+      name: String(localized: "Paper", bundle: .module), display: .paper, accent: .petrol),
+    ThemePreset(
+      name: String(localized: "Calculator", bundle: .module), display: .calculator, accent: .ink),
+    ThemePreset(
+      name: String(localized: "Navy and orange", bundle: .module), display: .navy, accent: .orange),
+    ThemePreset(
+      name: String(localized: "Petrol and mint", bundle: .module), display: .petrol, accent: .mint),
+    ThemePreset(
+      name: String(localized: "Forest", bundle: .module), display: .forest, accent: .orange),
+    ThemePreset(name: String(localized: "Sage", bundle: .module), display: .sage, accent: .olive),
+    ThemePreset(
+      name: String(localized: "Night and mint", bundle: .module), display: .night, accent: .mint),
   ]
 
   /// The preset matching a pairing, nil when it is a custom mix.
