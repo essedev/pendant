@@ -253,3 +253,14 @@ and when the page underneath has no bar it slides the pushed page's bar off with
 the back button lost its margin as soon as the swipe began. Rejected the classic large title
 (the title moves below the buttons, away from the chevrons) and an invisible bar item over the
 old layout (an empty band of about 50 pt at the top).
+
+## 2026-11-27 One notice card for every state message
+
+Every message about a state, the home's notices under the key and the outcome of the
+connection test on the first launch and on the Server page, is the same card (`NoticeCard`):
+the cells' fill, an ink title, grey text, the buttons inside, at the surface margin. The icon
+tells the kind: the amber ring for a problem, a checkmark for success, a grey ring that pulses
+while the test runs (still with Reduce Motion), with "Usually it takes a few seconds." under
+the title (`concept-g-onboarding.html`, round 4). Rejected a separate style for the connection
+test, free text on the background with an amber title and the search's scanning ticks: it
+appeared only there and made the same kind of message look like two.

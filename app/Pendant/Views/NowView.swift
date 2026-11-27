@@ -27,7 +27,7 @@ struct NowView: View {
             .padding(.horizontal, Theme.Gutter.text)
         }
         if let notice = s.notice {
-          NoticeCard(notice: notice, snapshot: s)
+          HomeNoticeCard(notice: notice, snapshot: s)
             .padding(.horizontal, Theme.Gutter.surface)
             .padding(.top, 16)
         }
@@ -264,33 +264,23 @@ private struct KeyPressStyle: ButtonStyle {
 }
 
 /// One notice under the key, the most severe that applies.
-struct NoticeCard: View {
+struct HomeNoticeCard: View {
   let notice: HomeNotice
   let snapshot: AppModel.Snapshot
   @Environment(AppModel.self) private var model
 
   var body: some View {
     let c = content
-    HStack(alignment: .top, spacing: 12) {
-      WarnRing().padding(.top, 4)
-      VStack(alignment: .leading, spacing: 4) {
-        Text(c.title).type(15, 20, .semibold).foregroundStyle(Theme.ink)
-        Text(c.text).type(15, 20).foregroundStyle(Theme.ink2)
-          .fixedSize(horizontal: false, vertical: true)
-        if !c.actions.isEmpty {
-          HStack(spacing: 8) {
-            ForEach(Array(c.actions.enumerated()), id: \.offset) { _, action in
-              CapsuleButton(title: action.0, action: action.1)
-            }
+    NoticeCard(kind: .problem, title: c.title, text: c.text) {
+      if !c.actions.isEmpty {
+        HStack(spacing: 8) {
+          ForEach(Array(c.actions.enumerated()), id: \.offset) { _, action in
+            CapsuleButton(title: action.0, action: action.1)
           }
-          .padding(.top, 8)
         }
+        .padding(.top, 8)
       }
-      Spacer(minLength: 0)
     }
-    .padding(.vertical, 14)
-    .padding(.horizontal, 16)
-    .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
   }
 
   private var content:

@@ -353,8 +353,8 @@ struct ServerPage: View {
         }
         if model.probing || model.probeOutcome != nil {
           ProbeResult(probing: model.probing, outcome: model.probeOutcome, host: creds?.host ?? "")
-            .padding(.horizontal, Theme.Gutter.text)
-            .padding(.top, 14)
+            .padding(.horizontal, Theme.Gutter.surface)
+            .padding(.top, 16)
         }
         Text(
           "The app sends the audio to any server that speaks this protocol. The token travels in the request header, never in the address."
@@ -384,7 +384,7 @@ struct ServerPage: View {
   }
 }
 
-/// The outcome of the connection test, or the ticks while it runs.
+/// The connection test in a notice card: a pulsing ring while it runs, then its outcome.
 struct ProbeResult: View {
   let probing: Bool
   let outcome: ServerProbeOutcome?
@@ -392,27 +392,11 @@ struct ProbeResult: View {
 
   var body: some View {
     if probing {
-      VStack(alignment: .leading, spacing: 10) {
-        Text("Trying to connect to \(host)").type(15, 20, .semibold).foregroundStyle(Theme.ink)
-        ScanTicks()
-      }
+      NoticeCard(
+        kind: .busy, title: "Trying to connect to \(host)", text: "Usually it takes a few seconds.")
     } else if let outcome {
-      HStack(alignment: .top, spacing: 10) {
-        if outcome == .ok {
-          Image(systemName: "checkmark").font(.system(size: 14, weight: .bold)).foregroundStyle(
-            Theme.ink
-          )
-          .padding(.top, 3)
-        } else {
-          WarnRing().padding(.top, 4)
-        }
-        VStack(alignment: .leading, spacing: 2) {
-          Text(title(outcome)).type(15, 20, .semibold)
-            .foregroundStyle(outcome == .ok ? Theme.ink : Theme.warn)
-          Text(text(outcome)).type(15, 20).foregroundStyle(Theme.ink2)
-            .fixedSize(horizontal: false, vertical: true)
-        }
-      }
+      NoticeCard(
+        kind: outcome == .ok ? .success : .problem, title: title(outcome), text: text(outcome))
     }
   }
 

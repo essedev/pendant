@@ -163,11 +163,11 @@ final class AppModel {
       notificationStatus = .authorized
       signatureExpiry = Calendar.current.date(
         from: DateComponents(year: 2026, month: 12, day: 3, hour: 9))
-      if demo == .obServer {
+      if demo.onboarding == .server {
         ServerForm.shared.address = "server.example.com"
         ServerForm.shared.token = "demo-token-7f3a"
-        probeOutcome = .ok
       }
+      (probing, probeOutcome) = demo.probeShown
       return
     }
     if let outcome = Credentials.importBootstrap() { log.record("credentials", outcome) }

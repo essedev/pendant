@@ -4046,6 +4046,16 @@
         }
       }
     },
+    "Usually it takes a few seconds." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di solito bastano pochi secondi."
+          }
+        }
+      }
+    },
     "Version" : {
       "localizations" : {
         "it" : {

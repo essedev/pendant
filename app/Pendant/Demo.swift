@@ -35,6 +35,7 @@ enum DemoScene: String, CaseIterable {
   case pageOffline = "page.offline"
   case pageNotifications = "page.notifications"
   case pageServer = "page.server"
+  case pageServerFail = "page.server.fail"
   case pageControls = "page.controls"
   case pageControlsGuide = "page.controls.guide"
   case pageControlsPause = "page.controls.pause"
@@ -51,6 +52,8 @@ enum DemoScene: String, CaseIterable {
   case obLinked = "ob.linked"
   case obNone = "ob.none"
   case obServer = "ob.server"
+  case obServerTesting = "ob.server.testing"
+  case obServerFail = "ob.server.fail"
   case obNotifications = "ob.notifications"
   case obDone = "ob.done"
 
@@ -69,7 +72,7 @@ enum DemoScene: String, CaseIterable {
       .conversationTranscribing:
       .today
     case .settings, .pagePendant, .pagePendantOff, .pageGestures, .pageOffline, .pageNotifications,
-      .pageServer, .pageControls, .pageControlsGuide, .pageControlsPause,
+      .pageServer, .pageServerFail, .pageControls, .pageControlsGuide, .pageControlsPause,
       .pageControlsOff, .pageAdvanced, .pageInfo, .pageLicenses,
       .pageTheme:
       .settings
@@ -83,7 +86,7 @@ enum DemoScene: String, CaseIterable {
     case .pageGestures: [.gestures]
     case .pageOffline: [.offline]
     case .pageNotifications: [.notifications]
-    case .pageServer: [.server]
+    case .pageServer, .pageServerFail: [.server]
     case .pageControls, .pageControlsGuide, .pageControlsPause, .pageControlsOff:
       [.systemControls]
     case .pageAdvanced: [.advanced]
@@ -120,7 +123,7 @@ enum DemoScene: String, CaseIterable {
     case .obBluetooth: .bluetooth
     case .obDenied: .denied
     case .obSearch, .obFound, .obLinked, .obNone: .search
-    case .obServer: .server
+    case .obServer, .obServerTesting, .obServerFail: .server
     case .obNotifications: .notifications
     case .obDone: .done
     default: nil
@@ -147,7 +150,18 @@ enum DemoScene: String, CaseIterable {
       url: URL(string: "wss://server.example.com/api/audio-stream/ws")!, token: "demo-7f3a")
   }
 
-  var probeOutcome: ServerProbeOutcome { .ok }
+  var probeOutcome: ServerProbeOutcome {
+    [.obServerFail, .pageServerFail].contains(self) ? .unreachable : .ok
+  }
+
+  /// The connection test as the scene opens: running, with an outcome, or not tried.
+  var probeShown: (probing: Bool, outcome: ServerProbeOutcome?) {
+    switch self {
+    case .obServerTesting: (true, nil)
+    case .obServer, .obServerFail, .pageServerFail: (false, probeOutcome)
+    default: (false, nil)
+    }
+  }
 
   /// A server that introduces itself with the additions the app knows.
   var serverInfo: ServerInfo {

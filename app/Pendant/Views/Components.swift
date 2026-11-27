@@ -481,6 +481,79 @@ struct WarnRing: View {
   }
 }
 
+/// A state message in a cell: the icon tells the kind, then an ink title, a grey text and any
+/// buttons. The one look of every state message: the home's notices and the connection test, on
+/// the first launch and on the Server page (DECISIONS 2026-11-27, "One notice card").
+struct NoticeCard<Actions: View>: View {
+  /// What the message reports.
+  enum Kind {
+    /// Something to fix: the amber ring.
+    case problem
+    /// It worked: a checkmark.
+    case success
+    /// Under way: a grey ring that pulses.
+    case busy
+  }
+
+  let kind: Kind
+  let title: LocalizedStringResource
+  var text: LocalizedStringResource?
+  @ViewBuilder var actions: Actions
+
+  var body: some View {
+    HStack(alignment: .top, spacing: 12) {
+      icon.frame(width: 12, height: 12).padding(.top, 4)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(title).type(15, 20, .semibold).foregroundStyle(Theme.ink)
+          .fixedSize(horizontal: false, vertical: true)
+        if let text {
+          Text(text).type(15, 20).foregroundStyle(Theme.ink2)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        actions
+      }
+      Spacer(minLength: 0)
+    }
+    .padding(.vertical, 14)
+    .padding(.horizontal, 16)
+    .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
+    .accessibilityElement(children: .contain)
+  }
+
+  @ViewBuilder private var icon: some View {
+    switch kind {
+    case .problem: WarnRing()
+    case .success:
+      Image(systemName: "checkmark").font(.system(size: 13, weight: .bold))
+        .foregroundStyle(Theme.ink)
+    case .busy: PulseRing()
+    }
+  }
+}
+
+extension NoticeCard where Actions == EmptyView {
+  init(kind: Kind, title: LocalizedStringResource, text: LocalizedStringResource? = nil) {
+    self.init(kind: kind, title: title, text: text) { EmptyView() }
+  }
+}
+
+/// A grey ring that fills and empties while something is under way; still with Reduce Motion.
+private struct PulseRing: View {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+  /// Seconds of one pulse, as in the mock (concept-g-onboarding.html).
+  private static let period = 1.2
+
+  var body: some View {
+    TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
+      let phase = context.date.timeIntervalSinceReferenceDate / Self.period
+      let fill = reduceMotion ? 0 : (1 - cos(phase * 2 * .pi)) / 2
+      Circle().strokeBorder(Theme.ink2, lineWidth: 2.5 + 3.5 * fill)
+    }
+    .accessibilityHidden(true)
+  }
+}
+
 /// The main button of the first launch: 56 tall, graphite.
 struct MainButton: View {
   let title: LocalizedStringResource

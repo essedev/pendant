@@ -559,7 +559,7 @@ private struct ServerStep: View {
           probing: model.probing, outcome: model.probeOutcome,
           host: Credentials.url(fromAddress: form.address)?.host() ?? form.address
         )
-        .padding(.horizontal, Theme.Gutter.text - Theme.Gutter.title)
+        .onboardingSurface()
         .padding(.top, 20)
       }
     }
