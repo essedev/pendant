@@ -30,6 +30,22 @@
 
 			Scelta: C (27/11/2026). Sorgenti in app/Icon/, PNG con `make icon`. Resta aperto: sotto
 			40 pt nel tema scuro il LED si perde; il file .icon di Icon Composer al posto delle PNG.
+
+			Giro 2 (27/11/2026): Simone vuole rivedere l'icona e farla cambiare col tema dell'app,
+			insieme al giro delle palette LCD del mock completo (concept-b-app.html, tasti x a b c).
+			Tasti nuovi: d e f per le direzioni nuove, cifre 1-4 per la palette (1 grafite di oggi,
+			2 Casio, 3 G-Shock, 4 Carta); A, B, C restano come riferimento.
+			D  Finestra: una finestra LCD nella cornice d'alluminio, con la spia rossa, una barra
+			   nell'accento e le tacche del livello in inchiostro LCD, come i segmenti di un orologio.
+			   Scommette sul display.
+			E  Ciondolo LCD: la C, con la faccia del ciondolo nel colore dell'LCD e l'anello
+			   nell'accento. Scommette sull'oggetto, ma vestito come l'app.
+			F  Tasto: il tasto incassato di Adesso, la capsula rossa col punto bianco nel pozzetto
+			   color LCD. Scommette sull'azione: registrare.
+			Cambiare col tema dell'app: iOS sceglie la resa chiara o scura dell'icona dalla Home del
+			telefono, non dall'app. Per seguire l'Aspetto scelto nell'app servono icone alternative
+			(setAlternateIconName): si può, ma a ogni cambio iOS mostra l'avviso "Hai cambiato l'icona
+			di Pendant". La sezione in fondo mostra le due icone che l'app userebbe.
 		-->
 		<style>
 			:root {
@@ -98,6 +114,11 @@
 			.spot .icon { width: 40px; }
 			.spot div { display: grid; justify-items: center; gap: 4px; font-size: 11px; color: var(--ink2); }
 
+			.ios-alert { width: 220px; border-radius: 26px; background: var(--bg); display: grid; text-align: center; font: 15px/20px -apple-system, system-ui, sans-serif; overflow: hidden; }
+			.ios-alert b { padding: 18px 16px; font-weight: 600; }
+			.ios-alert span { padding: 12px; border-top: 1px solid rgb(127 127 127 / 0.25); color: #2a62c9; font-weight: 600; font-size: 17px; }
+			.mode.alert-mode { align-content: center; }
+
 			@media (max-width: 440px) {
 				.stage { padding: 24px 16px 48px; }
 				.phone { padding: 56px 18px 32px; border-radius: 44px; }
@@ -109,6 +130,7 @@
 	<body data-v="a">
 		<div class="switch">
 			<span data-buttons></span>
+			<span data-pals></span>
 			<p data-desc></p>
 			<button data-theme-toggle>t tema</button>
 		</div>
@@ -156,14 +178,33 @@
 					</div>
 				</div>
 			</section>
+			<section>
+				<h2>Se segue l’Aspetto dell’app: le due icone alternative, con l’avviso che iOS mostra a ogni cambio</h2>
+				<div class="modes">
+					<div class="mode"><div class="icon" data-icon="light"></div><span>App in Chiaro</span></div>
+					<div class="mode"><div class="icon" data-icon="dark"></div><span>App in Scuro</span></div>
+					<div class="mode alert-mode"><div class="ios-alert"><b>Hai cambiato l’icona di “Pendant”.</b><span>OK</span></div><span>L’avviso di iOS, a ogni cambio</span></div>
+				</div>
+			</section>
 		</main>
 
 		<script>
 			const DESC = {
 				a: 'Spia: il display della home in piccolo, spia REC e tacche del livello',
 				b: 'Tacche: cinque barre rosse come nella Dynamic Island, la forma più semplice',
-				c: 'Ciondolo: l’oggetto visto dall’alto, disco grafite con anello e LED rosso'
+				c: 'Ciondolo: l’oggetto visto dall’alto, disco grafite con anello e LED rosso',
+				d: 'Finestra: una finestra LCD nella cornice, spia rossa e tacche a segmenti',
+				e: 'Ciondolo LCD: la C con la faccia color LCD e l’anello nell’accento',
+				f: 'Tasto: il tasto incassato, capsula rossa col punto bianco nel pozzetto'
 			};
+			// Palettes of the display round (concept-b-app.html, giro 2): LCD in light, accent in both.
+			const PALS = {
+				1: { name: 'grafite', lcd: '#2b2e34', ink: '#f1f2f4', dim: '#3d4149', acc: '#a9aeb7', accDark: '#9ba0a9' },
+				2: { name: 'Casio', lcd: '#c3cab0', ink: '#1b2016', dim: '#afb69b', acc: '#d2581a', accDark: '#ff8a3d' },
+				3: { name: 'G-Shock', lcd: '#b8c1c3', ink: '#131b23', dim: '#a3adb0', acc: '#2a62c9', accDark: '#5c95ff' },
+				4: { name: 'Carta', lcd: '#d8d0b8', ink: '#241f17', dim: '#c4bba1', acc: '#1d7a6b', accDark: '#3fbfa9' }
+			};
+			let pal = 2;
 
 			// Tokens of the app (ARCHITECTURE #Interfaccia).
 			const T = { display: '#2b2e34', displayDark: '#1a1c20', red: '#ff5a47', redDeep: '#d93a2b', tickOff: '#3d4149', alu: '#cfd0cc', aluDark: '#2c2f34', bgLight: '#e4e5e2' };
@@ -212,6 +253,38 @@
 				}
 			};
 
+			// Colours of the new directions: aluminium ground, the LCD of the palette, its accent.
+			const lcdPalette = (mode) => {
+				const P = PALS[pal];
+				if (mode === 'dark') return { ground: ['#1d1f23', '#111215'], frame: '#2c2f34', lcd: '#23262b', ink: '#eceef1', dim: '#34383f', acc: P.accDark, red: T.red, white: '#fff' };
+				if (mode === 'tinted') return { ground: ['#1b1712', '#0f0d0a'], frame: 'rgb(240 180 90 / 0.25)', lcd: '#211b13', ink: '#f0b45a', dim: 'rgb(240 180 90 / 0.3)', acc: 'rgb(240 180 90 / 0.6)', red: '#f0b45a', white: '#1b1712' };
+				if (mode === 'clear') return { ground: null, frame: 'rgb(255 255 255 / 0.35)', lcd: 'rgb(255 255 255 / 0.14)', ink: '#fff', dim: 'rgb(255 255 255 / 0.3)', acc: 'rgb(255 255 255 / 0.7)', red: '#fff', white: 'rgb(0 0 0 / 0.35)' };
+				return { ground: ['#f1f1ef', '#d6d7d3'], frame: '#cfd0cc', lcd: P.lcd, ink: P.ink, dim: P.dim, acc: P.acc, red: T.redDeep, white: '#fff' };
+			};
+			const ground = (p, id) => (p.ground ? `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="${p.ground[0]}"/><stop offset="1" stop-color="${p.ground[1]}"/></linearGradient></defs><rect width="1024" height="1024" fill="url(#${id})"/>` : '');
+			Object.assign(ICONS, {
+				// D: an LCD window in the aluminium, REC dot in red, level ticks as dark segments.
+				d: (mode) => {
+					const p = lcdPalette(mode);
+					const id = `g${uid++}`;
+					const ticks = Array.from({ length: 7 }, (_, i) => `<rect x="${262 + i * 74}" y="560" width="44" height="150" rx="8" fill="${i < 4 ? p.ink : p.dim}"/>`).join('');
+					return `<svg viewBox="0 0 1024 1024">${ground(p, id)}<rect x="150" y="220" width="724" height="584" rx="110" fill="${p.frame}"/><rect x="186" y="256" width="652" height="512" rx="74" fill="${p.lcd}"/><circle cx="322" cy="410" r="62" fill="${p.red}"/><rect x="430" y="384" width="300" height="52" rx="26" fill="${p.acc}"/>${ticks}</svg>`;
+				},
+				// E: the pendant with an LCD face and an accent ring.
+				e: (mode) => {
+					const p = lcdPalette(mode);
+					const id = `g${uid++}`;
+					return `<svg viewBox="0 0 1024 1024">${ground(p, id)}<circle cx="512" cy="512" r="338" fill="${p.frame}"/><circle cx="512" cy="512" r="300" fill="${p.acc}"/><circle cx="512" cy="512" r="268" fill="${p.lcd}"/><circle cx="512" cy="340" r="40" fill="${p.red}"/></svg>`;
+				},
+				// F: the recessed key: a well in the LCD colour, a red capsule, the white dot.
+				f: (mode) => {
+					const p = lcdPalette(mode);
+					const id = `g${uid++}`;
+					const well = mode === 'light' ? PALS[pal].lcd : p.frame;
+					return `<svg viewBox="0 0 1024 1024">${ground(p, id)}<rect x="132" y="372" width="760" height="280" rx="140" fill="${well}"/><rect x="172" y="412" width="680" height="200" rx="100" fill="${p.red}"/><circle cx="512" cy="512" r="46" fill="${p.white}"/></svg>`;
+				}
+			});
+
 			const root = document.documentElement;
 			const body = document.body;
 			const KEY = `concept:${location.pathname}`;
@@ -241,10 +314,19 @@
 				render();
 			};
 			const setTheme = (t) => { root.dataset.theme = t; save({ ...load(), theme: t }); render(); };
+			const setPal = (n) => {
+				pal = n;
+				save({ ...load(), pal: n });
+				document.querySelectorAll('[data-pal]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.pal) === n)));
+				render();
+			};
 
+			document.querySelector('[data-pals]').innerHTML = Object.entries(PALS).map(([n, P]) => `<button data-pal="${n}">${n} ${P.name}</button>`).join(' ');
 			document.querySelector('.switch').addEventListener('click', (e) => {
 				const b = e.target.closest('[data-v]');
 				if (b) pick(b.dataset.v);
+				const q = e.target.closest('[data-pal]');
+				if (q) setPal(Number(q.dataset.pal));
 			});
 			document.querySelector('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
 			addEventListener('keydown', (e) => {
@@ -252,11 +334,14 @@
 				const k = e.key.toLowerCase();
 				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
 				else if (k === 'p') body.dataset.chrome = body.dataset.chrome === 'off' ? 'on' : 'off';
+				else if (PALS[k]) setPal(Number(k));
 				else pick(k);
 			});
 
 			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'a');
+			pal = load().pal || 2;
+			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'd');
+			setPal(pal);
 		</script>
 	</body>
 </html>
