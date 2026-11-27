@@ -17,18 +17,23 @@ struct TodayView: View {
     let closed = all.filter { $0.status != .live }
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        PageTitle(title: title(day, offset: offset), subtitle: Clock.longDay(day)) {
+        PageTitle(
+          title: .verbatim(title(day, offset: offset)), subtitle: .verbatim(Clock.longDay(day))
+        ) {
           ChevronPair(
-            backLabel: "Giorno prima", forwardLabel: "Giorno dopo",
+            backLabel: "Previous day", forwardLabel: "Next day",
             canGoBack: offset < ConversationLog.retentionDays, canGoForward: !isToday,
             back: { offset += 1 }, forward: { offset -= 1 })
         }
         .padding(.top, 8)
         VStack(alignment: .leading, spacing: 12) {
           HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(closed.isEmpty ? "Niente" : DurationFormat.words(summary.totalSeconds))
-              .type(22, 28, .semibold)
-              .foregroundStyle(Theme.ink)
+            Text(
+              closed.isEmpty
+                ? String(localized: "Nothing") : DurationFormat.words(summary.totalSeconds)
+            )
+            .type(22, 28, .semibold)
+            .foregroundStyle(Theme.ink)
             Text(countText(closed.count, isToday: isToday))
               .type(15, 20)
               .foregroundStyle(Theme.ink2)
@@ -39,11 +44,7 @@ struct TodayView: View {
         .padding(.horizontal, Theme.Gutter.title)
         .padding(.top, 20)
         if isToday || !closed.isEmpty {
-          CellGroup(
-            footer: closed.isEmpty
-              ? "Oggi non c’è ancora niente di chiuso. La conversazione in corso entra nell’elenco quando la chiudi: tocca due volte il ciondolo."
-              : "Qui ci sono le conversazioni passate da questo telefono. Le trascrizioni si leggono sul server."
-          ) {
+          CellGroup(footer: listFooter(empty: closed.isEmpty)) {
             ForEach(all) { c in
               NavigationLink(value: c.id) {
                 ConversationRow(conversation: c, now: today, snapshot: model.snapshot)
@@ -54,8 +55,12 @@ struct TodayView: View {
           .padding(.top, 4)
         } else {
           CellGroup {
-            Row(label: "\(title(day, offset: offset)) non hai registrato niente.") {
-              CapsuleButton(title: "Torna a oggi") { offset = 0 }
+            Row(
+              label: offset == 1
+                ? "You recorded nothing yesterday."
+                : "You recorded nothing on \(title(day, offset: offset))."
+            ) {
+              CapsuleButton(title: "Back to today") { offset = 0 }
             }
           }
           .padding(.top, 4)
@@ -80,18 +85,22 @@ struct TodayView: View {
 
   private func title(_ day: Date, offset: Int) -> String {
     switch offset {
-    case 0: "Oggi"
-    case 1: "Ieri"
-    default:
-      day.formatted(.dateTime.weekday(.wide).locale(Locale(identifier: "it_IT"))).capitalized
+    case 0: String(localized: "Today")
+    case 1: String(localized: "Yesterday")
+    default: day.formatted(.dateTime.weekday(.wide)).capitalized
     }
   }
 
-  private func countText(_ n: Int, isToday: Bool) -> String {
+  private func listFooter(empty: Bool) -> LocalizedStringResource {
+    empty
+      ? "Nothing is closed yet today. The conversation in progress joins the list when you close it: double-tap the pendant."
+      : "Here are the conversations that went through this phone. Transcripts are on the server."
+  }
+
+  private func countText(_ n: Int, isToday: Bool) -> LocalizedStringResource {
     switch n {
-    case 0: isToday ? "ancora nessuna conversazione chiusa" : "nessuna conversazione"
-    case 1: "in 1 conversazione"
-    default: "in \(n) conversazioni"
+    case 0: isToday ? "no closed conversations yet" : "no conversations"
+    default: "in \(n) conversations"
     }
   }
 }
@@ -102,18 +111,18 @@ private struct Legend: View {
 
   var body: some View {
     HStack(spacing: 16) {
-      item(Theme.recorded, "registrato")
-      if isToday { item(Theme.red, "adesso") }
+      item(Theme.recorded, "recorded")
+      if isToday { item(Theme.red, "now") }
       HStack(spacing: 6) {
         Triangle().fill(Theme.ink).frame(width: 8, height: 7)
-        Text("momento segnato")
+        Text("marked moment")
       }
     }
     .type(13, 18)
     .foregroundStyle(Theme.ink2)
   }
 
-  private func item(_ color: Color, _ text: String) -> some View {
+  private func item(_ color: Color, _ text: LocalizedStringResource) -> some View {
     HStack(spacing: 6) {
       RoundedRectangle(cornerRadius: 1).fill(color).frame(width: 3, height: 12)
       Text(text)
@@ -130,11 +139,16 @@ private struct ConversationRow: View {
   var body: some View {
     let c = conversation
     HStack(spacing: 12) {
-      Text(Clock.time(c.start))
-        .type(17, 24, .semibold)
-        .monospacedDigit()
-        .foregroundStyle(Theme.ink)
-        .frame(width: 56, alignment: .leading)
+      // As wide as the longest time of the phone's clock, so the rows line up on a 12-hour one.
+      ZStack(alignment: .leading) {
+        ForEach(Self.widest, id: \.self) { Text(Clock.time($0)).hidden() }
+        Text(Clock.time(c.start))
+      }
+      .type(17, 24, .semibold)
+      .monospacedDigit()
+      .foregroundStyle(Theme.ink)
+      .fixedSize()
+      .frame(minWidth: 56, alignment: .leading)
       VStack(alignment: .leading, spacing: 0) {
         if c.status == .live {
           TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -143,10 +157,10 @@ private struct ConversationRow: View {
                 c.duration(now: AppModel.shared.demo == nil ? context.date : now)))
           }
           .type(17, 24)
-          Text("in corso").type(13, 18).foregroundStyle(Theme.ink2)
+          Text("in progress").type(13, 18).foregroundStyle(Theme.ink2)
         } else {
           Text(DurationFormat.words(c.duration(now: now))).type(17, 24)
-          Text("fino alle \(Clock.time(c.end ?? now))").type(13, 18).foregroundStyle(Theme.ink2)
+          Text("until \(Clock.time(c.end ?? now))").type(13, 18).foregroundStyle(Theme.ink2)
         }
       }
       .foregroundStyle(Theme.ink)
@@ -159,6 +173,11 @@ private struct ConversationRow: View {
     .padding(.horizontal, 16)
     .frame(minHeight: 60)
     .contentShape(Rectangle())
+  }
+
+  /// The widest times: `22:22`, and `10:22 AM` and `10:22 PM` on a 12-hour clock.
+  private static let widest = [10, 22].compactMap {
+    Calendar.current.date(bySettingHour: $0, minute: 22, second: 0, of: Date())
   }
 
   private func liveQueued(_ c: Conversation) -> Double {
@@ -176,20 +195,20 @@ struct StatusLabel: View {
       switch status {
       case .sent:
         Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
-        Text("Inviata")
+        Text("Sent")
       case .queued:
         WarnRing(size: 12)
-        Text("In coda")
+        Text("Queued")
       case .interrupted:
         Image(systemName: "scissors").font(.system(size: 12, weight: .semibold))
-        Text("Interrotta")
+        Text("Interrupted")
       case .live:
         if queuedSeconds >= 1 {
           WarnRing(size: 12)
-          Text("\(DurationFormat.words(queuedSeconds)) in coda")
+          Text("\(DurationFormat.words(queuedSeconds)) queued")
         } else {
           Circle().fill(Theme.red).frame(width: 8, height: 8)
-          Text("Registra")
+          Text("Recording")
         }
       }
     }
@@ -241,8 +260,8 @@ struct ConversationView: View {
             HStack {
               Text(
                 live
-                  ? "Dall’inizio a ora"
-                  : "Dalle \(Clock.time(c.start)) alle \(Clock.time(c.end ?? now))")
+                  ? "From the start to now"
+                  : "From \(Clock.time(c.start)) to \(Clock.time(c.end ?? now))")
               Spacer()
               Text(markCount(c.bookmarks.count))
             }
@@ -258,16 +277,16 @@ struct ConversationView: View {
           TranscriptSection(conversation: c, submission: op)
         }
         CellGroup(
-          header: "Momenti segnati",
+          header: "Marked moments",
           footer: c.bookmarks.isEmpty
             ? nil
-            : "Segnati mentre registravi. Restano su questo telefono: il server li riceve ma per ora non li usa."
+            : "Marked while you were recording. They stay on this phone: the server receives them but doesn’t use them yet."
         ) {
           if c.bookmarks.isEmpty {
             Text(
               model.config.gestures["singleTap"] == .bookmark
-                ? "Nessuno. Un momento si segna con un tocco sul ciondolo, dal tasto Azione o dal Centro di Controllo, mentre registra."
-                : "Nessuno. Un momento si segna dal tasto Azione o dal Centro di Controllo, mentre registra."
+                ? "None. You mark a moment with a tap on the pendant, from the Action button or from Control Center, while it records."
+                : "None. You mark a moment from the Action button or from Control Center, while it records."
             )
             .type(15, 20)
             .foregroundStyle(Theme.ink2)
@@ -276,50 +295,55 @@ struct ConversationView: View {
           } else {
             ForEach(c.bookmarks, id: \.self) { mark in
               Row(
-                Clock.time(mark),
-                value: "a \(DurationFormat.words(mark.timeIntervalSince(c.start))) dall’inizio")
+                .verbatim(Clock.time(mark)),
+                value: "\(DurationFormat.words(mark.timeIntervalSince(c.start))) from the start")
             }
           }
         }
-        CellGroup(header: "Invio", footer: footer(c, queued: queued, seconds: s.queuedSeconds)) {
+        CellGroup(header: "Sending", footer: footer(c, queued: queued, seconds: s.queuedSeconds)) {
           Row(
-            "Stato", value: state(c, queued: queued, seconds: s.queuedSeconds),
+            "Status", value: state(c, queued: queued, seconds: s.queuedSeconds),
             warn: queued || c.status == .queued)
-          Row("Server", value: s.serverHost)
+          Row("Server", value: .verbatim(s.serverHost))
         }
       }
       .padding(.bottom, 32)
     }
-    .page("Conversazione")
+    .page("Conversation")
     .onAppear { model.refreshTranscripts() }
   }
 
-  private func markCount(_ n: Int) -> String {
-    n == 0 ? "nessun segnalibro" : n == 1 ? "1 segnalibro" : "\(n) segnalibri"
+  private func markCount(_ n: Int) -> LocalizedStringResource {
+    n == 0 ? "no bookmarks" : "\(n) bookmarks"
   }
 
-  private func state(_ c: Conversation, queued: Bool, seconds: Double) -> String {
+  private func state(_ c: Conversation, queued: Bool, seconds: Double)
+    -> LocalizedStringResource
+  {
     switch c.status {
-    case .live: queued ? "Ultimi \(DurationFormat.words(seconds)) in coda" : "In invio mentre parli"
-    case .sent: "Inviata alle \(Clock.time(c.end ?? c.start))"
-    case .queued: "In coda dalle \(Clock.time(c.end ?? c.start))"
-    case .interrupted: "Interrotta alle \(Clock.time(c.end ?? c.start))"
+    case .live: queued ? "Last \(DurationFormat.words(seconds)) queued" : "Sending while you talk"
+    case .sent: "Sent at \(Clock.time(c.end ?? c.start))"
+    case .queued: "Queued since \(Clock.time(c.end ?? c.start))"
+    case .interrupted: "Interrupted at \(Clock.time(c.end ?? c.start))"
     }
   }
 
-  private func footer(_ c: Conversation, queued: Bool, seconds: Double) -> String {
+  private func footer(_ c: Conversation, queued: Bool, seconds: Double)
+    -> LocalizedStringResource
+  {
     switch c.status {
     case .live:
       queued
-        ? "Il server non risponde: l’audio degli ultimi \(DurationFormat.words(seconds)) aspetta sul telefono e parte da solo quando torna in linea."
-        : "L’audio arriva al server mentre parli. Sul telefono non resta niente."
+        ? "The server isn’t responding: the audio of the last \(DurationFormat.words(seconds)) waits on the phone and goes out by itself when the server is back online."
+        : "The audio reaches the server while you talk. Nothing stays on the phone."
     case .sent:
       c.submission == nil || !model.config.transcripts
-        ? "Sul telefono l’audio non c’è più: la trascrizione si legge sul server."
-        : "Sul telefono l’audio non c’è più: è sul server."
-    case .queued: "L’audio aspetta sul telefono e parte da solo quando il server torna in linea."
+        ? "The audio is no longer on the phone: the transcript is on the server."
+        : "The audio is no longer on the phone: it’s on the server."
+    case .queued:
+      "The audio waits on the phone and goes out by itself when the server is back online."
     case .interrupted:
-      "Il ciondolo si è scollegato e non è tornato entro \(DurationFormat.words(model.config.resumeGrace)), quindi il server ha chiuso la conversazione. L’audio fino alle \(Clock.time(c.end ?? c.start)) è arrivato tutto, se il server era in linea."
+      "The pendant disconnected and didn’t come back within \(DurationFormat.words(model.config.resumeGrace)), so the server closed the conversation. All the audio up to \(Clock.time(c.end ?? c.start)) arrived, if the server was online."
     }
   }
 }
@@ -332,7 +356,7 @@ private struct TranscriptSection: View {
 
   var body: some View {
     let paragraphs = submission.transcript?.paragraphs ?? []
-    CellGroup(header: "Trascrizione", footer: footer) {
+    CellGroup(header: "Transcript", footer: footer) {
       if submission.status == .done, !paragraphs.isEmpty {
         VStack(alignment: .leading, spacing: 14) {
           ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, p in
@@ -357,28 +381,29 @@ private struct TranscriptSection: View {
     }
   }
 
-  private var state: String {
+  private var state: LocalizedStringResource {
     if conversation.status == .live {
-      return "Arriva dal server dopo la chiusura della conversazione."
+      return "It comes from the server once the conversation is closed."
     }
     if submission.gaveUp {
-      return submission.error ?? "Il server non l’ha mandata entro un giorno: si legge sul server."
+      return submission.error.map { .verbatim($0) }
+        ?? "The server didn’t send it within a day: read it on the server."
     }
     switch submission.status {
     case .done:
       return submission.transcript == nil
-        ? "Troppo breve per una trascrizione." : "Il server non ha riconosciuto parlato."
-    case .failed: return "Il server non è riuscito a trascriverla."
-    case .running: return "Il server la sta trascrivendo."
-    case .pending, nil: return "In arrivo dal server, di solito in pochi minuti."
+        ? "Too short for a transcript." : "The server recognized no speech."
+    case .failed: return "The server couldn’t transcribe it."
+    case .running: return "The server is transcribing it."
+    case .pending, nil: return "On its way from the server, usually within a few minutes."
     }
   }
 
-  private var footer: String? {
+  private var footer: LocalizedStringResource? {
     switch submission.status {
     case .done where !(submission.transcript?.paragraphs.isEmpty ?? true):
-      "Resta su questo telefono finché resta la conversazione."
-    case .failed: submission.error
+      "It stays on this phone as long as the conversation does."
+    case .failed: submission.error.map { .verbatim($0) }
     default: nil
     }
   }
@@ -405,6 +430,6 @@ private struct BookmarkStrip: View {
     }
     .frame(height: 24, alignment: .bottom)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("La conversazione, con i momenti segnati")
+    .accessibilityLabel("The conversation, with its marked moments")
   }
 }

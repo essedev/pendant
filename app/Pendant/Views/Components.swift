@@ -38,7 +38,7 @@ struct DisplaySurface<Content: View>: View {
 struct Tag: View {
   enum Kind { case rec, line, warn }
   let kind: Kind
-  let text: String
+  let text: LocalizedStringResource
 
   var body: some View {
     HStack(spacing: 6) {
@@ -73,7 +73,7 @@ struct BatteryLabel: View {
     HStack(spacing: 6) {
       if charging {
         Image(systemName: "bolt.fill").font(.system(size: 12, weight: .semibold))
-        if !tight { Text("In carica") }
+        if !tight { Text("Charging") }
       }
       if !tight { Text("\(percent)%") }
       Image(systemName: batterySymbol).font(.system(size: 15, weight: .regular))
@@ -82,7 +82,7 @@ struct BatteryLabel: View {
     .monospacedDigit()
     .foregroundStyle(warn ? Theme.displayWarn : Theme.displayInk2)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Batteria \(percent)%" + (charging ? ", in carica" : ""))
+    .accessibilityLabel(charging ? "Battery \(percent)%, charging" : "Battery \(percent)%")
   }
 
   private var batterySymbol: String {
@@ -153,8 +153,8 @@ struct LevelMeterView: View {
       .foregroundStyle(Theme.displayInk2)
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Livello")
-    .accessibilityValue(live ? "\(Int(decibels)) decibel" : "fermo")
+    .accessibilityLabel("Level")
+    .accessibilityValue(live ? "\(Int(decibels)) decibels" : "stopped")
   }
 }
 
@@ -206,7 +206,7 @@ struct DayStrip: View {
       .foregroundStyle(onDisplay ? Theme.displayInk2 : Theme.ink2)
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("La giornata dalle 8 alle 20")
+    .accessibilityLabel("The day from 8 AM to 8 PM")
   }
 
   private func empty(_ i: Int) -> Color {
@@ -234,7 +234,7 @@ struct TickRuler: View {
   let maximum: Int
   var onDisplay = true
   var enabled = true
-  var label: String
+  var label: LocalizedStringResource
 
   var body: some View {
     let at = Int((Double(value) / Double(maximum) * Double(steps - 1)).rounded())
@@ -264,8 +264,8 @@ struct TickRuler: View {
     }
     .frame(height: onDisplay ? 24 : 28)
     .accessibilityElement()
-    .accessibilityLabel(label)
-    .accessibilityValue("\(value)")
+    .accessibilityLabel(Text(label))
+    .accessibilityValue(Text(verbatim: "\(value)"))
     .accessibilityAdjustableAction { direction in
       guard enabled else { return }
       let unit = max(1, maximum / (steps - 1))
@@ -315,8 +315,8 @@ struct ScanTicks: View {
 
 /// A group of rows in a cell, with an optional header and footer.
 struct CellGroup<Content: View>: View {
-  var header: String?
-  var footer: String?
+  var header: LocalizedStringResource?
+  var footer: LocalizedStringResource?
   @ViewBuilder var content: Content
 
   var body: some View {
@@ -356,9 +356,9 @@ struct CellGroup<Content: View>: View {
 
 /// One row of a cell: label, optional subtitle, value or accessory.
 struct Row<Accessory: View>: View {
-  let label: String
-  var subtitle: String?
-  var value: String?
+  let label: LocalizedStringResource
+  var subtitle: LocalizedStringResource?
+  var value: LocalizedStringResource?
   var warn = false
   var chevron = false
   var disabled = false
@@ -398,7 +398,8 @@ struct Row<Accessory: View>: View {
 
 extension Row where Accessory == EmptyView {
   init(
-    _ label: String, subtitle: String? = nil, value: String? = nil, warn: Bool = false,
+    _ label: LocalizedStringResource, subtitle: LocalizedStringResource? = nil,
+    value: LocalizedStringResource? = nil, warn: Bool = false,
     chevron: Bool = false, disabled: Bool = false
   ) {
     self.init(
@@ -410,20 +411,20 @@ extension Row where Accessory == EmptyView {
 
 /// A row with a system toggle tinted in ink, never red.
 struct ToggleRow: View {
-  let label: String
-  var subtitle: String?
+  let label: LocalizedStringResource
+  var subtitle: LocalizedStringResource?
   @Binding var isOn: Bool
 
   var body: some View {
     Row(label: label, subtitle: subtitle) {
-      Toggle(label, isOn: $isOn).labelsHidden().tint(Theme.toggleTint)
+      Toggle(isOn: $isOn) { Text(label) }.labelsHidden().tint(Theme.toggleTint)
     }
   }
 }
 
 /// A capsule button, 36 tall, in ink at 8%.
 struct CapsuleButton: View {
-  let title: String
+  let title: LocalizedStringResource
   var disabled = false
   let action: () -> Void
 
@@ -446,8 +447,8 @@ struct CapsuleButton: View {
 /// The roots hide the navigation bar, so every tab's title starts at the same height and the
 /// controls sit centred on the title instead of in a bar above it.
 struct PageTitle<Trailing: View>: View {
-  let title: String
-  var subtitle: String?
+  let title: LocalizedStringResource
+  var subtitle: LocalizedStringResource?
   @ViewBuilder var trailing: Trailing
 
   var body: some View {
@@ -472,15 +473,15 @@ struct PageTitle<Trailing: View>: View {
 }
 
 extension PageTitle where Trailing == EmptyView {
-  init(title: String, subtitle: String? = nil) {
+  init(title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil) {
     self.init(title: title, subtitle: subtitle) { EmptyView() }
   }
 }
 
 /// Two chevrons in one glass capsule, as iOS draws a pair of toolbar buttons.
 struct ChevronPair: View {
-  let backLabel: String
-  let forwardLabel: String
+  let backLabel: LocalizedStringResource
+  let forwardLabel: LocalizedStringResource
   let canGoBack: Bool
   let canGoForward: Bool
   let back: () -> Void
@@ -495,7 +496,8 @@ struct ChevronPair: View {
   }
 
   private func chevron(
-    _ symbol: String, _ label: String, enabled: Bool, action: @escaping () -> Void
+    _ symbol: String, _ label: LocalizedStringResource, enabled: Bool,
+    action: @escaping () -> Void
   )
     -> some View
   {
@@ -508,7 +510,7 @@ struct ChevronPair: View {
     }
     .buttonStyle(.plain)
     .disabled(!enabled)
-    .accessibilityLabel(label)
+    .accessibilityLabel(Text(label))
   }
 }
 
@@ -523,7 +525,7 @@ struct WarnRing: View {
 
 /// The main button of the first launch: 56 tall, graphite.
 struct MainButton: View {
-  let title: String
+  let title: LocalizedStringResource
   var disabled = false
   let action: () -> Void
 
@@ -544,7 +546,7 @@ struct MainButton: View {
 
 /// The text button of the first launch.
 struct TextButton: View {
-  let title: String
+  let title: LocalizedStringResource
   let action: () -> Void
 
   var body: some View {
@@ -560,7 +562,7 @@ struct TextButton: View {
 
 /// The page background and the navigation title in Archivo.
 struct PageChrome: ViewModifier {
-  let title: String
+  let title: LocalizedStringResource
 
   func body(content: Content) -> some View {
     content
@@ -576,25 +578,35 @@ struct PageChrome: ViewModifier {
 
 extension View {
   /// A pushed page with its title.
-  func page(_ title: String) -> some View { modifier(PageChrome(title: title)) }
+  func page(_ title: LocalizedStringResource) -> some View { modifier(PageChrome(title: title)) }
 }
 
 /// Times and dates as the app writes them.
 enum Clock {
-  /// `17:42`.
+  /// `17:42` and `09:04` on a 24-hour clock, the phone's own `5:42 PM` on a 12-hour one.
   static func time(_ date: Date) -> String {
-    date.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits))
+    switch Locale.current.hourCycle {
+    case .zeroToTwentyThree, .oneToTwentyFour:
+      date.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits))
+    default:
+      date.formatted(date: .omitted, time: .shortened)
+    }
   }
 
-  /// The day in words, as the Italian UI writes it: `giovedì 26 novembre` (prose-allow).
+  /// The day in words: `Thursday, November 26`, `giovedì 26 novembre` (prose-allow).
   static func longDay(_ date: Date) -> String {
-    date.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "it_IT")))
+    date.formatted(.dateTime.weekday(.wide).day().month(.wide))
   }
 
-  /// `gio 26 nov`.
+  /// `Thu, Nov 26`, `gio 26 nov`.
   static func shortDay(_ date: Date) -> String {
-    date.formatted(
-      .dateTime.weekday(.abbreviated).day().month(.abbreviated).locale(Locale(identifier: "it_IT"))
-    ).replacingOccurrences(of: ".", with: "")
+    date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+      .replacingOccurrences(of: ".", with: "")
   }
+}
+
+extension LocalizedStringResource {
+  /// Text made at runtime, already in the phone's language or never translated (a time, a
+  /// host, a duration), for the components that take localizable text: shown as it is.
+  static func verbatim(_ text: String) -> LocalizedStringResource { "\(text)" }
 }

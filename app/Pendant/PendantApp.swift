@@ -25,13 +25,13 @@ struct RootView: View {
   var body: some View {
     @Bindable var model = model
     TabView(selection: $model.tab) {
-      Tab("Adesso", systemImage: "waveform", value: AppModel.Tab.now) {
+      Tab("Now", systemImage: "waveform", value: AppModel.Tab.now) {
         NavigationStack { NowView() }
       }
-      Tab("Oggi", systemImage: "list.bullet", value: AppModel.Tab.today) {
+      Tab("Today", systemImage: "list.bullet", value: AppModel.Tab.today) {
         NavigationStack(path: $model.todayPath) { TodayView() }
       }
-      Tab("Impostazioni", systemImage: "slider.horizontal.3", value: AppModel.Tab.settings) {
+      Tab("Settings", systemImage: "slider.horizontal.3", value: AppModel.Tab.settings) {
         NavigationStack(path: $model.settingsPath) { SettingsView() }
       }
     }

@@ -1,7 +1,4186 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-
+    "%@" : {
+      "shouldTranslate" : false
+    },
+    "%@ from the start" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a %@ dall’inizio"
+          }
+        }
+      }
+    },
+    "%@ in %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ in %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ in %2$@"
+          }
+        }
+      }
+    },
+    "%@ isn’t responding" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ non risponde"
+          }
+        }
+      }
+    },
+    "%@ queued" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ in coda"
+          }
+        }
+      }
+    },
+    "%@, online" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, in linea"
+          }
+        }
+      }
+    },
+    "%lld bookmarks" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bookmark"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bookmarks"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld segnalibro"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld segnalibri"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld conversations" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld conversation"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld conversations"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld conversazione"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld conversazioni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld days before" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day before"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days before"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld giorno prima"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld giorni prima"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld decibels" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld decibel"
+          }
+        }
+      }
+    },
+    "%lld of 8" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld di 8"
+          }
+        }
+      }
+    },
+    "%lld on" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld attive"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "%llu packets" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llu pacchetti"
+          }
+        }
+      }
+    },
+    "A bookmark in the conversation in progress" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un segnalibro nella conversazione in corso"
+          }
+        }
+      }
+    },
+    "A warning when something stops" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un avviso quando qualcosa si ferma"
+          }
+        }
+      }
+    },
+    "About" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni"
+          }
+        }
+      }
+    },
+    "About %lld MB" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circa %lld MB"
+          }
+        }
+      }
+    },
+    "Accent" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accento"
+          }
+        }
+      }
+    },
+    "Action button" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasto Azione"
+          }
+        }
+      }
+    },
+    "Address" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indirizzo"
+          }
+        }
+      }
+    },
+    "Advanced" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzate"
+          }
+        }
+      }
+    },
+    "After" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo"
+          }
+        }
+      }
+    },
+    "All %lld" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutte e %lld"
+          }
+        }
+      }
+    },
+    "All set" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È tutto pronto"
+          }
+        }
+      }
+    },
+    "Allow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti"
+          }
+        }
+      }
+    },
+    "Allow notifications" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti le notifiche"
+          }
+        }
+      }
+    },
+    "Allowed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consentite"
+          }
+        }
+      }
+    },
+    "Always off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre spenta"
+          }
+        }
+      }
+    },
+    "Always on" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre accesa"
+          }
+        }
+      }
+    },
+    "Always visible" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre visibile"
+          }
+        }
+      }
+    },
+    "App" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        }
+      }
+    },
+    "App log" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log dell’app"
+          }
+        }
+      }
+    },
+    "Appearance" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aspetto"
+          }
+        }
+      }
+    },
+    "Archivo, by Omnibus-Type" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo, di Omnibus-Type"
+          }
+        }
+      }
+    },
+    "Automatic" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatico"
+          }
+        }
+      }
+    },
+    "Away from the phone the pendant records to its own memory. For now the app doesn’t download it: it keeps it or clears it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lontano dal telefono il ciondolo registra nella sua memoria. Per ora l’app non la scarica: la tiene o la svuota."
+          }
+        }
+      }
+    },
+    "Back to today" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Torna a oggi"
+          }
+        }
+      }
+    },
+    "Battery %lld%%" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria %lld%%"
+          }
+        }
+      }
+    },
+    "Battery %lld%%, charging" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria %lld%%, in carica"
+          }
+        }
+      }
+    },
+    "Below" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sotto il"
+          }
+        }
+      }
+    },
+    "Bluetooth is needed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serve il Bluetooth"
+          }
+        }
+      }
+    },
+    "Bluetooth isn’t allowed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il Bluetooth non è consentito"
+          }
+        }
+      }
+    },
+    "Bluetooth off %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth spento %@"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla"
+          }
+        }
+      }
+    },
+    "Can’t find the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non trovo il ciondolo"
+          }
+        }
+      }
+    },
+    "Charge it as soon as you can. When it’s off it records nothing, not even to its own memory." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettilo in carica appena puoi. Da spento non registra niente, nemmeno nella sua memoria."
+          }
+        }
+      }
+    },
+    "Charge it for a few minutes and keep it next to the phone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettilo in carica qualche minuto e tienilo accanto al telefono."
+          }
+        }
+      }
+    },
+    "Charging" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In carica"
+          }
+        }
+      }
+    },
+    "Check that the address is spelled right and that the phone is online. If the server is off, try again when it’s on." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso."
+          }
+        }
+      }
+    },
+    "Choose Lock Screen and remove the flashlight or the camera with the minus." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli Blocco schermo e togli la torcia o la fotocamera col meno."
+          }
+        }
+      }
+    },
+    "Clear the memory" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svuota la memoria"
+          }
+        }
+      }
+    },
+    "Closes the conversation; the next one opens a new one" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiude la conversazione, il successivo ne apre una nuova"
+          }
+        }
+      }
+    },
+    "Confirmation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma"
+          }
+        }
+      }
+    },
+    "Confirmation vibration" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vibrazione di conferma"
+          }
+        }
+      }
+    },
+    "Connect" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collega"
+          }
+        }
+      }
+    },
+    "Connect the pendant in Settings." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collega il ciondolo dalle impostazioni."
+          }
+        }
+      }
+    },
+    "Connected" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collegato"
+          }
+        }
+      }
+    },
+    "Connected, firmware %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collegato, firmware %@"
+          }
+        }
+      }
+    },
+    "Connecting" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collegamento"
+          }
+        }
+      }
+    },
+    "Connecting to the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi collego al ciondolo"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continua"
+          }
+        }
+      }
+    },
+    "Control Center" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Centro di Controllo"
+          }
+        }
+      }
+    },
+    "Conversation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversazione"
+          }
+        }
+      }
+    },
+    "Custom" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizzato"
+          }
+        }
+      }
+    },
+    "Customize" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizza"
+          }
+        }
+      }
+    },
+    "Dark" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scuro"
+          }
+        }
+      }
+    },
+    "Diagnostics" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostica"
+          }
+        }
+      }
+    },
+    "Discards the audio recorded away from the phone" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Butta l’audio registrato lontano dal telefono"
+          }
+        }
+      }
+    },
+    "Disconnected %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scollegato %@"
+          }
+        }
+      }
+    },
+    "Display" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fine"
+          }
+        }
+      }
+    },
+    "Done, try again" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fatto, riprova"
+          }
+        }
+      }
+    },
+    "Don’t Allow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non consentire"
+          }
+        }
+      }
+    },
+    "Double tap" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doppio tocco"
+          }
+        }
+      }
+    },
+    "Dynamic Island" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dynamic Island"
+          }
+        }
+      }
+    },
+    "English" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inglese"
+          }
+        }
+      }
+    },
+    "Even when paused and with the pendant away" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anche in pausa e col ciondolo lontano"
+          }
+        }
+      }
+    },
+    "Every %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni %@"
+          }
+        }
+      }
+    },
+    "Export" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta"
+          }
+        }
+      }
+    },
+    "Firmware" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware"
+          }
+        }
+      }
+    },
+    "Firmware %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware %@"
+          }
+        }
+      }
+    },
+    "Firmware %@, not supported yet" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware %@, non ancora supportato"
+          }
+        }
+      }
+    },
+    "Follows recording" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segue la registrazione"
+          }
+        }
+      }
+    },
+    "For pausing from the Action button and Control Center: Settings, Outside the app." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Fuori dall’app."
+          }
+        }
+      }
+    },
+    "Forget %@?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimenticare %@?"
+          }
+        }
+      }
+    },
+    "Forget the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimentica il ciondolo"
+          }
+        }
+      }
+    },
+    "Found" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trovato"
+          }
+        }
+      }
+    },
+    "From %@ to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "From %1$@ to %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dalle %1$@ alle %2$@"
+          }
+        }
+      }
+    },
+    "From the start to now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dall’inizio a ora"
+          }
+        }
+      }
+    },
+    "Gain" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guadagno"
+          }
+        }
+      }
+    },
+    "Gestures" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesti"
+          }
+        }
+      }
+    },
+    "Gestures, notifications and advanced values go back to how they were at first launch. The server address and token stay." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
+          }
+        }
+      }
+    },
+    "Get started" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inizia"
+          }
+        }
+      }
+    },
+    "Give it a short tap: the LED lights up." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dagli un tocco breve: la spia si accende."
+          }
+        }
+      }
+    },
+    "Got it" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ho capito"
+          }
+        }
+      }
+    },
+    "Here are the conversations that went through this phone. Transcripts are on the server." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qui ci sono le conversazioni passate da questo telefono. Le trascrizioni si leggono sul server."
+          }
+        }
+      }
+    },
+    "Higher picks up distant voices better, and noise too. The pendant remembers it by itself." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più alto sente meglio le voci lontane, e anche il rumore. Il ciondolo lo ricorda da solo."
+          }
+        }
+      }
+    },
+    "I looked for 30 seconds. It’s usually one of these three things." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ho cercato per 30 secondi. Di solito è una di queste tre cose."
+          }
+        }
+      }
+    },
+    "If the pendant comes back soon, the same conversation continues." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se il ciondolo torna subito, continua la stessa conversazione."
+          }
+        }
+      }
+    },
+    "If the server doesn’t respond the app retries with longer and longer waits, up to this one." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se il server non risponde l’app riprova con attese sempre più lunghe, fino a questa."
+          }
+        }
+      }
+    },
+    "If the server sends them, transcripts show on the conversation’s page, with the speakers when the server tells them apart. They stay on the phone as long as the conversation does." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se il server le manda, le trascrizioni si leggono nella pagina della conversazione, con i parlatori quando il server li distingue. Restano sul telefono finché resta la conversazione."
+          }
+        }
+      }
+    },
+    "In memory" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In memoria"
+          }
+        }
+      }
+    },
+    "In place of the flashlight or the camera" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al posto della torcia o della fotocamera"
+          }
+        }
+      }
+    },
+    "In the iOS keychain" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nel portachiavi di iOS"
+          }
+        }
+      }
+    },
+    "In the pendant now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nel ciondolo adesso"
+          }
+        }
+      }
+    },
+    "Interrupted" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrotta"
+          }
+        }
+      }
+    },
+    "Interrupted at %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrotta alle %@"
+          }
+        }
+      }
+    },
+    "It answered, but not with audio_stream 1. Check the address, or update the server or the app." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app."
+          }
+        }
+      }
+    },
+    "It appears when a recording starts and closes after %@ of pause. With the app open the Dynamic Island stays empty." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare quando parte una registrazione e si chiude dopo %@ di pausa. Con l’app aperta la Dynamic Island resta vuota."
+          }
+        }
+      }
+    },
+    "It comes from the server once the conversation is closed." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arriva dal server dopo la chiusura della conversazione."
+          }
+        }
+      }
+    },
+    "It stays even when paused and with the pendant away. iOS keeps it for 8 hours at most: then it comes back when you open the app. With the app open the Dynamic Island stays empty." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resta anche in pausa e col ciondolo lontano. iOS la tiene al massimo 8 ore: poi ricompare quando apri l’app. Con l’app aperta la Dynamic Island resta vuota."
+          }
+        }
+      }
+    },
+    "It stays on this phone as long as the conversation does." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resta su questo telefono finché resta la conversazione."
+          }
+        }
+      }
+    },
+    "It works by pressing and holding, so it doesn’t go off in a pocket. The pendant vibrates to confirm. It needs an iPhone 15 Pro or later." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si attiva tenendolo premuto, quindi in tasca non parte. Il ciondolo vibra per conferma. Serve un iPhone 15 Pro o successivo."
+          }
+        }
+      }
+    },
+    "Italian" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Italiano"
+          }
+        }
+      }
+    },
+    "It’s connected to the Omi app" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È collegato all’app Omi"
+          }
+        }
+      }
+    },
+    "It’s flat or far away" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È scarico o lontano"
+          }
+        }
+      }
+    },
+    "It’s off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È spento"
+          }
+        }
+      }
+    },
+    "It’s sent to the server with every conversation." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viene comunicata al server a ogni conversazione."
+          }
+        }
+      }
+    },
+    "Just the name, without https and without a path. The connection is always encrypted." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo il nome, senza https e senza percorso. La connessione è sempre cifrata."
+          }
+        }
+      }
+    },
+    "Keep it on and close to the phone. It usually takes a few seconds." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienilo acceso e vicino al telefono. Di solito bastano pochi secondi."
+          }
+        }
+      }
+    },
+    "LED" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spia"
+          }
+        }
+      }
+    },
+    "LED brightness" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luminosità della spia"
+          }
+        }
+      }
+    },
+    "LED, microphone, vibration" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spia, microfono, vibrazione"
+          }
+        }
+      }
+    },
+    "Last %@ queued" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultimi %@ in coda"
+          }
+        }
+      }
+    },
+    "Last contact" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultimo contatto"
+          }
+        }
+      }
+    },
+    "Last seen at %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visto l’ultima volta alle %@"
+          }
+        }
+      }
+    },
+    "Leave it in the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lascia nel ciondolo"
+          }
+        }
+      }
+    },
+    "Leaves it alone: when the memory is full, the oldest is overwritten" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non lo tocca: piena la memoria, si sovrascrive il più vecchio"
+          }
+        }
+      }
+    },
+    "Lengthen the queue" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allunga la coda"
+          }
+        }
+      }
+    },
+    "Level" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Livello"
+          }
+        }
+      }
+    },
+    "Licenses" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licenze"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiaro"
+          }
+        }
+      }
+    },
+    "Live Activity" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività in tempo reale"
+          }
+        }
+      }
+    },
+    "Lock screen" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocco schermo"
+          }
+        }
+      }
+    },
+    "Longest wait between attempts" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attesa massima fra i tentativi"
+          }
+        }
+      }
+    },
+    "Looking for the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerco il ciondolo"
+          }
+        }
+      }
+    },
+    "Low battery" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria bassa"
+          }
+        }
+      }
+    },
+    "Low battery, notify below" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria bassa, avvisa sotto il"
+          }
+        }
+      }
+    },
+    "Mark this moment" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segna questo momento"
+          }
+        }
+      }
+    },
+    "Marked moments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Momenti segnati"
+          }
+        }
+      }
+    },
+    "Marked while you were recording. They stay on this phone: the server receives them but doesn’t use them yet." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segnati mentre registravi. Restano su questo telefono: il server li riceve ma per ora non li usa."
+          }
+        }
+      }
+    },
+    "Medium signal" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segnale medio"
+          }
+        }
+      }
+    },
+    "Medium when recording starts, short when it stops and when you mark a moment" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media quando la registrazione parte, breve quando si ferma e quando segni un momento"
+          }
+        }
+      }
+    },
+    "Microphone" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microfono"
+          }
+        }
+      }
+    },
+    "Microphone gain" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guadagno del microfono"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
+          }
+        }
+      }
+    },
+    "Needed to receive the audio from the pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serve per ricevere l’audio dal ciondolo."
+          }
+        }
+      }
+    },
+    "Never" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mai"
+          }
+        }
+      }
+    },
+    "New token" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo token"
+          }
+        }
+      }
+    },
+    "Next day" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giorno dopo"
+          }
+        }
+      }
+    },
+    "No Bluetooth %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senza Bluetooth %@"
+          }
+        }
+      }
+    },
+    "No pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun ciondolo"
+          }
+        }
+      }
+    },
+    "None. You mark a moment from the Action button or from Control Center, while it records." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuno. Un momento si segna dal tasto Azione o dal Centro di Controllo, mentre registra."
+          }
+        }
+      }
+    },
+    "None. You mark a moment with a tap on the pendant, from the Action button or from Control Center, while it records." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuno. Un momento si segna con un tocco sul ciondolo, dal tasto Azione o dal Centro di Controllo, mentre registra."
+          }
+        }
+      }
+    },
+    "Not allowed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non consentite"
+          }
+        }
+      }
+    },
+    "Not available yet: it needs an update of the server and the app" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non ancora disponibile: serve un aggiornamento del server e dell’app"
+          }
+        }
+      }
+    },
+    "Not connected" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non collegato"
+          }
+        }
+      }
+    },
+    "Not now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non ora"
+          }
+        }
+      }
+    },
+    "Nothing" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niente"
+          }
+        }
+      }
+    },
+    "Nothing is closed yet today. The conversation in progress joins the list when you close it: double-tap the pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggi non c’è ancora niente di chiuso. La conversazione in corso entra nell’elenco quando la chiudi: tocca due volte il ciondolo."
+          }
+        }
+      }
+    },
+    "Nothing recorded yet today." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora niente registrato oggi."
+          }
+        }
+      }
+    },
+    "Notifications" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifiche"
+          }
+        }
+      }
+    },
+    "Notifications are off in iOS Settings: you can choose below, but nothing arrives." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le notifiche sono spente nelle Impostazioni di iOS: qui sotto si sceglie, ma non arriva niente."
+          }
+        }
+      }
+    },
+    "Notify" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvisa"
+          }
+        }
+      }
+    },
+    "Now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adesso"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spente"
+          }
+        }
+      }
+    },
+    "Offline audio" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio offline"
+          }
+        }
+      }
+    },
+    "Offline queue" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coda senza rete"
+          }
+        }
+      }
+    },
+    "Omi, by Based Hardware" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omi, di Based Hardware"
+          }
+        }
+      }
+    },
+    "On %@ the app stops opening: it’s signed with a free account, which lasts 7 days. To renew it, connect the iPhone to the Mac and run the install again from Xcode. Settings and token stay." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ l’app smette di aprirsi: è firmata con un account gratuito, che dura 7 giorni. Per rinnovarla collega l’iPhone al Mac e rilancia l’installazione da Xcode. Impostazioni e token restano."
+          }
+        }
+      }
+    },
+    "On its way from the server, usually within a few minutes." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In arrivo dal server, di solito in pochi minuti."
+          }
+        }
+      }
+    },
+    "On the lock screen and among the notifications." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sul blocco schermo e fra le notifiche."
+          }
+        }
+      }
+    },
+    "On the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sul ciondolo"
+          }
+        }
+      }
+    },
+    "On while recording, off when paused" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesa quando registra, spenta in pausa"
+          }
+        }
+      }
+    },
+    "On without recording" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso senza registrare"
+          }
+        }
+      }
+    },
+    "On without recording, notify after" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso senza registrare, avvisa dopo"
+          }
+        }
+      }
+    },
+    "On without recording, repeat the warning" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso senza registrare, ripeti l’avviso"
+          }
+        }
+      }
+    },
+    "On without recording, the pendant vibrates" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso senza registrare, il ciondolo vibra"
+          }
+        }
+      }
+    },
+    "Only in this app." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vale solo in questa app."
+          }
+        }
+      }
+    },
+    "Only the first" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo al primo"
+          }
+        }
+      }
+    },
+    "Only the notification on the phone" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo la notifica sul telefono"
+          }
+        }
+      }
+    },
+    "Open Pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Pendant"
+          }
+        }
+      }
+    },
+    "Open Server" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Server"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Impostazioni"
+          }
+        }
+      }
+    },
+    "Open Settings, then Action Button." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Impostazioni, poi Tasto Azione."
+          }
+        }
+      }
+    },
+    "Open iOS Settings" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri le impostazioni di iOS"
+          }
+        }
+      }
+    },
+    "Open the Omi app" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri l’app Omi"
+          }
+        }
+      }
+    },
+    "Open the Omi app and tap Forget Device: otherwise the pendant stays with it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri l’app Omi e fai Dimentica dispositivo: altrimenti il ciondolo resta con lei."
+          }
+        }
+      }
+    },
+    "Or double-tap the pendant to record." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oppure tocca due volte il ciondolo per registrare."
+          }
+        }
+      }
+    },
+    "Or double-tap the pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oppure tocca due volte il ciondolo."
+          }
+        }
+      }
+    },
+    "Outside the app" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuori dall’app"
+          }
+        }
+      }
+    },
+    "Paste the token" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incolla il token"
+          }
+        }
+      }
+    },
+    "Paste the token created on the server for the audio. It goes into the iOS keychain and replaces the previous one." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incolla il token creato sul server per l’audio. Finisce nel portachiavi di iOS e sostituisce quello di prima."
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa"
+          }
+        }
+      }
+    },
+    "Pause and bookmark one swipe down from the top" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa e segnalibro a un gesto dall’alto"
+          }
+        }
+      }
+    },
+    "Pause and bookmarks without opening the app: from the lock screen, the Dynamic Island and the iOS controls." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa e segnalibri senza aprire l’app: dal blocco schermo, dalla Dynamic Island e dai tasti di iOS."
+          }
+        }
+      }
+    },
+    "Pause and resume" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa e ripresa"
+          }
+        }
+      }
+    },
+    "Pause and resume shows the state: on while recording." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa e ripresa mostra lo stato: acceso mentre registra."
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In pausa"
+          }
+        }
+      }
+    },
+    "Pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciondolo"
+          }
+        }
+      }
+    },
+    "Pendant LED" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spia del ciondolo"
+          }
+        }
+      }
+    },
+    "Pendant battery" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria del ciondolo"
+          }
+        }
+      }
+    },
+    "Pendant battery at %lld%%" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria del ciondolo al %lld%%"
+          }
+        }
+      }
+    },
+    "Pendant disconnected" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciondolo scollegato"
+          }
+        }
+      }
+    },
+    "Pendant disconnected for 2 min" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciondolo scollegato da 2 min"
+          }
+        }
+      }
+    },
+    "Pendant disconnected, notify after" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciondolo scollegato, avvisa dopo"
+          }
+        }
+      }
+    },
+    "Pendant lets you know if the pendant disconnects, if the server doesn’t respond or if the battery is low. You choose which ones and when in Settings." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendant ti avvisa se il ciondolo si scollega, se il server non risponde o se la batteria è bassa. Quando e quali lo scegli dalle impostazioni."
+          }
+        }
+      }
+    },
+    "Pendant name" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome del ciondolo"
+          }
+        }
+      }
+    },
+    "Pendant no longer has Bluetooth permission" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendant non ha più il permesso del Bluetooth"
+          }
+        }
+      }
+    },
+    "Pendant receives the audio from the Omi pendant and sends it to your server while you talk. Something stays on the phone only when there’s no network." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendant riceve l’audio dal ciondolo Omi e lo manda al tuo server mentre parli. Sul telefono resta qualcosa solo quando manca la rete."
+          }
+        }
+      }
+    },
+    "Pendant receives the audio of the Omi pendant and sends it to the server you choose. It has no account and sends nothing to anyone else." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendant riceve l’audio del ciondolo Omi e lo manda al server che scegli tu. Non ha account e non manda niente a nessun altro."
+          }
+        }
+      }
+    },
+    "Pendant works even when closed, and records only when you ask: double-tap the pendant to record, and double-tap it again to pause." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendant lavora anche chiusa, e registra solo quando lo chiedi tu: tocca due volte il ciondolo per registrare, e di nuovo due volte per la pausa."
+          }
+        }
+      }
+    },
+    "Pendant works even when closed, and records only when you ask: press Resume in Now." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendant lavora anche chiusa, e registra solo quando lo chiedi tu: premi Riprendi in Adesso."
+          }
+        }
+      }
+    },
+    "Pendant’s Bluetooth part follows Omi’s protocol and iOS app, published under the MIT license." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La parte Bluetooth di Pendant segue il protocollo e l’app iOS di Omi, pubblicati con licenza MIT."
+          }
+        }
+      }
+    },
+    "Pendant’s Live Activities are off in iOS Settings." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le attività in tempo reale di Pendant sono spente nelle impostazioni di iOS."
+          }
+        }
+      }
+    },
+    "Ping during silence" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ping nel silenzio"
+          }
+        }
+      }
+    },
+    "Press and hold an empty space, then tap Add a Control." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni premuto su uno spazio vuoto, poi tocca Aggiungi un controllo."
+          }
+        }
+      }
+    },
+    "Press and hold the lock screen, then tap Customize." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni premuto sul blocco schermo, poi tocca Personalizza."
+          }
+        }
+      }
+    },
+    "Press and hold to mark the moment or pause" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni premuto per segnare il momento o mettere in pausa"
+          }
+        }
+      }
+    },
+    "Preview of the Live Activity" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteprima dell’attività in tempo reale"
+          }
+        }
+      }
+    },
+    "Previous day" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giorno prima"
+          }
+        }
+      }
+    },
+    "Protocol" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protocollo"
+          }
+        }
+      }
+    },
+    "Queued" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In coda"
+          }
+        }
+      }
+    },
+    "Queued since %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In coda dalle %@"
+          }
+        }
+      }
+    },
+    "Read" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggi"
+          }
+        }
+      }
+    },
+    "Read the memory" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggi la memoria"
+          }
+        }
+      }
+    },
+    "Read the pendant’s memory" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggi la memoria del ciondolo"
+          }
+        }
+      }
+    },
+    "Read the pendant’s memory?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggere la memoria del ciondolo?"
+          }
+        }
+      }
+    },
+    "Reading its version and battery, and setting its clock." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leggo versione e batteria e gli scrivo l’ora."
+          }
+        }
+      }
+    },
+    "Record your conversations with the pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra le conversazioni col ciondolo"
+          }
+        }
+      }
+    },
+    "Recorded today, in %lld conversations." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Recorded today, in %lld conversation."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Recorded today, in %lld conversations."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Registrato oggi, in %lld conversazione."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Registrato oggi, in %lld conversazioni."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Recording" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra"
+          }
+        }
+      }
+    },
+    "Recording for" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra da"
+          }
+        }
+      }
+    },
+    "Recording resumes by itself when it’s back nearby." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprende da sola quando torna vicino."
+          }
+        }
+      }
+    },
+    "Red stays the color of recording and amber the color of warnings, in every theme. The theme applies to the Live Activity too." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il rosso resta quello della registrazione e l’ambra quello degli avvisi, in ogni tema. Il tema vale anche per l’attività in tempo reale."
+          }
+        }
+      }
+    },
+    "Repeat" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti"
+          }
+        }
+      }
+    },
+    "Reset the settings to their defaults?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riportare le impostazioni ai valori iniziali?"
+          }
+        }
+      }
+    },
+    "Reset to defaults" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riporta ai valori iniziali"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprendi"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva"
+          }
+        }
+      }
+    },
+    "Search again" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca di nuovo"
+          }
+        }
+      }
+    },
+    "Search for Pendant and add Pause and resume and Mark this moment." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca Pendant e aggiungi Pausa e ripresa e Segna questo momento."
+          }
+        }
+      }
+    },
+    "Send to the server" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invia al server"
+          }
+        }
+      }
+    },
+    "Sending" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invio"
+          }
+        }
+      }
+    },
+    "Sending while you talk" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In invio mentre parli"
+          }
+        }
+      }
+    },
+    "Sent" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inviata"
+          }
+        }
+      }
+    },
+    "Sent at %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inviata alle %@"
+          }
+        }
+      }
+    },
+    "Server" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server"
+          }
+        }
+      }
+    },
+    "Server address" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indirizzo del server"
+          }
+        }
+      }
+    },
+    "Server connection" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connessione al server"
+          }
+        }
+      }
+    },
+    "Server unreachable" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server irraggiungibile"
+          }
+        }
+      }
+    },
+    "Server unreachable, notify after" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server irraggiungibile, avvisa dopo"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni"
+          }
+        }
+      }
+    },
+    "Settings stay on this phone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le impostazioni restano su questo telefono."
+          }
+        }
+      }
+    },
+    "Settings stay on this phone. The app’s signature expires on %@: how to renew it is in Advanced." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le impostazioni restano su questo telefono. La firma dell’app scade %@: come rinnovarla è in Avanzate."
+          }
+        }
+      }
+    },
+    "Shortcuts" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorciatoie"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra"
+          }
+        }
+      }
+    },
+    "Shown when the pendant is connected." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si legge quando il ciondolo è collegato."
+          }
+        }
+      }
+    },
+    "Signature" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firma"
+          }
+        }
+      }
+    },
+    "Signature expiring" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firma in scadenza"
+          }
+        }
+      }
+    },
+    "Signature expiring, notify" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firma in scadenza, avvisa"
+          }
+        }
+      }
+    },
+    "Single tap" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocco singolo"
+          }
+        }
+      }
+    },
+    "Size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione"
+          }
+        }
+      }
+    },
+    "Speech language" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingua del parlato"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stato"
+          }
+        }
+      }
+    },
+    "Step %lld of 6" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passo %lld di 6"
+          }
+        }
+      }
+    },
+    "Stop the audio when paused" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferma l’audio in pausa"
+          }
+        }
+      }
+    },
+    "Strong signal" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segnale forte"
+          }
+        }
+      }
+    },
+    "Supported firmware" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware supportato"
+          }
+        }
+      }
+    },
+    "Swipe down from the top-right corner to open Control Center." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorri giù dall’angolo in alto a destra per aprire il Centro di Controllo."
+          }
+        }
+      }
+    },
+    "Swipe sideways to Controls." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorri di lato fino a Controlli."
+          }
+        }
+      }
+    },
+    "Tap Bluetooth." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca Bluetooth."
+          }
+        }
+      }
+    },
+    "Tap Choose a Control and search for Pendant: Mark this moment, or Pause and resume." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca Scegli un controllo e cerca Pendant: Segna questo momento, oppure Pausa e ripresa."
+          }
+        }
+      }
+    },
+    "Tap Open Settings below." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca Apri Impostazioni qui sotto."
+          }
+        }
+      }
+    },
+    "Tap the plus in their place and search for Pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca il più al loro posto e cerca Pendant."
+          }
+        }
+      }
+    },
+    "Test" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prova"
+          }
+        }
+      }
+    },
+    "Test the connection" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prova la connessione"
+          }
+        }
+      }
+    },
+    "Test vibration" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vibrazione di prova"
+          }
+        }
+      }
+    },
+    "Testing" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provo"
+          }
+        }
+      }
+    },
+    "Testing the connection" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provo la connessione"
+          }
+        }
+      }
+    },
+    "That doesn’t look like a valid value. %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sembra un valore valido. %@"
+          }
+        }
+      }
+    },
+    "The Omi pendant" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo Omi"
+          }
+        }
+      }
+    },
+    "The address is right, the token isn’t. Paste it again: it must be the one created for the audio, in full." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’indirizzo è giusto, il token no. Incollalo di nuovo: deve essere quello creato per l’audio, intero."
+          }
+        }
+      }
+    },
+    "The app sends the audio to any server that speaks this protocol. The token travels in the request header, never in the address." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app manda l’audio a qualunque server che parli questo protocollo. Il token viaggia nell’intestazione della richiesta, mai nell’indirizzo."
+          }
+        }
+      }
+    },
+    "The app stops looking for it and goes back to the search. Settings and conversations stay." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app smette di cercarlo e torna alla ricerca. Impostazioni e conversazioni restano."
+          }
+        }
+      }
+    },
+    "The app stops looking for it and recording. To use it again, connect it from the search, in a few seconds." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
+          }
+        }
+      }
+    },
+    "The app’s typeface. SIL Open Font License 1.1." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il carattere dell’app. SIL Open Font License 1.1."
+          }
+        }
+      }
+    },
+    "The audio is no longer on the phone: it’s on the server." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sul telefono l’audio non c’è più: è sul server."
+          }
+        }
+      }
+    },
+    "The audio is no longer on the phone: the transcript is on the server." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sul telefono l’audio non c’è più: la trascrizione si legge sul server."
+          }
+        }
+      }
+    },
+    "The audio reaches the server while you talk. Nothing stays on the phone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio arriva al server mentre parli. Sul telefono non resta niente."
+          }
+        }
+      }
+    },
+    "The audio read goes into a file next to the log and no longer stays in the pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio letto finisce in un file accanto al log e non resta più nel ciondolo."
+          }
+        }
+      }
+    },
+    "The audio waits in the queue on the phone. Paste a valid token on the Server page and the queue starts by itself." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio aspetta in coda sul telefono. Incolla un token valido nella pagina Server e la coda parte da sola."
+          }
+        }
+      }
+    },
+    "The audio waits on the phone and goes out by itself when the server is back online." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio aspetta sul telefono e parte da solo quando il server torna in linea."
+          }
+        }
+      }
+    },
+    "The conversation, with its marked moments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conversazione, con i momenti segnati"
+          }
+        }
+      }
+    },
+    "The day from 8 AM to 8 PM" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La giornata dalle 8 alle 20"
+          }
+        }
+      }
+    },
+    "The firmware is updated from the Omi app: connect the pendant there again, update, then tap Forget Device. While it’s connected to that app too, both apps record." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il firmware si aggiorna dall’app Omi: ricollega lì il ciondolo, aggiorna, poi fai Dimentica dispositivo. Finché è collegato anche a lei, registrate in due."
+          }
+        }
+      }
+    },
+    "The first conversation is the one you’re recording. It shows up here when you close it: double-tap the pendant, or press Pause." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa."
+          }
+        }
+      }
+    },
+    "The iOS prompt, with Allow highlighted" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La richiesta di iOS, con Consenti evidenziato"
+          }
+        }
+      }
+    },
+    "The log holds neither audio nor tokens. Reading the memory is for checking the format of the offline audio: the audio read no longer stays in the pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il log non contiene né audio né token. La lettura della memoria serve a verificare il formato dell’audio offline: l’audio letto non resta più nel ciondolo."
+          }
+        }
+      }
+    },
+    "The pendant disconnected and didn’t come back within %@, so the server closed the conversation. All the audio up to %@ arrived, if the server was online." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The pendant disconnected and didn’t come back within %1$@, so the server closed the conversation. All the audio up to %2$@ arrived, if the server was online."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo si è scollegato e non è tornato entro %1$@, quindi il server ha chiuso la conversazione. L’audio fino alle %2$@ è arrivato tutto, se il server era in linea."
+          }
+        }
+      }
+    },
+    "The pendant is charging and keeps recording." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo è in carica e continua a registrare."
+          }
+        }
+      }
+    },
+    "The pendant is ready. It stays connected even with the app closed." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo è pronto. Resta collegato anche con l’app chiusa."
+          }
+        }
+      }
+    },
+    "The pendant picks the color. While disconnected it keeps the last choice." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il colore lo decide il ciondolo. Da scollegato resta l’ultima scelta."
+          }
+        }
+      }
+    },
+    "The pendant picks the color; here you choose when and how bright. When it’s on, it also tells the person in front of you that you’re recording." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il colore lo decide il ciondolo, qui scegli quando e quanto. Accesa, dice anche a chi ti sta davanti che stai registrando."
+          }
+        }
+      }
+    },
+    "The pendant recognizes only these two. Holding it for more than 3 seconds turns it off: that’s a firmware gesture and can’t be changed. When it’s off, a short tap turns it back on." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo riconosce solo questi due. Tenerlo premuto oltre 3 secondi lo spegne: è un gesto del firmware e non si può cambiare. Da spento, un tocco breve lo riaccende."
+          }
+        }
+      }
+    },
+    "The pendant sends the audio to the phone over Bluetooth, even when the app is closed. At the next step iOS asks for permission: choose Allow." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ciondolo manda l’audio al telefono via Bluetooth, anche quando l’app è chiusa. Al prossimo passo iOS chiede il permesso: scegli Consenti."
+          }
+        }
+      }
+    },
+    "The person in front of you can’t see that you’re recording" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chi ti sta davanti non vede che stai registrando"
+          }
+        }
+      }
+    },
+    "The phone’s Bluetooth is off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il Bluetooth del telefono è spento"
+          }
+        }
+      }
+    },
+    "The queue is almost full: %lld of %lld minutes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The queue is almost full: %1$lld of %2$lld minutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La coda è quasi piena: %1$lld minuti su %2$lld"
+          }
+        }
+      }
+    },
+    "The server accepted the token and speaks audio_stream 1." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server ha accettato il token e parla audio_stream 1."
+          }
+        }
+      }
+    },
+    "The server address and token don’t change." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indirizzo e token del server non cambiano."
+          }
+        }
+      }
+    },
+    "The server couldn’t transcribe it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non è riuscito a trascriverla."
+          }
+        }
+      }
+    },
+    "The server detects it" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La riconosce il server"
+          }
+        }
+      }
+    },
+    "The server didn’t send it within a day: read it on the server." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non l’ha mandata entro un giorno: si legge sul server."
+          }
+        }
+      }
+    },
+    "The server hasn’t responded since %@. In %lld minutes the oldest audio starts to be lost. Check the server or make the queue longer." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The server hasn’t responded since %1$@. In %2$lld minutes the oldest audio starts to be lost. Check the server or make the queue longer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non risponde dalle %1$@. Fra %2$lld minuti si comincia a perdere l’audio più vecchio. Controlla il server o allunga la coda."
+          }
+        }
+      }
+    },
+    "The server is transcribing it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server la sta trascrivendo."
+          }
+        }
+      }
+    },
+    "The server isn’t responding" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non risponde"
+          }
+        }
+      }
+    },
+    "The server isn’t responding. In %lld minutes the oldest audio starts to be lost. Check the server or make the queue longer." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non risponde. Fra %lld minuti si comincia a perdere l’audio più vecchio. Controlla il server o allunga la coda."
+          }
+        }
+      }
+    },
+    "The server isn’t responding: the audio of the last %@ waits on the phone and goes out by itself when the server is back online." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non risponde: l’audio degli ultimi %@ aspetta sul telefono e parte da solo quando torna in linea."
+          }
+        }
+      }
+    },
+    "The server recognized no speech." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server non ha riconosciuto parlato."
+          }
+        }
+      }
+    },
+    "The server rejected the token" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server ha rifiutato il token"
+          }
+        }
+      }
+    },
+    "The server rejected the token at %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server ha rifiutato il token alle %@"
+          }
+        }
+      }
+    },
+    "The server speaks a different protocol" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il server parla un protocollo diverso"
+          }
+        }
+      }
+    },
+    "The single tap arrives about a third of a second later: the pendant waits to tell whether it’s a double tap." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tocco singolo arriva circa un terzo di secondo dopo: il ciondolo aspetta di capire se è un doppio tocco."
+          }
+        }
+      }
+    },
+    "The token goes into the iOS keychain. You can change the address and token later in Settings." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il token finisce nel portachiavi di iOS. Indirizzo e token si cambiano poi dalle impostazioni."
+          }
+        }
+      }
+    },
+    "Theme" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tema"
+          }
+        }
+      }
+    },
+    "Theme preview" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteprima del tema"
+          }
+        }
+      }
+    },
+    "Themes" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temi"
+          }
+        }
+      }
+    },
+    "Then only the notification on the phone" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poi solo la notifica sul telefono"
+          }
+        }
+      }
+    },
+    "There’s a pendant nearby. If it’s yours, connect it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C’è un ciondolo qui vicino. Se è il tuo, collegalo."
+          }
+        }
+      }
+    },
+    "There’s room for one control on each side. It works with the phone locked too." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ci sta un controllo per lato. Funziona anche col telefono bloccato."
+          }
+        }
+      }
+    },
+    "This copy of the app has no signing profile with an expiry." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa copia dell’app non ha un profilo di firma con scadenza."
+          }
+        }
+      }
+    },
+    "This version of the app knows %@. It records and pauses as before; the pendant’s new features stay off until you update the app." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa versione dell’app conosce il %@. Registra e mette in pausa come prima; le funzioni nuove del ciondolo restano spente finché non aggiorni l’app."
+          }
+        }
+      }
+    },
+    "Today" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggi"
+          }
+        }
+      }
+    },
+    "Token" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token"
+          }
+        }
+      }
+    },
+    "Too short for a transcript." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Troppo breve per una trascrizione."
+          }
+        }
+      }
+    },
+    "Transcript" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascrizione"
+          }
+        }
+      }
+    },
+    "Transcripts are only on the server. None stay on the phone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le trascrizioni si leggono solo sul server. Sul telefono non ne resta nessuna."
+          }
+        }
+      }
+    },
+    "Transcripts on the phone" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascrizioni sul telefono"
+          }
+        }
+      }
+    },
+    "Trying to connect to %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provo a collegarmi a %@"
+          }
+        }
+      }
+    },
+    "Turn it back on from Control Center or Settings. Meanwhile the pendant records to its own memory." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riaccendilo dal Centro di Controllo o dalle Impostazioni. Intanto il ciondolo registra nella sua memoria."
+          }
+        }
+      }
+    },
+    "Turn on the switch and come back here." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accendi l’interruttore e torna qui."
+          }
+        }
+      }
+    },
+    "Type your server’s address and paste the token you created there for the audio." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrivi l’indirizzo del tuo server e incolla il token che hai creato lì per l’audio."
+          }
+        }
+      }
+    },
+    "Used now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occupata ora"
+          }
+        }
+      }
+    },
+    "Version" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versione"
+          }
+        }
+      }
+    },
+    "Vibrate" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fai vibrare"
+          }
+        }
+      }
+    },
+    "Vibration" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vibrazione"
+          }
+        }
+      }
+    },
+    "Weak signal" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segnale debole"
+          }
+        }
+      }
+    },
+    "When" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando"
+          }
+        }
+      }
+    },
+    "When it’s back it stays paused." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al ritorno resta in pausa."
+          }
+        }
+      }
+    },
+    "When it’s back it stays paused. Meanwhile, if it’s on, it records to its own memory." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al ritorno resta in pausa. Intanto, se è acceso, registra nella sua memoria."
+          }
+        }
+      }
+    },
+    "When it’s back nearby" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando torna vicino"
+          }
+        }
+      }
+    },
+    "When lit" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accensione"
+          }
+        }
+      }
+    },
+    "When nobody talks the app sends a signal to keep the connection open. Many networks close it after 100 seconds of silence." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando nessuno parla l’app manda un segnale per tenere aperta la connessione. Molte reti la chiudono dopo 100 secondi di silenzio."
+          }
+        }
+      }
+    },
+    "When paused the app stops receiving the audio and the pendant stops sending it: the radio rests, the microphone stays on. It helps during pauses in noisy places; in silence the microphone already sleeps by itself. Without audio iOS may suspend the app while paused: a double tap wakes it, but idle warnings might arrive late." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In pausa l’app smette di ricevere l’audio e il ciondolo smette di trasmetterlo: la radio riposa, il microfono resta acceso. Aiuta nelle pause in posti rumorosi; nel silenzio il microfono dorme già da solo. Senza audio iOS può sospendere l’app in pausa: il doppio tocco la risveglia, ma gli avvisi del ciondolo acceso a vuoto potrebbero arrivare in ritardo."
+          }
+        }
+      }
+    },
+    "When the pendant connects and you don’t record within this time, a warning arrives, and it comes back until you record or turn the pendant off: it’s usually a tap in a pocket, and while on it uses battery. From the notification, Enough for now stops it until the next connection. On the charger it doesn’t warn, and when you unplug it the count starts over. With this firmware the app can’t turn it off." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando il ciondolo si collega e non registri entro questo tempo, arriva un avviso, e torna finché non registri o lo spegni: di solito è un tocco in tasca, e acceso consuma batteria. Dalla notifica, Basta per ora lo ferma fino al prossimo collegamento. Sul caricatore non avvisa, e quando lo stacchi il conto riparte. Con questo firmware l’app non può spegnerlo."
+          }
+        }
+      }
+    },
+    "When the pendant is back nearby" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando il ciondolo torna vicino"
+          }
+        }
+      }
+    },
+    "When the queue is full, the oldest audio is lost." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piena la coda, si perde l’audio più vecchio."
+          }
+        }
+      }
+    },
+    "When the server doesn’t respond the audio waits on the phone. When the queue is full, the oldest audio is lost." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando il server non risponde l’audio aspetta sul telefono. Piena la coda, si perde l’audio più vecchio."
+          }
+        }
+      }
+    },
+    "Where" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dove"
+          }
+        }
+      }
+    },
+    "Where to send the audio" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dove mando l’audio"
+          }
+        }
+      }
+    },
+    "While disconnected the pendant keeps its last values. LED, microphone and vibration change when it’s back nearby." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da scollegato il ciondolo tiene gli ultimi valori. Spia, microfono e vibrazione si cambiano quando torna vicino."
+          }
+        }
+      }
+    },
+    "With every warning" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A ogni avviso"
+          }
+        }
+      }
+    },
+    "With the phone unlocked, around the camera. Press and hold it to open." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Col telefono sbloccato, intorno alla fotocamera. Si apre tenendola premuta."
+          }
+        }
+      }
+    },
+    "Without Bluetooth the app gets nothing from the pendant. You can fix it in iOS Settings, in three taps." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senza Bluetooth l’app non riceve niente dal ciondolo. Si rimedia dalle Impostazioni di iOS, in tre tocchi."
+          }
+        }
+      }
+    },
+    "Without permission it gets nothing from the pendant. Open Settings, tap Bluetooth and turn on Pendant." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senza permesso non riceve niente dal ciondolo. Apri Impostazioni, tocca Bluetooth e accendi Pendant."
+          }
+        }
+      }
+    },
+    "Yesterday" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ieri"
+          }
+        }
+      }
+    },
+    "You recorded nothing on %@." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ non hai registrato niente."
+          }
+        }
+      }
+    },
+    "You recorded nothing yesterday." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ieri non hai registrato niente."
+          }
+        }
+      }
+    },
+    "bookmark" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "segnalibro"
+          }
+        }
+      }
+    },
+    "different protocol" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "protocollo diverso"
+          }
+        }
+      }
+    },
+    "expires on %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "scade il %@"
+          }
+        }
+      }
+    },
+    "iOS decides where they go: the app can’t place them by itself." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dove stanno lo decide iOS: l’app non può metterle da sola."
+          }
+        }
+      }
+    },
+    "iOS permission" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesso di iOS"
+          }
+        }
+      }
+    },
+    "in %lld conversations" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld conversation"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld conversations"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld conversazione"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld conversazioni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "in progress" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in corso"
+          }
+        }
+      }
+    },
+    "marked moment" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "momento segnato"
+          }
+        }
+      }
+    },
+    "no bookmarks" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nessun segnalibro"
+          }
+        }
+      }
+    },
+    "no closed conversations yet" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ancora nessuna conversazione chiusa"
+          }
+        }
+      }
+    },
+    "no conversations" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nessuna conversazione"
+          }
+        }
+      }
+    },
+    "no expiry" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "senza scadenza"
+          }
+        }
+      }
+    },
+    "not connected" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "non collegato"
+          }
+        }
+      }
+    },
+    "not in this session" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in questa sessione no"
+          }
+        }
+      }
+    },
+    "not responding" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "non risponde"
+          }
+        }
+      }
+    },
+    "not set up" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "da impostare"
+          }
+        }
+      }
+    },
+    "nothing" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "niente"
+          }
+        }
+      }
+    },
+    "nothing yet" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ancora niente"
+          }
+        }
+      }
+    },
+    "now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "adesso"
+          }
+        }
+      }
+    },
+    "off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spenta"
+          }
+        }
+      }
+    },
+    "online" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in linea"
+          }
+        }
+      }
+    },
+    "pause" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pausa"
+          }
+        }
+      }
+    },
+    "recorded" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "registrato"
+          }
+        }
+      }
+    },
+    "server.example.com" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "server.esempio.it"
+          }
+        }
+      }
+    },
+    "since %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dalle %@"
+          }
+        }
+      }
+    },
+    "stopped" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fermo"
+          }
+        }
+      }
+    },
+    "tag.sinceDay" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "since %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "da %@"
+          }
+        }
+      }
+    },
+    "token rejected" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "token rifiutato"
+          }
+        }
+      }
+    },
+    "until %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fino alle %@"
+          }
+        }
+      }
+    },
+    "“Pendant” Would Like to Use Bluetooth" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Pendant” vorrebbe usare il Bluetooth"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

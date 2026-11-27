@@ -11,7 +11,7 @@ struct SettingsView: View {
     let d = model.device
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        PageTitle(title: "Impostazioni").padding(.top, 8)
+        PageTitle(title: "Settings").padding(.top, 8)
         NavigationLink(value: AppModel.Page.pendant) {
           DeviceCard(device: d, name: config.pendantName, more: true)
         }
@@ -20,25 +20,27 @@ struct SettingsView: View {
         .padding(.top, 20)
         CellGroup {
           link(
-            .gestures, "Gesti",
-            value:
+            .gestures, "Gestures",
+            value: .verbatim(
               "\(Choices.short(config.gestures["doubleTap"])), \(Choices.short(config.gestures["singleTap"]))"
+            )
           )
           link(
-            .offline, "Audio offline",
+            .offline, "Offline audio",
             value: Choices.offline.first { $0.value == config.offlinePolicy }?.label)
-          link(.notifications, "Notifiche", value: "\(activeNotifications(config)) attive")
+          link(.notifications, "Notifications", value: "\(activeNotifications(config)) on")
         }
         CellGroup {
-          link(.server, "Server", value: model.credentials?.host ?? "da impostare")
-          link(.systemControls, "Fuori dall’app")
+          link(
+            .server, "Server", value: model.credentials.map { .verbatim($0.host) } ?? "not set up")
+          link(.systemControls, "Outside the app")
         }
         CellGroup {
-          link(.theme, "Tema", value: themeName(config))
+          link(.theme, "Theme", value: .verbatim(themeName(config)))
         }
         CellGroup(footer: footer) {
-          link(.advanced, "Avanzate")
-          link(.info, "Informazioni", value: AppInfo.version)
+          link(.advanced, "Advanced")
+          link(.info, "About", value: .verbatim(AppInfo.version))
         }
       }
       .padding(.bottom, 32)
@@ -61,13 +63,16 @@ struct SettingsView: View {
     }
   }
 
-  private func link(_ page: AppModel.Page, _ label: String, value: String? = nil) -> some View {
+  private func link(
+    _ page: AppModel.Page, _ label: LocalizedStringResource, value: LocalizedStringResource? = nil
+  ) -> some View {
     NavigationLink(value: page) { Row(label, value: value, chevron: true) }
       .buttonStyle(.plain)
   }
 
   private func themeName(_ c: Configuration) -> String {
-    ThemePreset.matching(display: c.displayStyle, accent: c.accentStyle)?.name ?? "Personalizzato"
+    ThemePreset.matching(display: c.displayStyle, accent: c.accentStyle)?.name
+      ?? String(localized: "Custom")
   }
 
   private func activeNotifications(_ c: Configuration) -> Int {
@@ -75,13 +80,10 @@ struct SettingsView: View {
       .filter { $0 }.count
   }
 
-  private var footer: String {
-    var text = "Le impostazioni restano su questo telefono."
-    if let expiry = model.signatureExpiry {
-      text +=
-        " La firma dell’app scade \(Clock.longDay(expiry)): come rinnovarla è in Avanzate."
-    }
-    return text
+  private var footer: LocalizedStringResource {
+    guard let expiry = model.signatureExpiry else { return "Settings stay on this phone." }
+    return
+      "Settings stay on this phone. The app’s signature expires on \(Clock.longDay(expiry)): how to renew it is in Advanced."
   }
 }
 
@@ -102,7 +104,7 @@ struct DeviceCard<Extra: View>: View {
           if device.connected, let battery = device.battery {
             BatteryLabel(percent: battery, charging: device.charging)
           } else if !device.connected {
-            Text("non collegato").type(15, 20, .medium).foregroundStyle(Theme.displayWarn)
+            Text("not connected").type(15, 20, .medium).foregroundStyle(Theme.displayWarn)
           }
         }
         Text(state)
@@ -113,7 +115,7 @@ struct DeviceCard<Extra: View>: View {
         if more {
           Rectangle().fill(Theme.displayRule).frame(height: 1).padding(.top, 14)
           HStack {
-            Text("Spia, microfono, vibrazione")
+            Text("LED, microphone, vibration")
             Spacer()
             Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold))
           }
@@ -125,10 +127,10 @@ struct DeviceCard<Extra: View>: View {
     }
   }
 
-  private var state: String {
-    if device.connected { return "Collegato, firmware \(device.firmware ?? "?")" }
-    if let seen = device.lastSeen { return "Visto l’ultima volta alle \(Clock.time(seen))" }
-    return "Non collegato"
+  private var state: LocalizedStringResource {
+    if device.connected { return "Connected, firmware \(device.firmware ?? "?")" }
+    if let seen = device.lastSeen { return "Last seen at \(Clock.time(seen))" }
+    return "Not connected"
   }
 }
 

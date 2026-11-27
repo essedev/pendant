@@ -53,39 +53,40 @@ struct OnboardingView: View {
       HomeDisplay(
         snapshot: AppModel.Snapshot(
           mode: .recording, since: model.demo?.now ?? welcomeSince, battery: 84,
-          serverHost: "server.esempio.it", serverState: .online, level: -14),
+          serverHost: String(localized: "server.example.com"), serverState: .online,
+          level: -14),
         now: model.now
       )
       .allowsHitTesting(false)
       .accessibilityHidden(true)
       .onboardingSurface()
       Heading(
-        title: "Registra le conversazioni col ciondolo",
+        title: "Record your conversations with the pendant",
         text:
-          "Pendant riceve l’audio dal ciondolo Omi e lo manda al tuo server mentre parli. Sul telefono resta qualcosa solo quando manca la rete."
+          "Pendant receives the audio from the Omi pendant and sends it to your server while you talk. Something stays on the phone only when there’s no network."
       )
       .padding(.top, 36)
     case .bluetooth:
       Heading(
-        title: "Serve il Bluetooth",
+        title: "Bluetooth is needed",
         text:
-          "Il ciondolo manda l’audio al telefono via Bluetooth, anche quando l’app è chiusa. Al prossimo passo iOS chiede il permesso: scegli Consenti."
+          "The pendant sends the audio to the phone over Bluetooth, even when the app is closed. At the next step iOS asks for permission: choose Allow."
       )
       SystemAlertPreview(
-        title: "“Pendant” vorrebbe usare il Bluetooth",
-        text: "Serve per ricevere l’audio dal ciondolo.", buttons: ["Non consentire", "Consenti"]
+        title: "“Pendant” Would Like to Use Bluetooth",
+        text: "Needed to receive the audio from the pendant.", buttons: ["Don’t Allow", "Allow"]
       )
       .onboardingSurface()
       .padding(.top, 28)
     case .denied:
       Heading(
-        title: "Il Bluetooth non è consentito",
+        title: "Bluetooth isn’t allowed",
         text:
-          "Senza Bluetooth l’app non riceve niente dal ciondolo. Si rimedia dalle Impostazioni di iOS, in tre tocchi."
+          "Without Bluetooth the app gets nothing from the pendant. You can fix it in iOS Settings, in three taps."
       )
       StepsCell([
-        "Tocca Apri Impostazioni qui sotto.", "Tocca Bluetooth.",
-        "Accendi l’interruttore e torna qui.",
+        "Tap Open Settings below.", "Tap Bluetooth.",
+        "Turn on the switch and come back here.",
       ])
       .onboardingSurface()
       .padding(.top, 28)
@@ -95,33 +96,34 @@ struct OnboardingView: View {
       ServerStep()
     case .notifications:
       Heading(
-        title: "Un avviso quando qualcosa si ferma",
+        title: "A warning when something stops",
         text:
-          "Pendant ti avvisa se il ciondolo si scollega, se il server non risponde o se la batteria è bassa. Quando e quali lo scegli dalle impostazioni."
+          "Pendant lets you know if the pendant disconnects, if the server doesn’t respond or if the battery is low. You choose which ones and when in Settings."
       )
       NotificationPreview().onboardingSurface().padding(.top, 28)
     case .done:
       Heading(
-        title: "È tutto pronto",
+        title: "All set",
         text: doneText)
       VStack(spacing: 0) {
         let d = model.device
         Row(
-          "Ciondolo",
-          value: d.battery.map { "\(model.config.pendantName), \($0)%" } ?? model.config.pendantName
+          "Pendant",
+          value: .verbatim(
+            d.battery.map { "\(model.config.pendantName), \($0)%" } ?? model.config.pendantName)
         )
         Divider().overlay(Theme.hairline)
-        Row("Server", value: "\(model.credentials?.host ?? "?"), in linea")
+        Row("Server", value: "\(model.credentials?.host ?? "?"), online")
         Divider().overlay(Theme.hairline)
         Row(
-          "Notifiche",
-          value: model.notificationStatus == .authorized ? "Consentite" : "Non consentite")
+          "Notifications",
+          value: notificationsValue)
       }
       .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
       .onboardingSurface()
       .padding(.top, 28)
       Text(
-        "Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Fuori dall’app."
+        "For pausing from the Action button and Control Center: Settings, Outside the app."
       )
       .type(13, 18)
       .foregroundStyle(Theme.ink2)
@@ -130,21 +132,23 @@ struct OnboardingView: View {
     }
   }
 
-  private var doneText: String {
-    let toggle = model.config.gestures["doubleTap"] == .toggleRecording
-    return "Pendant lavora anche chiusa, e registra solo quando lo chiedi tu: "
-      + (toggle
-        ? "tocca due volte il ciondolo per registrare, e di nuovo due volte per la pausa."
-        : "premi Riprendi in Adesso.")
+  private var notificationsValue: LocalizedStringResource {
+    model.notificationStatus == .authorized ? "Allowed" : "Not allowed"
+  }
+
+  private var doneText: LocalizedStringResource {
+    model.config.gestures["doubleTap"] == .toggleRecording
+      ? "Pendant works even when closed, and records only when you ask: double-tap the pendant to record, and double-tap it again to pause."
+      : "Pendant works even when closed, and records only when you ask: press Resume in Now."
   }
 
   @ViewBuilder private var actions: some View {
     VStack(spacing: 4) {
       switch step {
       case .welcome:
-        MainButton(title: "Inizia") { step = .bluetooth }
+        MainButton(title: "Get started") { step = .bluetooth }
       case .bluetooth:
-        MainButton(title: "Continua") {
+        MainButton(title: "Continue") {
           if CBManager.authorization == .allowedAlways || model.demo != nil {
             model.startBluetooth()
             step = .search
@@ -155,8 +159,8 @@ struct OnboardingView: View {
           }
         }
       case .denied:
-        MainButton(title: "Apri Impostazioni") { model.openSystemSettings() }
-        TextButton(title: "Fatto, riprova") {
+        MainButton(title: "Open Settings") { model.openSystemSettings() }
+        TextButton(title: "Done, try again") {
           if CBManager.authorization == .allowedAlways { step = .search }
         }
       case .search:
@@ -166,15 +170,15 @@ struct OnboardingView: View {
           step = model.notificationStatus == .notDetermined ? .notifications : .done
         }
       case .notifications:
-        MainButton(title: "Consenti le notifiche") {
+        MainButton(title: "Allow notifications") {
           Task {
             await model.requestNotifications()
             step = .done
           }
         }
-        TextButton(title: "Non ora") { step = .done }
+        TextButton(title: "Not now") { step = .done }
       case .done:
-        MainButton(title: "Apri Pendant") { model.finishOnboarding() }
+        MainButton(title: "Open Pendant") { model.finishOnboarding() }
       }
     }
   }
@@ -203,14 +207,14 @@ private struct StepTicks: View {
       }
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Passo \(index + 1) di 6")
+    .accessibilityLabel("Step \(index + 1) of 6")
   }
 }
 
 /// Title and lead text of a step.
 private struct Heading: View {
-  let title: String
-  let text: String
+  let title: LocalizedStringResource
+  let text: LocalizedStringResource
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -229,9 +233,9 @@ private struct Heading: View {
 
 /// Numbered steps in a cell.
 private struct StepsCell: View {
-  let steps: [String]
+  let steps: [LocalizedStringResource]
 
-  init(_ steps: [String]) { self.steps = steps }
+  init(_ steps: [LocalizedStringResource]) { self.steps = steps }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -243,9 +247,9 @@ private struct StepsCell: View {
 
 /// A preview of the iOS permission prompt, with the button to tap in ink.
 private struct SystemAlertPreview: View {
-  let title: String
-  let text: String
-  let buttons: [String]
+  let title: LocalizedStringResource
+  let text: LocalizedStringResource
+  let buttons: [LocalizedStringResource]
 
   var body: some View {
     VStack(spacing: 0) {
@@ -271,7 +275,7 @@ private struct SystemAlertPreview: View {
     }
     .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(Theme.cell))
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("La richiesta di iOS, con Consenti evidenziato")
+    .accessibilityLabel("The iOS prompt, with Allow highlighted")
   }
 }
 
@@ -285,11 +289,12 @@ private struct NotificationPreview: View {
         .overlay(Image(systemName: "waveform").foregroundStyle(Theme.redLit))
       VStack(alignment: .leading, spacing: 2) {
         HStack {
-          Text("Ciondolo scollegato da 2 min").type(15, 20, .semibold)
+          Text("Pendant disconnected for 2 min").type(15, 20, .semibold)
           Spacer()
-          Text("adesso").type(13, 18).foregroundStyle(Theme.ink2)
+          Text("now").type(13, 18).foregroundStyle(Theme.ink2)
         }
-        Text("Riprende da sola quando torna vicino.").type(15, 20).foregroundStyle(Theme.ink2)
+        Text("Recording resumes by itself when it’s back nearby.").type(15, 20).foregroundStyle(
+          Theme.ink2)
       }
       .foregroundStyle(Theme.ink)
     }
@@ -310,13 +315,13 @@ private struct SearchStep: View {
         Heading(title: state.title, text: state.text)
         if state == .none {
           VStack(alignment: .leading, spacing: 0) {
-            cause(1, "È spento", "Dagli un tocco breve: la spia si accende.")
+            cause(1, "It’s off", "Give it a short tap: the LED lights up.")
             cause(
-              2, "È collegato all’app Omi",
-              "Apri l’app Omi e fai Dimentica dispositivo: altrimenti il ciondolo resta con lei.")
+              2, "It’s connected to the Omi app",
+              "Open the Omi app and tap Forget Device: otherwise the pendant stays with it.")
             cause(
-              3, "È scarico o lontano",
-              "Mettilo in carica qualche minuto e tienilo accanto al telefono.")
+              3, "It’s flat or far away",
+              "Charge it for a few minutes and keep it next to the phone.")
           }
           .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
           .onboardingSurface()
@@ -337,9 +342,11 @@ private struct SearchStep: View {
     }
   }
 
-  private func cause(_ n: Int, _ title: String, _ text: String) -> some View {
+  private func cause(_ n: Int, _ title: LocalizedStringResource, _ text: LocalizedStringResource)
+    -> some View
+  {
     HStack(alignment: .firstTextBaseline, spacing: 0) {
-      Text("\(n)").type(15, 20, .semibold).foregroundStyle(Theme.ink2).frame(
+      Text(n, format: .number).type(15, 20, .semibold).foregroundStyle(Theme.ink2).frame(
         width: 24, alignment: .leading)
       VStack(alignment: .leading, spacing: 2) {
         Text(title).type(17, 24, .semibold).foregroundStyle(Theme.ink)
@@ -360,25 +367,26 @@ private struct SearchStep: View {
         ? link.candidates.first : DeviceLink.Candidate(id: UUID(), name: "Omi", rssi: -48)
       guard let c else { return nil }
       return AnyView(
-        Row(label: c.name, subtitle: signal(c.rssi)) {
-          CapsuleButton(title: "Collega") { link.pair(c) }
+        Row(label: .verbatim(c.name), subtitle: signal(c.rssi)) {
+          CapsuleButton(title: "Connect") { link.pair(c) }
         })
     case .linking:
       return AnyView(
-        Row(model.config.pendantName, subtitle: "Segnale forte", value: "Collegamento"))
+        Row(
+          .verbatim(model.config.pendantName), subtitle: "Strong signal", value: "Connecting"))
     case .linked:
       let d = model.device
       return AnyView(
         Row(
-          model.config.pendantName, subtitle: "Firmware \(d.firmware ?? "?")",
+          .verbatim(model.config.pendantName), subtitle: "Firmware \(d.firmware ?? "?")",
           value: d.battery.map { "\($0)%" }))
     default:
       return nil
     }
   }
 
-  private func signal(_ rssi: Int) -> String {
-    rssi > -60 ? "Segnale forte" : rssi > -75 ? "Segnale medio" : "Segnale debole"
+  private func signal(_ rssi: Int) -> LocalizedStringResource {
+    rssi > -60 ? "Strong signal" : rssi > -75 ? "Medium signal" : "Weak signal"
   }
 }
 
@@ -406,23 +414,23 @@ private enum SearchState: Equatable {
     return .scanning
   }
 
-  var title: String {
+  var title: LocalizedStringResource {
     switch self {
-    case .scanning: "Cerco il ciondolo"
-    case .found: "Trovato"
-    case .linking: "Mi collego al ciondolo"
-    case .linked: "Collegato"
-    case .none: "Non trovo il ciondolo"
+    case .scanning: "Looking for the pendant"
+    case .found: "Found"
+    case .linking: "Connecting to the pendant"
+    case .linked: "Connected"
+    case .none: "Can’t find the pendant"
     }
   }
 
-  var text: String {
+  var text: LocalizedStringResource {
     switch self {
-    case .scanning: "Tienilo acceso e vicino al telefono. Di solito bastano pochi secondi."
-    case .found: "C’è un ciondolo qui vicino. Se è il tuo, collegalo."
-    case .linking: "Leggo versione e batteria e gli scrivo l’ora."
-    case .linked: "Il ciondolo è pronto. Resta collegato anche con l’app chiusa."
-    case .none: "Ho cercato per 30 secondi. Di solito è una di queste tre cose."
+    case .scanning: "Keep it on and close to the phone. It usually takes a few seconds."
+    case .found: "There’s a pendant nearby. If it’s yours, connect it."
+    case .linking: "Reading its version and battery, and setting its clock."
+    case .linked: "The pendant is ready. It stays connected even with the app closed."
+    case .none: "I looked for 30 seconds. It’s usually one of these three things."
     }
   }
 }
@@ -437,12 +445,12 @@ private struct SearchActions: View {
       let state = SearchState.of(model, now: context.date)
       VStack(spacing: 4) {
         if state == .none {
-          MainButton(title: "Cerca di nuovo") { model.link.rescan() }
-          TextButton(title: "Apri l’app Omi") {
+          MainButton(title: "Search again") { model.link.rescan() }
+          TextButton(title: "Open the Omi app") {
             if let url = URL(string: "omi://") { UIApplication.shared.open(url) }
           }
         } else {
-          MainButton(title: "Continua", disabled: state != .linked) {
+          MainButton(title: "Continue", disabled: state != .linked) {
             // After forgetting the pendant the server is already set: pairing is all there is.
             if model.credentials == nil { next() } else { model.finishOnboarding() }
           }
@@ -477,7 +485,7 @@ private struct PendantFigure: View {
     .frame(height: 236)
     .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(Theme.cell))
     .animation(.easeOut(duration: 0.3), value: found)
-    .accessibilityLabel("Il ciondolo Omi")
+    .accessibilityLabel("The Omi pendant")
   }
 }
 
@@ -489,16 +497,16 @@ private struct ServerStep: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       Heading(
-        title: "Dove mando l’audio",
-        text: "Scrivi l’indirizzo del tuo server e incolla il token che hai creato lì per l’audio.")
+        title: "Where to send the audio",
+        text: "Type your server’s address and paste the token you created there for the audio.")
       VStack(spacing: 0) {
-        field("Indirizzo") {
-          TextField("server.esempio.it", text: $form.address)
+        field("Address") {
+          TextField("server.example.com", text: $form.address)
             .keyboardType(.URL)
         }
         Divider().overlay(Theme.hairline).padding(.leading, 16)
         field("Token") {
-          SecureField("Incolla il token", text: $form.token)
+          SecureField("Paste the token", text: $form.token)
         }
       }
       .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
@@ -507,7 +515,7 @@ private struct ServerStep: View {
       .onChange(of: form.address) { model.clearProbe() }
       .onChange(of: form.token) { model.clearProbe() }
       Text(
-        "Il token finisce nel portachiavi di iOS. Indirizzo e token si cambiano poi dalle impostazioni."
+        "The token goes into the iOS keychain. You can change the address and token later in Settings."
       )
       .type(13, 18)
       .foregroundStyle(Theme.ink2)
@@ -524,7 +532,9 @@ private struct ServerStep: View {
     }
   }
 
-  private func field(_ label: String, @ViewBuilder input: () -> some View) -> some View {
+  private func field(_ label: LocalizedStringResource, @ViewBuilder input: () -> some View)
+    -> some View
+  {
     HStack(spacing: 0) {
       Text(label).type(17, 24).foregroundStyle(Theme.ink2).frame(width: 84, alignment: .leading)
       input()
@@ -546,14 +556,14 @@ private struct ServerActions: View {
     let form = ServerForm.shared
     let filled = Credentials.url(fromAddress: form.address) != nil && !form.token.isEmpty
     if model.probeOutcome == .ok {
-      MainButton(title: "Continua") {
+      MainButton(title: "Continue") {
         if model.demo != nil || model.saveServer(address: form.address, token: form.token) {
           next()
         }
       }
     } else {
       MainButton(
-        title: model.probing ? "Provo la connessione" : "Prova la connessione",
+        title: model.probing ? "Testing the connection" : "Test the connection",
         disabled: !filled || model.probing
       ) {
         Task { await model.testServer(address: form.address, token: form.token) }

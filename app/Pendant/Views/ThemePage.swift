@@ -16,15 +16,15 @@ struct ThemePage: View {
         ThemePreview()
           .padding(.horizontal, Theme.Gutter.surface)
           .padding(.top, Theme.pageTop)
-        Picker("Aspetto", selection: $model.config.appearance) {
-          Text("Automatico").tag(AppAppearance.system)
-          Text("Chiaro").tag(AppAppearance.light)
-          Text("Scuro").tag(AppAppearance.dark)
+        Picker("Appearance", selection: $model.config.appearance) {
+          Text("Automatic").tag(AppAppearance.system)
+          Text("Light").tag(AppAppearance.light)
+          Text("Dark").tag(AppAppearance.dark)
         }
         .pickerStyle(.segmented)
         .padding(.horizontal, Theme.Gutter.surface)
         .padding(.top, 20)
-        Text("Temi")
+        Text("Themes")
           .type(13, 18, .medium)
           .foregroundStyle(Theme.ink2)
           .padding(.horizontal, Theme.Gutter.text)
@@ -47,7 +47,7 @@ struct ThemePage: View {
           }
         }
         .padding(.horizontal, Theme.Gutter.surface)
-        Text("Personalizza")
+        Text("Customize")
           .type(13, 18, .medium)
           .foregroundStyle(Theme.ink2)
           .padding(.horizontal, Theme.Gutter.text)
@@ -63,7 +63,7 @@ struct ThemePage: View {
               ) { model.config.displayStyle = style }
             }
           }
-          SwatchRow(title: "Accento") {
+          SwatchRow(title: "Accent") {
             ForEach(AccentStyle.allCases, id: \.self) { style in
               let tone =
                 style.color(dark: scheme == .dark) ?? (scheme == .dark ? 0xECEEF1 : 0x15171B)
@@ -78,7 +78,7 @@ struct ThemePage: View {
         .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
         .padding(.horizontal, Theme.Gutter.surface)
         Text(
-          "Il rosso resta quello della registrazione e l’ambra quello degli avvisi, in ogni tema. Il tema vale anche per l’attività in tempo reale."
+          "Red stays the color of recording and amber the color of warnings, in every theme. The theme applies to the Live Activity too."
         )
         .type(13, 18)
         .foregroundStyle(Theme.ink2)
@@ -87,7 +87,7 @@ struct ThemePage: View {
       }
       .padding(.bottom, 32)
     }
-    .page("Tema")
+    .page("Theme")
   }
 }
 
@@ -101,7 +101,8 @@ private struct ThemePreview: View {
       HomeDisplay(
         snapshot: AppModel.Snapshot(
           mode: .recording, since: now.addingTimeInterval(-728), battery: 84,
-          serverHost: model.credentials?.host ?? "server.esempio.it", serverState: .online,
+          serverHost: model.credentials?.host ?? String(localized: "server.example.com"),
+          serverState: .online,
           level: -16),
         now: now
       )
@@ -116,7 +117,7 @@ private struct ThemePreview: View {
         .padding(.horizontal, 8)
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Anteprima del tema")
+    .accessibilityLabel("Theme preview")
   }
 }
 
@@ -136,7 +137,7 @@ private struct ThemeCard: View {
           Capsule().fill(accent).frame(width: 26, height: 5)
           Spacer(minLength: 0)
         }
-        Text("12m08s")
+        Text(verbatim: "12m08s")
           .font(Theme.font(20, .semibold, wide: true))
           .foregroundStyle(Color(hex: c.ink))
           .lineLimit(1)
@@ -179,7 +180,7 @@ private struct ThemeCard: View {
 
 /// A titled row of swatches that scrolls sideways.
 private struct SwatchRow<Content: View>: View {
-  let title: String
+  let title: LocalizedStringResource
   @ViewBuilder var content: Content
 
   var body: some View {

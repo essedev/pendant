@@ -55,20 +55,20 @@ struct NowView: View {
 
   /// The line under the key. Away from the pendant it says what the greyed key will do when the
   /// pendant is back: the display holds no sentences (concept-d-pausa.html, variant G).
-  private func hint(_ s: AppModel.Snapshot) -> String? {
+  private func hint(_ s: AppModel.Snapshot) -> LocalizedStringResource? {
     let doubleTap = model.config.gestures["doubleTap"] == .toggleRecording
     switch s.mode {
-    case .unpaired: return "Collega il ciondolo dalle impostazioni."
+    case .unpaired: return "Connect the pendant in Settings."
     case .disconnected, .bluetoothOff, .denied:
-      if resumes(s) { return "Se il ciondolo torna subito, continua la stessa conversazione." }
+      if resumes(s) { return "If the pendant comes back soon, the same conversation continues." }
       // On 3.0.21 a pendant away writes its audio to storage even when the app is paused
       // (ARCHITECTURE, Storage); the Bluetooth notice already says so.
       return s.mode == .disconnected
-        ? "Al ritorno resta in pausa. Intanto, se è acceso, registra nella sua memoria."
-        : "Al ritorno resta in pausa."
-    case .recording where s.charging: return "Il ciondolo è in carica e continua a registrare."
-    case .recording: return doubleTap ? "Oppure tocca due volte il ciondolo." : nil
-    case .paused: return doubleTap ? "Oppure tocca due volte il ciondolo per registrare." : nil
+        ? "When it’s back it stays paused. Meanwhile, if it’s on, it records to its own memory."
+        : "When it’s back it stays paused."
+    case .recording where s.charging: return "The pendant is charging and keeps recording."
+    case .recording: return doubleTap ? "Or double-tap the pendant." : nil
+    case .paused: return doubleTap ? "Or double-tap the pendant to record." : nil
     }
   }
 }
@@ -141,32 +141,33 @@ struct HomeDisplay: View {
   /// Away, the tag carries since when: the hour today, the day before that.
   private func since(_ s: AppModel.Snapshot) -> String {
     Calendar.current.isDate(s.since, inSameDayAs: now)
-      ? "dalle \(Clock.time(s.since))" : "da \(Clock.shortDay(s.since))"
+      ? String(localized: "since \(Clock.time(s.since))")
+      : String(localized: "tag.sinceDay", defaultValue: "since \(Clock.shortDay(s.since))")
   }
 
-  private func tags(_ s: AppModel.Snapshot) -> [(Tag.Kind, String)] {
-    var out: [(Tag.Kind, String)]
+  private func tags(_ s: AppModel.Snapshot) -> [(Tag.Kind, LocalizedStringResource)] {
+    var out: [(Tag.Kind, LocalizedStringResource)]
     switch s.mode {
-    case .recording: out = [(.rec, "Registra da")]
-    case .paused: out = [(.line, "In pausa")]
-    case .disconnected: out = [(.warn, "Scollegato \(since(s))")]
-    case .bluetoothOff: out = [(.warn, "Bluetooth spento \(since(s))")]
-    case .denied: out = [(.warn, "Senza Bluetooth \(since(s))")]
-    case .unpaired: out = [(.warn, "Nessun ciondolo")]
+    case .recording: out = [(.rec, "Recording for")]
+    case .paused: out = [(.line, "Paused")]
+    case .disconnected: out = [(.warn, "Disconnected \(since(s))")]
+    case .bluetoothOff: out = [(.warn, "Bluetooth off \(since(s))")]
+    case .denied: out = [(.warn, "No Bluetooth \(since(s))")]
+    case .unpaired: out = [(.warn, "No pendant")]
     }
     if s.serverState != .online && s.queuedSeconds >= 1 {
-      out.append((.warn, DurationFormat.words(s.queuedSeconds) + " in coda"))
+      out.append((.warn, "\(DurationFormat.words(s.queuedSeconds)) queued"))
     }
     return out
   }
 
-  private func serverWords(_ state: AppModel.Snapshot.ServerState) -> String {
+  private func serverWords(_ state: AppModel.Snapshot.ServerState) -> LocalizedStringResource {
     switch state {
-    case .online: "in linea"
-    case .unreachable: "non risponde"
-    case .tokenRejected: "token rifiutato"
-    case .protocolMismatch: "protocollo diverso"
-    case .notSet: "da impostare"
+    case .online: "online"
+    case .unreachable: "not responding"
+    case .tokenRejected: "token rejected"
+    case .protocolMismatch: "different protocol"
+    case .notSet: "not set up"
     }
   }
 }
@@ -182,10 +183,11 @@ private struct DayCounter: View {
         DisplayDuration(seconds: summary.totalSeconds, color: Theme.displayInk2, hoursAfter: 59)
       } else {
         HStack(alignment: .firstTextBaseline, spacing: 0) {
-          Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
-          Text("m").font(Theme.font(28, .medium)).padding(.leading, 3).padding(.trailing, 8)
-          Text("--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
-          Text("s").font(Theme.font(28, .medium)).padding(.leading, 3)
+          Text(verbatim: "--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
+          Text(verbatim: "m").font(Theme.font(28, .medium)).padding(.leading, 3)
+            .padding(.trailing, 8)
+          Text(verbatim: "--").font(Theme.font(72, .semibold, wide: true)).tracking(-1.44)
+          Text(verbatim: "s").font(Theme.font(28, .medium)).padding(.leading, 3)
         }
         .foregroundStyle(Theme.displayInk2)
         .lineLimit(1)
@@ -198,11 +200,10 @@ private struct DayCounter: View {
     .accessibilityElement(children: .combine)
   }
 
-  private var line: String {
+  private var line: LocalizedStringResource {
     switch summary.closedCount {
-    case 0: "Ancora niente registrato oggi."
-    case 1: "Registrato oggi, in 1 conversazione."
-    case let n: "Registrato oggi, in \(n) conversazioni."
+    case 0: "Nothing recorded yet today."
+    case let n: "Recorded today, in \(n) conversations."
     }
   }
 }
@@ -226,7 +227,7 @@ struct RecessedKey: View {
         } else {
           Image(systemName: "pause.fill").font(.system(size: 18, weight: .semibold))
         }
-        Text(resume ? "Riprendi" : "Pausa")
+        Text(resume ? "Resume" : "Pause")
       }
       .type(17, 24, .semibold)
       .foregroundStyle(enabled ? .white : Theme.ink2)
@@ -290,11 +291,16 @@ struct NoticeCard: View {
     .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
   }
 
-  private var content: (title: String, text: String, actions: [(String, () -> Void)]) {
+  private var content:
+    (
+      title: LocalizedStringResource, text: LocalizedStringResource,
+      actions: [(LocalizedStringResource, () -> Void)]
+    )
+  {
     let s = snapshot
     let config = model.config
-    let openServer: (String, () -> Void) = (
-      "Apri Server",
+    let openServer: (LocalizedStringResource, () -> Void) = (
+      "Open Server",
       {
         model.tab = .settings
         model.settingsPath = [.server]
@@ -303,35 +309,41 @@ struct NoticeCard: View {
     switch notice {
     case .bluetoothDenied:
       return (
-        "Pendant non ha più il permesso del Bluetooth",
-        "Senza permesso non riceve niente dal ciondolo. Apri Impostazioni, tocca Bluetooth e accendi Pendant.",
-        [("Apri Impostazioni", model.openSystemSettings)]
+        "Pendant no longer has Bluetooth permission",
+        "Without permission it gets nothing from the pendant. Open Settings, tap Bluetooth and turn on Pendant.",
+        [("Open Settings", model.openSystemSettings)]
       )
     case .bluetoothOff:
       return (
-        "Il Bluetooth del telefono è spento",
-        "Riaccendilo dal Centro di Controllo o dalle Impostazioni. Intanto il ciondolo registra nella sua memoria.",
-        [("Apri Impostazioni", model.openSystemSettings)]
+        "The phone’s Bluetooth is off",
+        "Turn it back on from Control Center or Settings. Meanwhile the pendant records to its own memory.",
+        [("Open Settings", model.openSystemSettings)]
       )
     case .tokenRejected:
-      let at = s.serverFailingSince.map { " alle \(Clock.time($0))" } ?? ""
+      let title: LocalizedStringResource =
+        s.serverFailingSince.map { "The server rejected the token at \(Clock.time($0))" }
+        ?? "The server rejected the token"
       return (
-        "Il server ha rifiutato il token\(at)",
-        "L’audio aspetta in coda sul telefono. Incolla un token valido nella pagina Server e la coda parte da sola.",
+        title,
+        "The audio waits in the queue on the phone. Paste a valid token on the Server page and the queue starts by itself.",
         [openServer]
       )
     case .queueNearlyFull:
       let used = Int(s.queuedSeconds / 60)
       let total = Int(config.spoolSeconds / 60)
       let left = max(0, total - used)
-      let since = s.serverFailingSince.map { " dalle \(Clock.time($0))" } ?? ""
+      let text: LocalizedStringResource =
+        s.serverFailingSince.map {
+          "The server hasn’t responded since \(Clock.time($0)). In \(left) minutes the oldest audio starts to be lost. Check the server or make the queue longer."
+        }
+        ?? "The server isn’t responding. In \(left) minutes the oldest audio starts to be lost. Check the server or make the queue longer."
       return (
-        "La coda è quasi piena: \(used) minuti su \(total)",
-        "Il server non risponde\(since). Fra \(left) minuti si comincia a perdere l’audio più vecchio. Controlla il server o allunga la coda.",
+        "The queue is almost full: \(used) of \(total) minutes",
+        text,
         [
           openServer,
           (
-            "Allunga la coda",
+            "Lengthen the queue",
             {
               model.tab = .settings
               model.settingsPath = [.advanced]
@@ -341,16 +353,16 @@ struct NoticeCard: View {
       )
     case .batteryLow:
       return (
-        "Batteria del ciondolo al \(s.battery ?? 0)%",
-        "Mettilo in carica appena puoi. Da spento non registra niente, nemmeno nella sua memoria.",
+        "Pendant battery at \(s.battery ?? 0)%",
+        "Charge it as soon as you can. When it’s off it records nothing, not even to its own memory.",
         []
       )
     case .firmwareUnsupported:
       let supported = SupportedFirmware.versions.sorted().joined(separator: ", ")
       return (
-        "Firmware \(s.firmware ?? "?"), non ancora supportato",
-        "Questa versione dell’app conosce il \(supported). Registra e mette in pausa come prima; le funzioni nuove del ciondolo restano spente finché non aggiorni l’app.",
-        [("Ho capito", { model.dismiss(.firmwareUnsupported) })]
+        "Firmware \(s.firmware ?? "?"), not supported yet",
+        "This version of the app knows \(supported). It records and pauses as before; the pendant’s new features stay off until you update the app.",
+        [("Got it", { model.dismiss(.firmwareUnsupported) })]
       )
     }
   }
@@ -378,7 +390,7 @@ private struct DaySection: View {
       VStack(alignment: .leading, spacing: 0) {
         VStack(alignment: .leading, spacing: 12) {
           HStack(alignment: .firstTextBaseline) {
-            Text("Oggi").type(22, 28, .semibold).foregroundStyle(Theme.ink)
+            Text("Today").type(22, 28, .semibold).foregroundStyle(Theme.ink)
             Spacer()
             if showsDay {
               Text(total(summary, closed: closed.count))
@@ -389,7 +401,7 @@ private struct DaySection: View {
           if showsDay { DayStrip(summary: summary, showNow: model.recording) }
           if closed.isEmpty {
             Text(
-              "La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa."
+              "The first conversation is the one you’re recording. It shows up here when you close it: double-tap the pendant, or press Pause."
             )
             .type(15, 20)
             .foregroundStyle(Theme.ink2)
@@ -402,8 +414,8 @@ private struct DaySection: View {
             ForEach(closed.prefix(Self.shown)) { c in
               NavigationLink(value: c.id) {
                 Row(
-                  Clock.time(c.start), value: DurationFormat.words(c.duration(now: now)),
-                  chevron: true)
+                  .verbatim(Clock.time(c.start)),
+                  value: .verbatim(DurationFormat.words(c.duration(now: now))), chevron: true)
               }
               .buttonStyle(.plain)
             }
@@ -412,7 +424,7 @@ private struct DaySection: View {
                 model.todayPath = []
                 model.tab = .today
               } label: {
-                Row("Tutte e \(closed.count)", chevron: true)
+                Row("All \(closed.count)", chevron: true)
               }
               .buttonStyle(.plain)
             }
@@ -423,9 +435,9 @@ private struct DaySection: View {
     }
   }
 
-  private func total(_ summary: DaySummary, closed: Int) -> String {
-    guard closed > 0 else { return "ancora niente" }
-    let count = closed == 1 ? "1 conversazione" : "\(closed) conversazioni"
+  private func total(_ summary: DaySummary, closed: Int) -> LocalizedStringResource {
+    guard closed > 0 else { return "nothing yet" }
+    let count = String(localized: "\(closed) conversations")
     return "\(DurationFormat.words(summary.totalSeconds)) in \(count)"
   }
 }

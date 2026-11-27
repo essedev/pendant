@@ -16,16 +16,16 @@ struct PendantPage: View {
       VStack(alignment: .leading, spacing: 0) {
         DeviceCard(device: d, name: model.config.pendantName) {
           HStack {
-            Text("Luminosità della spia")
+            Text("LED brightness")
             Spacer()
-            Text(ledOff ? "spenta" : "\(model.config.ledBrightness)%").monospacedDigit()
+            Text(ledOff ? "off" : "\(model.config.ledBrightness)%").monospacedDigit()
           }
           .type(15, 20, .medium)
           .foregroundStyle(Theme.displayInk2)
           .padding(.top, 16)
           TickRuler(
             value: $model.config.ledBrightness, steps: 33, maximum: 100, enabled: !ledOff && !off,
-            label: "Luminosità della spia"
+            label: "LED brightness"
           )
           .padding(.top, 10)
         }
@@ -33,7 +33,7 @@ struct PendantPage: View {
         .padding(.top, Theme.pageTop)
         if off {
           Text(
-            "Da scollegato il ciondolo tiene gli ultimi valori. Spia, microfono e vibrazione si cambiano quando torna vicino."
+            "While disconnected the pendant keeps its last values. LED, microphone and vibration change when it’s back nearby."
           )
           .type(13, 18)
           .foregroundStyle(Theme.ink2)
@@ -41,77 +41,78 @@ struct PendantPage: View {
           .padding(.top, 8)
         }
         CellGroup(
-          header: "Spia",
+          header: "LED",
           footer:
-            "Il colore lo decide il ciondolo, qui scegli quando e quanto. Accesa, dice anche a chi ti sta davanti che stai registrando."
+            "The pendant picks the color; here you choose when and how bright. When it’s on, it also tells the person in front of you that you’re recording."
         ) {
           PickerRow(
-            label: "Accensione", title: "Spia del ciondolo", choices: Choices.led,
+            label: "When lit", title: "Pendant LED", choices: Choices.led,
             selection: $model.config.ledPolicy,
-            footer: "Il colore lo decide il ciondolo. Da scollegato resta l’ultima scelta.",
+            footer: "The pendant picks the color. While disconnected it keeps the last choice.",
             disabled: off)
         }
         CellGroup(
-          header: "Microfono",
+          header: "Microphone",
           footer:
-            "Più alto sente meglio le voci lontane, e anche il rumore. Il ciondolo lo ricorda da solo."
+            "Higher picks up distant voices better, and noise too. The pendant remembers it by itself."
         ) {
           VStack(spacing: 0) {
-            Row("Guadagno", value: d.micGain.map { "\($0) di 8" } ?? "?", disabled: off)
+            Row(
+              "Gain", value: d.micGain.map { "\(Int($0)) of 8" } ?? .verbatim("?"), disabled: off)
             TickRuler(
               value: Binding(
                 get: { Int(model.device.micGain ?? 0) },
                 set: { model.link.setMicGain(UInt8($0)) }),
               steps: 9, maximum: 8, onDisplay: false, enabled: !off && d.micGain != nil,
-              label: "Guadagno del microfono"
+              label: "Microphone gain"
             )
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
           }
         }
         CellGroup(
-          header: "Ciondolo",
+          header: "Pendant",
           footer:
-            "Il firmware si aggiorna dall’app Omi: ricollega lì il ciondolo, aggiorna, poi fai Dimentica dispositivo. Finché è collegato anche a lei, registrate in due."
+            "The firmware is updated from the Omi app: connect the pendant there again, update, then tap Forget Device. While it’s connected to that app too, both apps record."
         ) {
           TextFieldRow(
-            label: "Nome", value: model.config.pendantName, title: "Nome del ciondolo",
-            footer: "Vale solo in questa app."
+            label: "Name", value: model.config.pendantName, title: "Pendant name",
+            footer: "Only in this app."
           ) { name in
             let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { return false }
             model.config.pendantName = String(trimmed.prefix(32))
             return true
           }
-          Row("Firmware", value: d.firmware ?? "?")
-          Row(label: "Vibrazione di prova") {
-            CapsuleButton(title: "Fai vibrare", disabled: off) { model.link.vibrate(.medium) }
+          Row("Firmware", value: .verbatim(d.firmware ?? "?"))
+          Row(label: "Test vibration") {
+            CapsuleButton(title: "Vibrate", disabled: off) { model.link.vibrate(.medium) }
           }
         }
         CellGroup(
           footer:
-            "L’app smette di cercarlo e torna alla ricerca. Impostazioni e conversazioni restano."
+            "The app stops looking for it and goes back to the search. Settings and conversations stay."
         ) {
           Button {
             confirmForget = true
           } label: {
-            Row("Dimentica il ciondolo")
+            Row("Forget the pendant")
           }
           .buttonStyle(.plain)
         }
       }
       .padding(.bottom, 32)
     }
-    .page("Ciondolo")
+    .page("Pendant")
     .confirmationDialog(
-      "Dimenticare \(model.config.pendantName)?", isPresented: $confirmForget,
+      "Forget \(model.config.pendantName)?", isPresented: $confirmForget,
       titleVisibility: .visible
     ) {
-      Button("Dimentica il ciondolo") { model.forgetPendant() }
-      Button("Annulla", role: .cancel) {}
+      Button("Forget the pendant") { model.forgetPendant() }
+      Button("Cancel", role: .cancel) {}
     } message: {
       Text(
-        "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
+        "The app stops looking for it and recording. To use it again, connect it from the search, in a few seconds."
       )
     }
   }
@@ -126,32 +127,32 @@ struct GesturesPage: View {
     ScrollView {
       VStack(spacing: 0) {
         CellGroup(
-          header: "Sul ciondolo",
+          header: "On the pendant",
           footer:
-            "Il ciondolo riconosce solo questi due. Tenerlo premuto oltre 3 secondi lo spegne: è un gesto del firmware e non si può cambiare. Da spento, un tocco breve lo riaccende."
+            "The pendant recognizes only these two. Holding it for more than 3 seconds turns it off: that’s a firmware gesture and can’t be changed. When it’s off, a short tap turns it back on."
         ) {
           PickerRow(
-            label: "Doppio tocco", title: "Doppio tocco", choices: Choices.gestures,
+            label: "Double tap", title: "Double tap", choices: Choices.gestures,
             selection: gesture("doubleTap"))
           PickerRow(
-            label: "Tocco singolo", title: "Tocco singolo", choices: Choices.gestures,
+            label: "Single tap", title: "Single tap", choices: Choices.gestures,
             selection: gesture("singleTap"),
             footer:
-              "Il tocco singolo arriva circa un terzo di secondo dopo: il ciondolo aspetta di capire se è un doppio tocco."
+              "The single tap arrives about a third of a second later: the pendant waits to tell whether it’s a double tap."
           )
         }
-        CellGroup(header: "Conferma") {
+        CellGroup(header: "Confirmation") {
           ToggleRow(
-            label: "Vibrazione di conferma",
+            label: "Confirmation vibration",
             subtitle:
-              "Media quando la registrazione parte, breve quando si ferma e quando segni un momento",
+              "Medium when recording starts, short when it stops and when you mark a moment",
             isOn: $model.config.vibrationConfirm)
         }
       }
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
-    .page("Gesti")
+    .page("Gestures")
   }
 
   private func gesture(_ name: String) -> Binding<GestureAction> {
@@ -172,25 +173,26 @@ struct OfflinePage: View {
       VStack(spacing: 0) {
         CellGroup(
           footer:
-            "Lontano dal telefono il ciondolo registra nella sua memoria. Per ora l’app non la scarica: la tiene o la svuota."
+            "Away from the phone the pendant records to its own memory. For now the app doesn’t download it: it keeps it or clears it."
         ) {
           PickerRow(
-            label: "Quando torna vicino", title: "Quando il ciondolo torna vicino",
+            label: "When it’s back nearby", title: "When the pendant is back nearby",
             choices: Choices.offline, selection: $model.config.offlinePolicy)
         }
         CellGroup(
-          header: "Nel ciondolo adesso",
-          footer: d.connected ? nil : "Si legge quando il ciondolo è collegato."
+          header: "In the pendant now",
+          footer: d.connected ? nil : "Shown when the pendant is connected."
         ) {
           Row(
-            "In memoria",
-            value: d.connected ? d.pendingPackets.map { "\($0) pacchetti" } ?? "?" : "?")
+            "In memory",
+            value: d.connected
+              ? d.pendingPackets.map { "\($0) packets" } ?? .verbatim("?") : .verbatim("?"))
         }
       }
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
-    .page("Audio offline")
+    .page("Offline audio")
   }
 }
 
@@ -206,69 +208,69 @@ struct NotificationsPage: View {
       VStack(spacing: 0) {
         CellGroup(
           footer: model.notificationStatus == .denied
-            ? "Le notifiche sono spente nelle Impostazioni di iOS: qui sotto si sceglie, ma non arriva niente."
+            ? "Notifications are off in iOS Settings: you can choose below, but nothing arrives."
             : nil
         ) {
           switch model.notificationStatus {
           case .notDetermined:
-            Row(label: "Permesso di iOS") {
-              CapsuleButton(title: "Consenti") { Task { await model.requestNotifications() } }
+            Row(label: "iOS permission") {
+              CapsuleButton(title: "Allow") { Task { await model.requestNotifications() } }
             }
           case .denied:
-            Row(label: "Permesso di iOS", value: "Spente") {
-              CapsuleButton(title: "Apri Impostazioni") { model.openSystemSettings() }
+            Row(label: "iOS permission", value: "Off") {
+              CapsuleButton(title: "Open Settings") { model.openSystemSettings() }
             }
           default:
-            Row("Permesso di iOS", value: "Consentite")
+            Row("iOS permission", value: "Allowed")
           }
         }
-        CellGroup(header: "Ciondolo scollegato") {
-          ToggleRow(label: "Avvisa", isOn: $model.config.notifyDisconnect)
+        CellGroup(header: "Pendant disconnected") {
+          ToggleRow(label: "Notify", isOn: $model.config.notifyDisconnect)
           PickerRow(
-            label: "Dopo", title: "Ciondolo scollegato, avvisa dopo",
+            label: "After", title: "Pendant disconnected, notify after",
             choices: including(
               Choices.minutes, c.disconnectNotifyAfter, label: DurationFormat.words),
             selection: $model.config.disconnectNotifyAfter, disabled: !c.notifyDisconnect)
         }
-        CellGroup(header: "Server irraggiungibile") {
-          ToggleRow(label: "Avvisa", isOn: $model.config.notifyUplink)
+        CellGroup(header: "Server unreachable") {
+          ToggleRow(label: "Notify", isOn: $model.config.notifyUplink)
           PickerRow(
-            label: "Dopo", title: "Server irraggiungibile, avvisa dopo",
+            label: "After", title: "Server unreachable, notify after",
             choices: including(Choices.minutes, c.uplinkNotifyAfter, label: DurationFormat.words),
             selection: $model.config.uplinkNotifyAfter, disabled: !c.notifyUplink)
         }
-        CellGroup(header: "Batteria bassa") {
-          ToggleRow(label: "Avvisa", isOn: $model.config.notifyBattery)
+        CellGroup(header: "Low battery") {
+          ToggleRow(label: "Notify", isOn: $model.config.notifyBattery)
           PickerRow(
-            label: "Sotto il", title: "Batteria bassa, avvisa sotto il",
+            label: "Below", title: "Low battery, notify below",
             choices: including(Choices.battery, c.batteryThreshold) { "\($0)%" },
             selection: $model.config.batteryThreshold, disabled: !c.notifyBattery)
         }
         CellGroup(
-          header: "Acceso senza registrare",
+          header: "On without recording",
           footer:
-            "Quando il ciondolo si collega e non registri entro questo tempo, arriva un avviso, e torna finché non registri o lo spegni: di solito è un tocco in tasca, e acceso consuma batteria. Dalla notifica, Basta per ora lo ferma fino al prossimo collegamento. Sul caricatore non avvisa, e quando lo stacchi il conto riparte. Con questo firmware l’app non può spegnerlo."
+            "When the pendant connects and you don’t record within this time, a warning arrives, and it comes back until you record or turn the pendant off: it’s usually a tap in a pocket, and while on it uses battery. From the notification, Enough for now stops it until the next connection. On the charger it doesn’t warn, and when you unplug it the count starts over. With this firmware the app can’t turn it off."
         ) {
-          ToggleRow(label: "Avvisa", isOn: $model.config.notifyIdle)
+          ToggleRow(label: "Notify", isOn: $model.config.notifyIdle)
           PickerRow(
-            label: "Dopo", title: "Acceso senza registrare, avvisa dopo",
+            label: "After", title: "On without recording, notify after",
             choices: including(Choices.idle, c.idleNotifyAfter, label: DurationFormat.words),
             selection: $model.config.idleNotifyAfter, disabled: !c.notifyIdle)
           PickerRow(
-            label: "Ripeti", title: "Acceso senza registrare, ripeti l’avviso",
+            label: "Repeat", title: "On without recording, repeat the warning",
             choices: including(Choices.idleRepeat, c.idleRepeatEvery, label: Choices.repeatLabel),
             selection: $model.config.idleRepeatEvery, disabled: !c.notifyIdle)
           PickerRow(
-            label: "Vibrazione", title: "Acceso senza registrare, il ciondolo vibra",
+            label: "Vibration", title: "On without recording, the pendant vibrates",
             choices: Choices.idleVibration,
             selection: $model.config.idleVibration, disabled: !c.notifyIdle)
         }
-        CellGroup(header: "Firma in scadenza") {
-          ToggleRow(label: "Avvisa", isOn: $model.config.notifySignature)
+        CellGroup(header: "Signature expiring") {
+          ToggleRow(label: "Notify", isOn: $model.config.notifySignature)
           PickerRow(
-            label: "Quando", title: "Firma in scadenza, avvisa",
+            label: "When", title: "Signature expiring, notify",
             choices: including(Choices.signatureDays, c.signatureDaysBefore) {
-              "\($0) giorni prima"
+              String(localized: "\($0) days before")
             },
             selection: $model.config.signatureDaysBefore, disabled: !c.notifySignature)
         }
@@ -276,7 +278,7 @@ struct NotificationsPage: View {
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
-    .page("Notifiche")
+    .page("Notifications")
     .onChange(of: scenePhase) { _, phase in
       if phase == .active { Task { await model.refreshNotificationStatus() } }
     }
@@ -296,10 +298,11 @@ struct ServerPage: View {
       VStack(alignment: .leading, spacing: 0) {
         CellGroup {
           TextFieldRow(
-            label: "Indirizzo", value: creds?.host ?? draftAddress ?? "da impostare",
-            title: "Indirizzo del server",
-            footer: "Solo il nome, senza https e senza percorso. La connessione è sempre cifrata.",
-            placeholder: "server.esempio.it", keyboard: .URL
+            label: "Address", value: creds?.host ?? draftAddress ?? String(localized: "not set up"),
+            title: "Server address",
+            footer:
+              "Just the name, without https and without a path. The connection is always encrypted.",
+            placeholder: "server.example.com", keyboard: .URL
           ) { address in
             guard let token = model.credentials?.token else {
               guard Credentials.url(fromAddress: address) != nil else { return false }
@@ -309,11 +312,12 @@ struct ServerPage: View {
             return model.saveServer(address: address, token: token)
           }
           TextFieldRow(
-            label: "Token", value: creds.map { "••••••••••••\($0.tokenTail)" } ?? "da impostare",
-            subtitle: "Nel portachiavi di iOS", title: "Nuovo token",
+            label: "Token",
+            value: creds.map { "••••••••••••\($0.tokenTail)" } ?? String(localized: "not set up"),
+            subtitle: "In the iOS keychain", title: "New token",
             footer:
-              "Incolla il token creato sul server per l’audio. Finisce nel portachiavi di iOS e sostituisce quello di prima.",
-            placeholder: "Incolla il token", startEmpty: true, secure: true
+              "Paste the token created on the server for the audio. It goes into the iOS keychain and replaces the previous one.",
+            placeholder: "Paste the token", startEmpty: true, secure: true
           ) { token in
             let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty,
@@ -323,25 +327,21 @@ struct ServerPage: View {
           }
         }
         CellGroup {
-          Row("Protocollo", value: "audio_stream 1")
+          Row("Protocol", value: .verbatim("audio_stream 1"))
           PickerRow(
-            label: "Lingua del parlato", title: "Lingua del parlato",
+            label: "Speech language", title: "Speech language",
             choices: including(Choices.language, model.config.language) { $0.uppercased() },
             selection: $model.config.language,
-            footer: "Viene comunicata al server a ogni conversazione.")
+            footer: "It’s sent to the server with every conversation.")
         }
-        CellGroup(
-          footer: model.config.transcripts
-            ? "Se il server le manda, le trascrizioni si leggono nella pagina della conversazione, con i parlatori quando il server li distingue. Restano sul telefono finché resta la conversazione."
-            : "Le trascrizioni si leggono solo sul server. Sul telefono non ne resta nessuna."
-        ) {
-          ToggleRow(label: "Trascrizioni sul telefono", isOn: $model.config.transcripts)
+        CellGroup(footer: transcriptsFooter) {
+          ToggleRow(label: "Transcripts on the phone", isOn: $model.config.transcripts)
         }
         CellGroup {
-          Row("Ultimo contatto", value: lastContact)
-          Row(label: "Prova la connessione") {
+          Row("Last contact", value: lastContact)
+          Row(label: "Test the connection") {
             CapsuleButton(
-              title: model.probing ? "Provo" : "Prova", disabled: model.probing || creds == nil
+              title: model.probing ? "Testing" : "Test", disabled: model.probing || creds == nil
             ) {
               Task { await model.testServer() }
             }
@@ -353,7 +353,7 @@ struct ServerPage: View {
             .padding(.top, 14)
         }
         Text(
-          "L’app manda l’audio a qualunque server che parli questo protocollo. Il token viaggia nell’intestazione della richiesta, mai nell’indirizzo."
+          "The app sends the audio to any server that speaks this protocol. The token travels in the request header, never in the address."
         )
         .type(13, 18)
         .foregroundStyle(Theme.ink2)
@@ -367,10 +367,16 @@ struct ServerPage: View {
     .onDisappear { model.clearProbe() }
   }
 
-  private var lastContact: String {
-    if model.demo != nil { return "adesso" }
-    guard let date = model.capture.uplink.lastContact else { return "in questa sessione no" }
-    return Date().timeIntervalSince(date) < 60 ? "adesso" : Clock.time(date)
+  private var transcriptsFooter: LocalizedStringResource {
+    model.config.transcripts
+      ? "If the server sends them, transcripts show on the conversation’s page, with the speakers when the server tells them apart. They stay on the phone as long as the conversation does."
+      : "Transcripts are only on the server. None stay on the phone."
+  }
+
+  private var lastContact: LocalizedStringResource {
+    if model.demo != nil { return "now" }
+    guard let date = model.capture.uplink.lastContact else { return "not in this session" }
+    return Date().timeIntervalSince(date) < 60 ? "now" : .verbatim(Clock.time(date))
   }
 }
 
@@ -383,7 +389,7 @@ struct ProbeResult: View {
   var body: some View {
     if probing {
       VStack(alignment: .leading, spacing: 10) {
-        Text("Provo a collegarmi a \(host)").type(15, 20, .semibold).foregroundStyle(Theme.ink)
+        Text("Trying to connect to \(host)").type(15, 20, .semibold).foregroundStyle(Theme.ink)
         ScanTicks()
       }
     } else if let outcome {
@@ -406,24 +412,24 @@ struct ProbeResult: View {
     }
   }
 
-  private func title(_ o: ServerProbeOutcome) -> String {
+  private func title(_ o: ServerProbeOutcome) -> LocalizedStringResource {
     switch o {
-    case .ok: "Collegato"
-    case .unreachable: "\(host.isEmpty ? "Il server" : host) non risponde"
-    case .tokenRejected: "Il server ha rifiutato il token"
-    case .protocolMismatch: "Il server parla un protocollo diverso"
+    case .ok: "Connected"
+    case .unreachable: host.isEmpty ? "The server isn’t responding" : "\(host) isn’t responding"
+    case .tokenRejected: "The server rejected the token"
+    case .protocolMismatch: "The server speaks a different protocol"
     }
   }
 
-  private func text(_ o: ServerProbeOutcome) -> String {
+  private func text(_ o: ServerProbeOutcome) -> LocalizedStringResource {
     switch o {
-    case .ok: "Il server ha accettato il token e parla audio_stream 1."
+    case .ok: "The server accepted the token and speaks audio_stream 1."
     case .unreachable:
-      "Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso."
+      "Check that the address is spelled right and that the phone is online. If the server is off, try again when it’s on."
     case .tokenRejected:
-      "L’indirizzo è giusto, il token no. Incollalo di nuovo: deve essere quello creato per l’audio, intero."
+      "The address is right, the token isn’t. Paste it again: it must be the one created for the audio, in full."
     case .protocolMismatch:
-      "Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app."
+      "It answered, but not with audio_stream 1. Check the address, or update the server or the app."
     }
   }
 }
@@ -441,7 +447,7 @@ struct SystemControlsPage: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
         Text(
-          "Pausa e segnalibri senza aprire l’app: dal blocco schermo, dalla Dynamic Island e dai tasti di iOS."
+          "Pause and bookmarks without opening the app: from the lock screen, the Dynamic Island and the iOS controls."
         )
         .type(15, 20)
         .foregroundStyle(Theme.ink2)
@@ -452,28 +458,24 @@ struct SystemControlsPage: View {
           .padding(.top, 20)
           .opacity(config.liveActivity && allowed ? 1 : 0.4)
         CellGroup(
-          header: "Attività in tempo reale",
-          footer: !allowed
-            ? "Le attività in tempo reale di Pendant sono spente nelle impostazioni di iOS."
-            : config.liveActivityAlways
-              ? "Resta anche in pausa e col ciondolo lontano. iOS la tiene al massimo 8 ore: poi ricompare quando apri l’app. Con l’app aperta la Dynamic Island resta vuota."
-              : "Compare quando parte una registrazione e si chiude dopo \(DurationFormat.words(config.liveActivityPauseEnd)) di pausa. Con l’app aperta la Dynamic Island resta vuota."
+          header: "Live Activity",
+          footer: activityFooter(allowed: allowed, config: config)
         ) {
-          ToggleRow(label: "Mostra", isOn: $model.config.liveActivity)
+          ToggleRow(label: "Show", isOn: $model.config.liveActivity)
           ToggleRow(
-            label: "Sempre visibile", subtitle: "Anche in pausa e col ciondolo lontano",
+            label: "Always visible", subtitle: "Even when paused and with the pendant away",
             isOn: $model.config.liveActivityAlways
           )
           .disabled(!config.liveActivity)
         }
         if !allowed {
-          CapsuleButton(title: "Apri le impostazioni di iOS") { model.openSystemSettings() }
+          CapsuleButton(title: "Open iOS Settings") { model.openSystemSettings() }
             .padding(.horizontal, Theme.Gutter.text)
             .padding(.top, 4)
         }
         CellGroup(
-          header: "Scorciatoie",
-          footer: "Dove stanno lo decide iOS: l’app non può metterle da sola."
+          header: "Shortcuts",
+          footer: "iOS decides where they go: the app can’t place them by itself."
         ) {
           ForEach(Shortcut.allCases) { shortcut in
             Button {
@@ -489,7 +491,16 @@ struct SystemControlsPage: View {
     }
     .onAppear { if model.demo == .pageControlsGuide { guide = .actionButton } }
     .sheet(item: $guide) { ShortcutGuide(shortcut: $0) }
-    .page("Fuori dall’app")
+    .page("Outside the app")
+  }
+}
+
+extension SystemControlsPage {
+  fileprivate func activityFooter(allowed: Bool, config: Configuration) -> LocalizedStringResource {
+    if !allowed { return "Pendant’s Live Activities are off in iOS Settings." }
+    return config.liveActivityAlways
+      ? "It stays even when paused and with the pendant away. iOS keeps it for 8 hours at most: then it comes back when you open the app. With the app open the Dynamic Island stays empty."
+      : "It appears when a recording starts and closes after \(DurationFormat.words(config.liveActivityPauseEnd)) of pause. With the app open the Dynamic Island stays empty."
   }
 }
 
@@ -499,53 +510,53 @@ private enum Shortcut: String, CaseIterable, Identifiable {
 
   var id: String { rawValue }
 
-  var title: String {
+  var title: LocalizedStringResource {
     switch self {
-    case .actionButton: "Tasto Azione"
-    case .controlCenter: "Centro di Controllo"
-    case .lockScreen: "Blocco schermo"
+    case .actionButton: "Action button"
+    case .controlCenter: "Control Center"
+    case .lockScreen: "Lock screen"
     }
   }
 
-  var subtitle: String {
+  var subtitle: LocalizedStringResource {
     switch self {
-    case .actionButton: "Tieni premuto per segnare il momento o mettere in pausa"
-    case .controlCenter: "Pausa e segnalibro a un gesto dall’alto"
-    case .lockScreen: "Al posto della torcia o della fotocamera"
+    case .actionButton: "Press and hold to mark the moment or pause"
+    case .controlCenter: "Pause and bookmark one swipe down from the top"
+    case .lockScreen: "In place of the flashlight or the camera"
     }
   }
 
-  var steps: [String] {
+  var steps: [LocalizedStringResource] {
     switch self {
     case .actionButton:
       [
-        "Apri Impostazioni, poi Tasto Azione.",
-        "Scorri di lato fino a Controlli.",
-        "Tocca Scegli un controllo e cerca Pendant: Segna questo momento, oppure Pausa e ripresa.",
+        "Open Settings, then Action Button.",
+        "Swipe sideways to Controls.",
+        "Tap Choose a Control and search for Pendant: Mark this moment, or Pause and resume.",
       ]
     case .controlCenter:
       [
-        "Scorri giù dall’angolo in alto a destra per aprire il Centro di Controllo.",
-        "Tieni premuto su uno spazio vuoto, poi tocca Aggiungi un controllo.",
-        "Cerca Pendant e aggiungi Pausa e ripresa e Segna questo momento.",
+        "Swipe down from the top-right corner to open Control Center.",
+        "Press and hold an empty space, then tap Add a Control.",
+        "Search for Pendant and add Pause and resume and Mark this moment.",
       ]
     case .lockScreen:
       [
-        "Tieni premuto sul blocco schermo, poi tocca Personalizza.",
-        "Scegli Blocco schermo e togli la torcia o la fotocamera col meno.",
-        "Tocca il più al loro posto e cerca Pendant.",
+        "Press and hold the lock screen, then tap Customize.",
+        "Choose Lock Screen and remove the flashlight or the camera with the minus.",
+        "Tap the plus in their place and search for Pendant.",
       ]
     }
   }
 
-  var note: String {
+  var note: LocalizedStringResource {
     switch self {
     case .actionButton:
-      "Si attiva tenendolo premuto, quindi in tasca non parte. Il ciondolo vibra per conferma. Serve un iPhone 15 Pro o successivo."
+      "It works by pressing and holding, so it doesn’t go off in a pocket. The pendant vibrates to confirm. It needs an iPhone 15 Pro or later."
     case .controlCenter:
-      "Pausa e ripresa mostra lo stato: acceso mentre registra."
+      "Pause and resume shows the state: on while recording."
     case .lockScreen:
-      "Ci sta un controllo per lato. Funziona anche col telefono bloccato."
+      "There’s room for one control on each side. It works with the phone locked too."
     }
   }
 }
@@ -560,7 +571,7 @@ private struct ShortcutGuide: View {
       HStack {
         Text(shortcut.title).type(22, 28, .semibold).foregroundStyle(Theme.ink)
         Spacer()
-        Button("Fine") { dismiss() }
+        Button("Done") { dismiss() }
           .type(17, 22, .semibold)
           .foregroundStyle(Theme.accent)
       }
@@ -587,17 +598,17 @@ private struct ActivityPreview: View {
     var state = model.activityContent
     // The timer counts from the system clock: a demo scene's fixed clock is moved to now.
     state.since = state.since.addingTimeInterval(Date().timeIntervalSince(model.now))
-    let server = model.credentials?.host ?? "server.esempio.it"
+    let server = model.credentials?.host ?? String(localized: "server.example.com")
     return VStack(spacing: 12) {
-      Picker("Dove", selection: $surface) {
+      Picker("Where", selection: $surface) {
         Text("Dynamic Island").tag(Surface.island)
-        Text("Blocco schermo").tag(Surface.lockScreen)
+        Text("Lock screen").tag(Surface.lockScreen)
       }
       .pickerStyle(.segmented)
       Text(
         surface == .island
-          ? "Col telefono sbloccato, intorno alla fotocamera. Si apre tenendola premuta."
-          : "Sul blocco schermo e fra le notifiche."
+          ? "With the phone unlocked, around the camera. Press and hold it to open."
+          : "On the lock screen and among the notifications."
       )
       .type(13, 18)
       .foregroundStyle(Theme.ink2)
@@ -614,7 +625,7 @@ private struct ActivityPreview: View {
       }
       .allowsHitTesting(false)
       .accessibilityElement(children: .ignore)
-      .accessibilityLabel("Anteprima dell’attività in tempo reale")
+      .accessibilityLabel("Preview of the Live Activity")
     }
   }
 
@@ -649,14 +660,14 @@ private struct ActivityPreview: View {
 
 /// Numbered steps in a cell: the order matters.
 struct Steps: View {
-  let steps: [String]
+  let steps: [LocalizedStringResource]
 
-  init(_ steps: [String]) { self.steps = steps }
+  init(_ steps: [LocalizedStringResource]) { self.steps = steps }
 
   var body: some View {
     ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
       HStack(alignment: .firstTextBaseline, spacing: 0) {
-        Text("\(i + 1)").type(15, 20, .semibold).foregroundStyle(Theme.ink2).frame(
+        Text(i + 1, format: .number).type(15, 20, .semibold).foregroundStyle(Theme.ink2).frame(
           width: 24, alignment: .leading)
         Text(step).type(15, 20).foregroundStyle(Theme.ink)
           .fixedSize(horizontal: false, vertical: true)
@@ -679,51 +690,51 @@ struct AdvancedPage: View {
     let c = model.config
     ScrollView {
       VStack(spacing: 0) {
-        CellGroup(header: "Connessione al server") {
+        CellGroup(header: "Server connection") {
           PickerRow(
-            label: "Ping nel silenzio", title: "Ping nel silenzio",
+            label: "Ping during silence", title: "Ping during silence",
             choices: including(Choices.ping, c.pingInterval, label: DurationFormat.words),
             selection: $model.config.pingInterval,
             footer:
-              "Quando nessuno parla l’app manda un segnale per tenere aperta la connessione. Molte reti la chiudono dopo 100 secondi di silenzio."
+              "When nobody talks the app sends a signal to keep the connection open. Many networks close it after 100 seconds of silence."
           )
           PickerRow(
-            label: "Attesa massima fra i tentativi", title: "Attesa massima fra i tentativi",
+            label: "Longest wait between attempts", title: "Longest wait between attempts",
             choices: including(Choices.retry, c.reconnectMaxDelay, label: DurationFormat.words),
             selection: $model.config.reconnectMaxDelay,
             footer:
-              "Se il server non risponde l’app riprova con attese sempre più lunghe, fino a questa."
+              "If the server doesn’t respond the app retries with longer and longer waits, up to this one."
           )
         }
         CellGroup(
-          header: "Batteria del ciondolo",
+          header: "Pendant battery",
           footer:
-            "In pausa l’app smette di ricevere l’audio e il ciondolo smette di trasmetterlo: la radio riposa, il microfono resta acceso. Aiuta nelle pause in posti rumorosi; nel silenzio il microfono dorme già da solo. Senza audio iOS può sospendere l’app in pausa: il doppio tocco la risveglia, ma gli avvisi del ciondolo acceso a vuoto potrebbero arrivare in ritardo."
+            "When paused the app stops receiving the audio and the pendant stops sending it: the radio rests, the microphone stays on. It helps during pauses in noisy places; in silence the microphone already sleeps by itself. Without audio iOS may suspend the app while paused: a double tap wakes it, but idle warnings might arrive late."
         ) {
-          ToggleRow(label: "Ferma l’audio in pausa", isOn: $model.config.stopAudioInPause)
+          ToggleRow(label: "Stop the audio when paused", isOn: $model.config.stopAudioInPause)
         }
         CellGroup(
-          header: "Coda senza rete",
+          header: "Offline queue",
           footer:
-            "Quando il server non risponde l’audio aspetta sul telefono. Piena la coda, si perde l’audio più vecchio."
+            "When the server doesn’t respond the audio waits on the phone. When the queue is full, the oldest audio is lost."
         ) {
           PickerRow(
-            label: "Dimensione", title: "Coda senza rete",
+            label: "Size", title: "Offline queue",
             choices: including(Choices.queue, c.spoolSeconds, label: DurationFormat.words),
             selection: $model.config.spoolSeconds,
-            footer: "Piena la coda, si perde l’audio più vecchio.")
+            footer: "When the queue is full, the oldest audio is lost.")
           TimelineView(.periodic(from: .now, by: 1)) { _ in
-            Row("Occupata ora", value: queueUsed)
+            Row("Used now", value: .verbatim(queueUsed))
           }
         }
         CellGroup(
-          header: "Diagnostica",
+          header: "Diagnostics",
           footer:
-            "Il log non contiene né audio né token. La lettura della memoria serve a verificare il formato dell’audio offline: l’audio letto non resta più nel ciondolo."
+            "The log holds neither audio nor tokens. Reading the memory is for checking the format of the offline audio: the audio read no longer stays in the pendant."
         ) {
-          Row(label: "Log dell’app") {
+          Row(label: "App log") {
             ShareLink(item: model.logFile) {
-              Text("Esporta")
+              Text("Export")
                 .type(15, 20, .medium)
                 .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 14)
@@ -731,23 +742,23 @@ struct AdvancedPage: View {
                 .background(Capsule().fill(Theme.ink.opacity(0.08)))
             }
           }
-          Row(label: "Leggi la memoria del ciondolo") {
+          Row(label: "Read the pendant’s memory") {
             CapsuleButton(
-              title: "Leggi", disabled: !model.device.connected || model.link.ringRead != nil
+              title: "Read", disabled: !model.device.connected || model.link.ringRead != nil
             ) {
               confirmRing = true
             }
           }
         }
         CellGroup(header: "App", footer: signatureFooter) {
-          Row("Versione", value: AppInfo.fullVersion)
-          Row("Firma", value: signatureValue, warn: signatureWarn)
+          Row("Version", value: .verbatim(AppInfo.fullVersion))
+          Row("Signature", value: signatureValue, warn: signatureWarn)
         }
-        CellGroup(footer: "Indirizzo e token del server non cambiano.") {
+        CellGroup(footer: "The server address and token don’t change.") {
           Button {
             confirmReset = true
           } label: {
-            Row("Riporta ai valori iniziali")
+            Row("Reset to defaults")
           }
           .buttonStyle(.plain)
         }
@@ -755,25 +766,25 @@ struct AdvancedPage: View {
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
-    .page("Avanzate")
+    .page("Advanced")
     .confirmationDialog(
-      "Riportare le impostazioni ai valori iniziali?", isPresented: $confirmReset,
+      "Reset the settings to their defaults?", isPresented: $confirmReset,
       titleVisibility: .visible
     ) {
-      Button("Riporta ai valori iniziali") { model.resetSettings() }
-      Button("Annulla", role: .cancel) {}
+      Button("Reset to defaults") { model.resetSettings() }
+      Button("Cancel", role: .cancel) {}
     } message: {
       Text(
-        "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
+        "Gestures, notifications and advanced values go back to how they were at first launch. The server address and token stay."
       )
     }
     .confirmationDialog(
-      "Leggere la memoria del ciondolo?", isPresented: $confirmRing, titleVisibility: .visible
+      "Read the pendant’s memory?", isPresented: $confirmRing, titleVisibility: .visible
     ) {
-      Button("Leggi la memoria") { model.link.readRing() }
-      Button("Annulla", role: .cancel) {}
+      Button("Read the memory") { model.link.readRing() }
+      Button("Cancel", role: .cancel) {}
     } message: {
-      Text("L’audio letto finisce in un file accanto al log e non resta più nel ciondolo.")
+      Text("The audio read goes into a file next to the log and no longer stays in the pendant.")
     }
   }
 
@@ -784,10 +795,9 @@ struct AdvancedPage: View {
     return seconds < 1 ? "0 MB" : String(format: "%.1f MB, %@", mb, DurationFormat.words(seconds))
   }
 
-  private var signatureValue: String {
-    guard let expiry = model.signatureExpiry else { return "senza scadenza" }
-    return
-      "scade il \(expiry.formatted(.dateTime.day().month(.wide).locale(Locale(identifier: "it_IT"))))"
+  private var signatureValue: LocalizedStringResource {
+    guard let expiry = model.signatureExpiry else { return "no expiry" }
+    return "expires on \(expiry.formatted(.dateTime.day().month(.wide)))"
   }
 
   private var signatureWarn: Bool {
@@ -795,13 +805,13 @@ struct AdvancedPage: View {
     return SignatureExpiry.daysLeft(until: expiry, now: model.now) <= 3
   }
 
-  private var signatureFooter: String {
+  private var signatureFooter: LocalizedStringResource {
     guard let expiry = model.signatureExpiry else {
-      return "Questa copia dell’app non ha un profilo di firma con scadenza."
+      return "This copy of the app has no signing profile with an expiry."
     }
     let day = Clock.longDay(expiry)
     return
-      "\(day.prefix(1).uppercased() + day.dropFirst()) l’app smette di aprirsi: è firmata con un account gratuito, che dura 7 giorni. Per rinnovarla collega l’iPhone al Mac e rilancia l’installazione da Xcode. Impostazioni e token restano."
+      "On \(day.prefix(1).uppercased() + day.dropFirst()) the app stops opening: it’s signed with a free account, which lasts 7 days. To renew it, connect the iPhone to the Mac and run the install again from Xcode. Settings and token stay."
   }
 }
 
@@ -812,23 +822,23 @@ struct InfoPage: View {
       VStack(spacing: 0) {
         CellGroup(
           footer:
-            "Pendant riceve l’audio del ciondolo Omi e lo manda al server che scegli tu. Non ha account e non manda niente a nessun altro."
+            "Pendant receives the audio of the Omi pendant and sends it to the server you choose. It has no account and sends nothing to anyone else."
         ) {
-          Row("Pendant", value: AppInfo.version)
-          Row("Ciondolo", value: "Omi CV 1")
+          Row(.verbatim("Pendant"), value: .verbatim(AppInfo.version))
+          Row("Pendant", value: .verbatim("Omi CV 1"))
           Row(
-            "Firmware supportato",
-            value: SupportedFirmware.versions.sorted().joined(separator: ", "))
+            "Supported firmware",
+            value: .verbatim(SupportedFirmware.versions.sorted().joined(separator: ", ")))
         }
         CellGroup {
-          NavigationLink(value: AppModel.Page.licenses) { Row("Licenze", chevron: true) }
+          NavigationLink(value: AppModel.Page.licenses) { Row("Licenses", chevron: true) }
             .buttonStyle(.plain)
         }
       }
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
-    .page("Informazioni")
+    .page("About")
   }
 }
 
@@ -838,24 +848,24 @@ struct LicensesPage: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
         LicenseBlock(
-          title: "Omi, di Based Hardware",
+          title: "Omi, by Based Hardware",
           note:
-            "La parte Bluetooth di Pendant segue il protocollo e l’app iOS di Omi, pubblicati con licenza MIT.",
+            "Pendant’s Bluetooth part follows Omi’s protocol and iOS app, published under the MIT license.",
           text: Licenses.omi)
         LicenseBlock(
-          title: "Archivo, di Omnibus-Type",
-          note: "Il carattere dell’app. SIL Open Font License 1.1.",
+          title: "Archivo, by Omnibus-Type",
+          note: "The app’s typeface. SIL Open Font License 1.1.",
           text: Licenses.archivo)
       }
       .padding(.bottom, 32)
     }
-    .page("Licenze")
+    .page("Licenses")
   }
 }
 
 private struct LicenseBlock: View {
-  let title: String
-  let note: String
+  let title: LocalizedStringResource
+  let note: LocalizedStringResource
   let text: String
 
   var body: some View {
