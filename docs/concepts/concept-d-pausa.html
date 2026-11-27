@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept D - Pausa e scollegato</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet" />
+		<!--
+			Concept D: cosa mostra il display della home quando non registra, in pausa e lontano dal
+			ciondolo, al posto del tempo che scorre.
+			Tasti: x a b c per la variante, t tema, p nasconde la barra. Ogni variante mostra tutti
+			gli stati affiancati, alla stessa ora finta (17:42, il primo collegamento alle 08:14).
+
+			Il problema.
+			- In pausa le cifre grandi (72 pt, il pezzo più grande dello schermo) contano da quando è
+			  in pausa. Dal 27/11 ogni collegamento parte in pausa (DECISIONS 2026-11-27), quindi il
+			  numero dice da quanto il ciondolo è collegato senza registrare: non c'è niente da farci.
+			- Acceso senza registrare, il tempo "5m 14s" e l'avviso "acceso da 5 min" dicono la stessa
+			  cosa due volte.
+			- Da scollegato le cifre diventano trattini, che tengono il posto più grande per non dire
+			  niente; quello che conta (l'ora, cosa succede al ritorno) sta nella riga piccola sotto.
+			  Nell'interruzione recuperabile la scadenza (17:43) è testo piccolo.
+			- Da scollegato manca un fatto: col firmware 3.0.21 il ciondolo lontano scrive l'audio
+			  nella sua memoria anche se l'app era in pausa (ARCHITECTURE #Storage; la pausa che vale
+			  anche da scollegato arriva col 3.0.24), e con la politica di default ("Lascia nel
+			  ciondolo") l'audio resta lì. "Al ritorno resta in pausa" fa pensare che non registri.
+			  Oggi lo dice solo l'avviso del Bluetooth spento.
+			- Livello e scala in dB restano accesi, spenti, in tutti gli stati fermi.
+
+			X  oggi: la replica dell'app (screenshot del simulatore di oggi, NowView.swift).
+			A  Ultima: il display parla sempre della registrazione; fermo, mostra l'ultima
+			   conversazione, come un registratore che a nastro fermo segna la durata dell'ultima presa.
+			B  Ore: un'ora si confronta con la giornata ("da quando è finita la riunione"), una durata
+			   va calcolata; le cifre diventano l'ora, come già fa l'attività in tempo reale in pausa.
+			C  Compatto: le cifre grandi e il livello esistono solo mentre registra, così la misura
+			   del display dice già lo stato; fermo, il display diventa una lettura a righe e la
+			   giornata sale. L'unico numero grande è un conto alla rovescia quando c'è una scadenza.
+
+			Comune ad A, B e C (non è l'asse, è il contenuto che manca a X):
+			- da scollegato, "se è acceso registra nella sua memoria";
+			- "Ancora nessuna conversazione oggi" al posto di "La prima conversazione è quella che
+			  stai registrando", che X mostra anche in pausa (bug di DaySection, NowView.swift:386);
+			- l'avviso di quando il ciondolo vibrerà, finché l'avviso è armato.
+			Uguali in tutte: tasto, frase sotto il tasto, avvisi, server, giornata.
+
+			Mappatura sul codice di oggi (fattibilità, non piano).
+			- A: l'ultima conversazione chiusa di oggi c'è (ConversationLog.conversations(on:), con
+			  durata e stato); quella interrotta è `conversations.live` con `controller.cutAt`.
+			- B: `capture.pausedSince`, `link.lastSeen`, `link.phaseSince` ci sono già. Da verificare
+			  che `pausedSince` si azzeri a ogni collegamento: è salvato su disco e potrebbe essere di
+			  ieri ("in pausa dalle 18:02" detto il giorno dopo).
+			- C: il conto alla rovescia è `resumesUntil`, che c'è. L'ora dell'avviso vuole esposto
+			  `idleStartedAt` (oggi privato in CaptureCoordinator) più `idleNotifyAfter`.
+			- La riga sulla memoria vale finché il firmware è il 3.0.21: col 3.0.24 e il muto salvato
+			  la pausa vale anche da lontano e la riga cambia.
+			- L'attività in tempo reale in pausa mostra già "dalle 17:26": fuori da questo mock.
+
+			Dati: le conversazioni di oggi del mock B (09:04 43 min, 11:30 48 min, 17:21 4 min 47 s),
+			batteria 84%, server.example.com. Plausibili: gli orari di pausa, collegamento e
+			interruzione, la conversazione interrotta (17:29, 11 min 40 s), il mattino alle 08:14.
+			Solo desktop: ogni stato è un pezzo di schermo largo 390.
+
+			Giro 2 (27/11/2026): Simone chiede altre idee, per esempio il registrato di oggi. Aggiunte:
+			D  Giornata: fermo, le cifre sono il registrato di oggi e la fila del livello diventa il
+			   nastro della giornata (48 quarti d'ora, 8-20), come il contatore di un registratore che
+			   a nastro fermo segna dove sei arrivato. La sezione Oggi sotto perde totale e nastro, che
+			   ripeterebbe, e tiene la lista. Fattibile con ConversationLog.summary, che c'è.
+			E  Prossimo: in pausa il prossimo impegno del calendario e, alla sua ora, il ciondolo vibra
+			   per ricordare di registrare. Mai partenza automatica: si registra solo su richiesta
+			   (DECISIONS 2026-11-27) e chi ti sta davanti va avvisato. Nuovo: EventKit e il suo
+			   permesso. Senza impegni in vista ricade su un'altra variante; da scollegato è come C.
+			F  Autonomia: fermo, fino a che ora arriva la batteria al consumo dell'ultima ora. In pausa
+			   il ciondolo consuma quasi come registrando (3,10 contro 4,44 mA, ARCHITECTURE #Power):
+			   la pausa non risparmia, e l'ora lo rende evidente. Stima: la batteria del firmware va a
+			   scatti e il consumo va misurato dal log `power` prima di fidarsi del numero.
+			C1 C con dove: da scollegato anche il luogo del telefono all'ultimo contatto e la batteria
+			   di quel momento (84%, o 3%: allora si è scaricato). Nuovo: CoreLocation e il suo permesso;
+			   l'indirizzo è inventato. Per Bluetooth spento e permesso tolto il luogo non serve.
+			Scartate senza mock: l'ora corrente (c'è già nella barra di stato), il titolo
+			dell'ultima conversazione da Nexus (il contratto non manda niente indietro), la pausa a
+			tempo ("riprendi alle 18") che è una funzione, non un display.
+
+			Giro 3 (27/11/2026): a Simone piace D. Toglie "Se non registri, alle 17:45 il ciondolo
+			vibra" (annunciare l'avviso prima che arrivi è rumore) e non lo convince "Se il ciondolo
+			torna entro le 17:43 continua la stessa conversazione" (l'ora della scadenza è un dettaglio
+			del server: non c'è niente da fare per rispettarla). Chiede se l'avviso del ciondolo acceso
+			senza registrare abbia più senso come popup.
+			G  D con le tre correzioni. L'interruzione dice solo "Interrotta alle 17:41. Riprende da
+			   sola se il ciondolo torna subito." L'avviso diventa solo la notifica: è un evento, non
+			   una condizione che resta (come Bluetooth spento o token rifiutato, che restano riquadri
+			   finché non li sistemi), e la notifica c'è già, si ripete ogni 15 minuti e iOS la mostra
+			   come banner anche ad app aperta. Scartato un popup modale: blocca lo schermo per una cosa
+			   che non è urgente. Da aggiungere alla notifica l'azione "Registra" accanto a "Basta per
+			   ora".
+
+			Giro 4 (27/11/2026): "Visto alle 17:39. Se è acceso, registra nella sua memoria. Al
+			ritorno resta in pausa." e "Interrotta alle 17:41. Riprende da sola..." non convincono
+			lì. G cambiato: il display resta uno strumento (tag, contatore, nastro), senza frasi.
+			L'ora entra nel tag ("Scollegato dalle 17:39"); cosa succede al ritorno va sotto il tasto
+			grigio, dove stanno già i suggerimenti, perché spiega proprio il tasto. La riga sulla
+			memoria resta solo per lo scollegato semplice (col Bluetooth spento la dice già l'avviso).
+
+			Scelta (27/11/2026): G, applicata nell'app (DECISIONS 2026-11-27, "Still display"). In
+			più: il contatore del giorno passa alle ore da 60 minuti (1h36m, non 96m05s). Aperto:
+			l'altezza delle barre del nastro.
+		-->
+		<style>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			h1, h2, h3, p, ul { margin: 0; padding: 0; }
+			ul { list-style: none; }
+			[hidden] { display: none !important; }
+			body { min-height: 100vh; background: #dcdee3; color: #23252a; font: 13px/1.45 system-ui, -apple-system, sans-serif; }
+			:root[data-theme='dark'] body { background: #1a1b1e; color: #d5d7dc; }
+
+			/* Concept chrome. Not part of the design. */
+			.switch { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; background: #111214; color: #b4b7bd; font: 12px/1.4 ui-monospace, Menlo, monospace; }
+			.switch button { font: inherit; border: 0; padding: 5px 9px; border-radius: 6px; background: #26282c; color: #eeeff1; cursor: pointer; }
+			.switch button[aria-pressed='true'] { background: #eeeff1; color: #111214; }
+			.switch p { margin: 0 0 0 8px; flex: 1 1 240px; min-width: 0; }
+			body[data-chrome='off'] .switch { display: none; }
+			.stage { display: grid; grid-template-columns: repeat(auto-fill, 390px); gap: 40px 32px; justify-content: center; padding: 32px 24px 64px; }
+			.cap { margin-bottom: 10px; height: 54px; }
+			.cap b { display: block; font-weight: 600; font-size: 14px; }
+			.cap span { color: #50545c; }
+			:root[data-theme='dark'] .cap span { color: #a4a8b0; }
+
+			/* A piece of the phone screen: the home from the display down, fixed height, so how far
+			   the day comes up is part of the comparison. Tokens from concept-b-app.html, Grafite e rosso. */
+			.frag { position: relative; width: 390px; height: 700px; overflow: hidden; border-radius: 44px; padding: 18px 16px 0; background: var(--bg); color: var(--ink); font: 400 17px/24px var(--font); -webkit-font-smoothing: antialiased; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 16px 40px rgb(0 0 0 / 0.12);
+				--font: 'Archivo', sans-serif;
+				--bg: #e4e5e2; --cell: #f1f1ef; --ink: #15171b; --ink2: #5b6068; --ink3: #a5a9b0; --line: #dfe0dc; --off: #d2d3cf; --bezel: #cfd0cc;
+				--led: #e5402f; --meter: #ff5a47; --warn: #9a5600; --key: #2b2e34; --tape-rec: #7c818a;
+				--lcd: #2b2e34; --lcd-ink: #f1f2f4; --lcd-ink2: #a9aeb7; --lcd-dim: #3d4149; --lcd-line: #464a53; --lcd-warn: #f0a840; --pill: rgb(21 23 27 / 0.08); }
+			:root[data-theme='dark'] .frag {
+				--bg: #141518; --cell: #1d1f23; --ink: #ecedef; --ink2: #9a9ea6; --ink3: #555961; --line: #2a2c31; --off: #2a2c30; --bezel: #2c2f34;
+				--led: #ff5a47; --meter: #ff5a47; --warn: #f0a840; --key: #3a3e46; --tape-rec: #6f757f;
+				--lcd: #23262b; --lcd-ink: #eceef1; --lcd-ink2: #9ba0a9; --lcd-dim: #34383f; --lcd-line: #3a3e45; --lcd-warn: #f0a840; --pill: rgb(255 255 255 / 0.1);
+				box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08), 0 16px 40px rgb(0 0 0 / 0.4); }
+			.frag::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+			.num { font-variant-numeric: tabular-nums; }
+
+			/* The display. */
+			.lcd { margin: 6px 6px 0; border-radius: 28px; background: var(--lcd); color: var(--lcd-ink); padding: 20px 20px 16px;
+				background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 38%), linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.08));
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.12), 0 0 0 6px var(--bezel), 0 0 0 6.75px rgb(0 0 0 / 0.08); }
+			:root[data-theme='dark'] .lcd { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 6px var(--bezel), 0 0 0 6.75px rgb(255 255 255 / 0.06); }
+			.lcd-top { display: flex; align-items: center; gap: 8px; height: 28px; }
+			.tag { height: 28px; padding: 0 10px; border-radius: 8px; display: inline-flex; align-items: center; font: 600 15px/20px var(--font); white-space: nowrap; }
+			.tag.line { color: var(--lcd-ink); box-shadow: inset 0 0 0 1.5px var(--lcd-ink); }
+			.tag.warn { color: var(--lcd-warn); box-shadow: inset 0 0 0 1.5px var(--lcd-warn); }
+			.lcd-batt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 500 15px/20px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+			.lcd-time { margin-top: 28px; font: 600 72px/72px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+			.lcd-time i { font: 500 28px/28px var(--font); font-style: normal; font-stretch: 100%; letter-spacing: 0; margin: 0 8px 0 3px; }
+			.lcd-time i:last-child { margin-right: 0; }
+			.lcd-time.still { color: var(--lcd-ink2); }
+			.lcd-time.live { color: var(--lcd-ink); }
+			.lcd-line { margin-top: 6px; font: 400 15px/20px var(--font); color: var(--lcd-ink2); text-wrap: pretty; }
+			.lcd-line.first { margin-top: 6px; }
+			.lcd-line.ink { color: var(--lcd-ink); }
+			.meter { margin-top: 20px; display: flex; gap: 3px; height: 16px; }
+			.meter i { flex: 1; border-radius: 1px; background: var(--lcd-dim); }
+			.meter i.lit { background: var(--lcd-ink2); }
+			.meter-scale { display: flex; justify-content: space-between; margin-top: 6px; font: 500 11px/14px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; }
+			.lcd-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--lcd-line); display: flex; justify-content: space-between; gap: 12px; font-size: 15px; line-height: 20px; white-space: nowrap; }
+			.lcd-foot span:last-child { color: var(--lcd-ink2); }
+
+			/* C: the still display as a readout, label and value on a grid. */
+			.readout { margin-top: 20px; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font: 400 15px/20px var(--font); }
+			.readout dt { color: var(--lcd-ink2); white-space: nowrap; }
+			.readout dd { margin: 0; color: var(--lcd-ink); text-wrap: pretty; font-variant-numeric: tabular-nums; }
+			.readout.alone { grid-template-columns: 1fr; }
+			.countdown { margin-top: 20px; }
+			.countdown .lcd-time { margin-top: 0; }
+
+			/* The key, the line under it, the notice, the day. */
+			.k-well { margin-top: 18px; padding: 6px; border-radius: 34px; background: var(--bezel); }
+			.k-btn { width: 100%; height: 56px; border: 0; border-radius: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 17px/24px var(--font); color: #fff; background: var(--key); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.25); }
+			.k-btn svg { width: 18px; height: 18px; }
+			.k-btn.rec { background: var(--led); }
+			.k-btn .recdot { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+			.k-btn.dis { background: var(--off); color: var(--ink2); box-shadow: none; }
+			.k-btn.dis .recdot { background: var(--ink2); }
+			.hint { margin-top: 10px; text-align: center; font-size: 13px; line-height: 18px; color: var(--ink2); }
+			.notice { margin-top: 16px; padding: 14px 16px; border-radius: 20px; background: var(--cell); display: grid; grid-template-columns: 12px 1fr; column-gap: 12px; }
+			.ring { width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; box-shadow: inset 0 0 0 2.5px var(--warn); }
+			.notice b { display: block; font: 600 15px/20px var(--font); }
+			.notice p { font-size: 15px; line-height: 20px; color: var(--ink2); text-wrap: pretty; }
+			.notice .acts { grid-column: 2; margin-top: 10px; display: flex; gap: 8px; }
+			.btn { height: 36px; padding: 0 14px; border-radius: 18px; background: var(--pill); font: 500 15px/36px var(--font); color: var(--ink); }
+			.day { margin: 28px 8px 0; }
+			.day h2 { display: flex; justify-content: space-between; align-items: baseline; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			.day h2 span { font: 400 15px/20px var(--font); letter-spacing: 0; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.tape { margin-top: 14px; display: flex; gap: 3px; height: 24px; }
+			.tape i { flex: 1; border-radius: 1px; background: var(--off); }
+			.tape i.rec { background: var(--tape-rec); }
+			.tape-axis { margin: 6px 0 10px; display: flex; justify-content: space-between; font-size: 13px; line-height: 18px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+			.day-rows { margin: 6px -8px 0; padding: 0 16px; border-radius: 20px; background: var(--cell); }
+			.day-rows li { display: flex; justify-content: space-between; align-items: center; height: 52px; font-variant-numeric: tabular-nums; }
+			.day-rows li + li { border-top: 1px solid var(--line); }
+			.day-rows li span:last-child { color: var(--ink2); }
+			/* G: the system notification banner over the top of the screen. Reconstructed by hand. */
+			.banner { position: absolute; z-index: 5; top: 10px; left: 10px; right: 10px; display: grid; grid-template-columns: 38px 1fr; gap: 10px; padding: 12px 14px; border-radius: 24px; background: rgb(246 246 244 / 0.86); -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%); box-shadow: 0 10px 30px rgb(0 0 0 / 0.2); color: #15171b; font: 400 15px/20px -apple-system, system-ui, sans-serif; }
+			:root[data-theme='dark'] .banner { background: rgb(44 46 51 / 0.86); color: #ecedef; }
+			.banner b { font-weight: 600; }
+			.banner p { margin: 0; }
+			.b-head { display: flex; justify-content: space-between; font-size: 13px; line-height: 18px; color: #6b7078; }
+			.b-head b { font-weight: 500; }
+			.b-icon { width: 38px; height: 38px; border-radius: 9px; background: #e9eae7; display: grid; place-items: center; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08); }
+			.b-icon i { width: 22px; height: 22px; border-radius: 50%; background: #9b9fa5; box-shadow: 0 0 0 3px #f6f6f4; display: grid; place-items: center; }
+			.b-icon i::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #e5402f; }
+			.empty { padding: 6px 0 0; font-size: 15px; line-height: 20px; color: var(--ink2); text-wrap: pretty; }
+		</style>
+	</head>
+	<body data-v="x">
+		<div class="switch">
+			<span data-buttons></span>
+			<p data-desc></p>
+			<button data-theme-toggle>t tema</button>
+		</div>
+		<main class="stage" data-stage></main>
+
+		<script>
+			const DESC = {
+				x: 'oggi: il tempo da quando è in pausa, trattini da scollegato',
+				a: 'Ultima: fermo, il display mostra l’ultima conversazione, come un registratore a nastro fermo',
+				b: 'Ore: le cifre diventano l’ora (dalle 17:26, visto alle 17:39), come l’attività in tempo reale',
+				c: 'Compatto: cifre e livello solo mentre registra; fermo, una lettura a righe e la giornata sale',
+				c1: 'C con dove: da scollegato anche dove era il telefono e la batteria all’ultimo contatto',
+				d: 'Giornata: fermo, il display è il contatore del giorno; la fila del livello diventa il nastro di oggi',
+				e: 'Prossimo: in pausa il prossimo impegno del calendario, che all’ora giusta ricorda di registrare',
+				f: 'Autonomia: fermo, fino a che ora arriva la batteria al consumo misurato',
+				g: 'Giornata, giro 4: D senza frasi nel display; l’ora nel tag, il ritorno sotto il tasto, l’avviso solo come notifica'
+			};
+
+			// States: the same facts in every variant. `t` is seconds at load, for the times that run.
+			const LAST = { a: '17:21', b: '17:26', dur: 287 };
+			const STATES = [
+				{ id: 'pausa', name: 'Pausa dopo una conversazione', note: 'Doppio tocco alle 17:26, ora sono le 17:42', mode: 'paused', since: '17:26', t: 972 },
+				{ id: 'collegato', name: 'Appena collegato', note: 'Collegato alle 17:40, parte in pausa. Se non registra, vibra alle 17:45', mode: 'paused', since: '17:40', t: 125, idleAt: '17:45', fresh: true },
+				{ id: 'acceso', name: 'Acceso senza registrare', note: 'Collegato alle 17:36, l’avviso è scattato alle 17:41', mode: 'paused', since: '17:36', t: 314, fired: '17:41', fresh: true, notice: 'idle' },
+				{ id: 'mattina', name: 'Primo collegamento del giorno', note: 'Sono le 08:14, collegato alle 08:12, nessuna conversazione', mode: 'paused', since: '08:12', t: 130, idleAt: '08:17', fresh: true, empty: true, batt: 100, next: ['09:00', 'Standup', 'fra 46 minuti'], ends: ['02:15', 'Fin qui arriva la batteria, stanotte, al consumo dell’ultima ora.'] },
+				{ id: 'interrotta', name: 'Interrotta, può continuare', note: 'Registrava dalle 17:29, il ciondolo è sparito alle 17:41', mode: 'cut', seen: '17:41', until: '17:43', left: 72, cutDur: 700, lastBatt: 81, place: 'Via Savona 12, Milano', day: 6460 },
+				{ id: 'scollegato', name: 'Scollegato in pausa', note: 'Era in pausa, l’ultimo contatto alle 17:39', mode: 'away', tag: 'Scollegato', seen: '17:39', lastBatt: 84, place: 'Via Savona 12, Milano' },
+				{ id: 'btoff', name: 'Bluetooth spento', note: 'Spento dal Centro di Controllo alle 17:41', mode: 'away', tag: 'Bluetooth spento', seen: '17:41', notice: 'bt', lastBatt: 84 },
+				{ id: 'negato', name: 'Senza permesso', note: 'Permesso del Bluetooth tolto alle 17:37', mode: 'away', tag: 'Senza Bluetooth', seen: '17:37', notice: 'denied', lastBatt: 84 },
+				{ id: 'nessuno', name: 'Nessun ciondolo', note: 'Ciondolo dimenticato dalle impostazioni', mode: 'unpaired', tag: 'Nessun ciondolo' }
+			];
+			const NOTICES = {
+				idle: ['Il ciondolo è acceso da 5 min senza registrare', 'Forse un tocco in tasca. Consuma batteria anche così: tienilo premuto 3 secondi per spegnerlo, o registra.', ['Registra', 'Ho capito']],
+				bt: ['Il Bluetooth del telefono è spento', 'Riaccendilo dal Centro di Controllo o dalle Impostazioni. Intanto il ciondolo registra nella sua memoria.', ['Apri Impostazioni']],
+				denied: ['Pendant non ha più il permesso del Bluetooth', 'Senza permesso non riceve niente dal ciondolo. Apri Impostazioni, tocca Bluetooth e accendi Pendant.', ['Apri Impostazioni']]
+			};
+			// The idle notification as iOS draws it (text from CaptureCoordinator.scheduleIdleNotification).
+			const BANNER = `<div class="banner" role="status"><span class="b-icon"><i></i></span><div><p class="b-head"><b>Pendant</b><span>ora</span></p><b>Il ciondolo è acceso da 5 min senza registrare</b><p>Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare.</p></div></div>`;
+			const MEMORY ='Se è acceso, registra nella sua memoria.';
+			const BACK_PAUSED = 'Al ritorno resta in pausa.';
+
+			const two = (n) => String(n).padStart(2, '0');
+			const units = (t) => (t >= 6000 ? `${Math.floor(t / 3600)}<i>h</i>${two(Math.floor((t % 3600) / 60))}<i>m</i>` : `${Math.floor(t / 60)}<i>m</i>${two(t % 60)}<i>s</i>`);
+			const words = (t) => `${Math.floor(t / 60)} min ${two(t % 60)} s`;
+			const DASHES = '--<i>m</i>--<i>s</i>';
+			const PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4"/><rect x="13.5" y="5" width="4" height="14" rx="1.4"/></svg>';
+			const batt = (pct) => `<span class="lcd-batt">${pct}%<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.75" y="0.75" width="20.5" height="10.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="3" width="${Math.max(2, (16 * pct) / 100)}" height="6" rx="1.5" fill="currentColor"/><path d="M23.5 4.2v3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>`;
+
+			// Times that run: `data-up` counts up from its base, `data-down` counts down to zero.
+			let tick = 0;
+			const runUp = (base) => `<div class="lcd-time still num" data-up="${base}">${units(base)}</div>`;
+			const runDown = (base) => `<div class="lcd-time live num" data-down="${base}">${units(base)}</div>`;
+
+			const hm = (t) => `${Math.floor(t / 3600)}<i>h</i>${two(Math.floor((t % 3600) / 60))}<i>m</i>`;
+			// D: the level row turns into today's tape, 48 quarter hours from 8 to 20.
+			const dayBars = (s) => {
+				const on = s.empty ? [] : s.mode === 'cut' ? [...TAPE, 38] : TAPE;
+				return `<div class="meter">${Array.from({ length: 48 }, (_, i) => `<i class="${on.includes(i) ? 'lit' : ''}"></i>`).join('')}</div><div class="meter-scale"><span>8</span><span>11</span><span>14</span><span>17</span><span>20</span></div>`;
+			};
+			const meter = () => `<div class="meter">${'<i></i>'.repeat(36)}</div><div class="meter-scale"><span>-40</span><span>-20</span><span>-10</span><span>-6</span><span>-3</span><span>0 dB</span></div>`;
+			const lines = (...ls) => ls.filter(Boolean).map((l) => `<p class="lcd-line">${l}</p>`).join('');
+			const readout = (rows) => `<dl class="readout">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+			const vibrates = (s) => (s.idleAt ? `Se non registri, alle ${s.idleAt} il ciondolo vibra.` : '');
+
+			// D and G: the day's counter. G (giro 3) drops the time of the idle vibration and gives the
+			// cut conversation no deadline: it just says it resumes if the pendant comes back soon.
+			const giornata = (s, refined) => {
+				const total = s.empty ? 0 : (s.day ?? 5760);
+				const fig = total ? hm(total) : '--<i>h</i>--<i>m</i>';
+				const what = s.empty ? 'Ancora niente registrato oggi.' : s.mode === 'cut' ? 'Registrato oggi, con la conversazione interrotta.' : 'Registrato oggi, in 3 conversazioni.';
+				let state = '';
+				// G (giro 4): no sentences in the display. The time goes into the tag, what happens on
+				// return goes under the key (`awayHint`), where the hints already live.
+				if (refined) state = '';
+				else if (s.mode === 'paused') state = vibrates(s);
+				else if (s.mode === 'cut') state = `Se il ciondolo torna entro le ${s.until} continua la stessa conversazione.`;
+				else if (s.mode === 'unpaired') state = 'Collega il ciondolo dalle impostazioni.';
+				else state = `${s.id === 'scollegato' ? `Visto alle ${s.seen}.` : `Dalle ${s.seen}.`} ${MEMORY} ${BACK_PAUSED}`;
+				const awayTag = s.mode === 'cut' ? 'Scollegato' : s.tag;
+				const tag = s.mode === 'paused' ? ['line', 'In pausa'] : ['warn', refined && s.seen ? `${awayTag} dalle ${s.seen}` : awayTag];
+				return { tag, body: `<div class="lcd-time still">${fig}</div>${lines(what)}${state ? `<p class="lcd-line ink">${state}</p>` : ''}${dayBars(s)}` };
+			};
+
+			// What each variant puts in the display: the tag, then the body under it.
+			const VARIANTS = {
+				x: (s) => {
+					if (s.mode === 'paused') return { tag: ['line', 'In pausa da'], body: runUp(s.t) + meter() };
+					const at = s.seen;
+					const first =
+						s.mode === 'unpaired' ? 'Collega il ciondolo dalle impostazioni.'
+						: s.id === 'btoff' ? `Bluetooth spento dalle ${at}.`
+						: s.id === 'negato' ? `Senza permesso dalle ${at}.`
+						: `Visto l’ultima volta alle ${at}.`;
+					const then = s.mode === 'unpaired' ? '' : s.mode === 'cut' ? ` Se torna entro le ${s.until} continua la stessa conversazione.` : ' Al ritorno resta in pausa: toccalo due volte per registrare.';
+					return { tag: ['warn', s.mode === 'cut' ? 'Scollegato' : s.tag], body: `<div class="lcd-time still">${DASHES}</div>${lines(first + then)}${meter()}` };
+				},
+				a: (s) => {
+					const last = s.empty ? null : LAST;
+					const fig = s.mode === 'cut' ? units(s.cutDur) : last && s.mode !== 'unpaired' ? units(last.dur) : DASHES;
+					const what =
+						s.mode === 'cut' ? 'Conversazione interrotta alle 17:41.'
+						: s.mode === 'unpaired' ? ''
+						: last ? `Ultima conversazione, dalle ${last.a} alle ${last.b}.`
+						: 'Ancora nessuna conversazione oggi.';
+					let state = '';
+					if (s.mode === 'paused') state = vibrates(s);
+					else if (s.mode === 'cut') state = `Se il ciondolo torna entro le ${s.until} continua da qui.`;
+					else if (s.mode === 'unpaired') state = 'Collega il ciondolo dalle impostazioni.';
+					else state = `${s.id === 'scollegato' ? `Visto alle ${s.seen}.` : `Dalle ${s.seen}.`} ${MEMORY} ${BACK_PAUSED}`;
+					const tag = s.mode === 'paused' ? ['line', 'In pausa'] : ['warn', s.mode === 'cut' ? 'Scollegato' : s.tag];
+					return { tag, body: `<div class="lcd-time still">${fig}</div>${lines(what)}${state ? `<p class="lcd-line ink">${state}</p>` : ''}${meter()}` };
+				},
+				b: (s) => {
+					const clock = (h) => `<div class="lcd-time still num">${h}</div>`;
+					if (s.mode === 'paused') return { tag: ['line', 'In pausa dalle'], body: clock(s.since) + lines(vibrates(s)) + meter() };
+					if (s.mode === 'unpaired') return { tag: ['warn', 'Nessun ciondolo'], body: clock('--:--') + lines('Collega il ciondolo dalle impostazioni.') + meter() };
+					if (s.mode === 'cut') return { tag: ['warn', 'Scollegato dalle'], body: clock(s.seen) + lines(`Se torna entro le ${s.until} continua la stessa conversazione.`) + meter() };
+					return { tag: ['warn', `${s.tag} dalle`], body: clock(s.seen) + lines(`${MEMORY} ${BACK_PAUSED}`) + meter() };
+				},
+				c: (s) => {
+					if (s.mode === 'paused') {
+						const rows = [['Dalle', s.fresh ? `${s.since}, al collegamento` : s.since]];
+						if (s.fired) rows.push(['Avviso', `alle ${s.fired}, poi ogni 15 min`]);
+						else if (s.idleAt) rows.push(['Vibra', `alle ${s.idleAt}, se non registri`]);
+						rows.push(['Ultima', s.empty ? 'nessuna conversazione oggi' : `${LAST.a}, ${words(LAST.dur)}, inviata`]);
+						return { tag: ['line', 'In pausa'], body: readout(rows) };
+					}
+					if (s.mode === 'unpaired') return { tag: ['warn', 'Nessun ciondolo'], body: `<dl class="readout alone"><dd>Collega il ciondolo dalle impostazioni.</dd></dl>` };
+					if (s.mode === 'cut')
+						return { tag: ['warn', 'Scollegato'], body: `<div class="countdown">${runDown(s.left)}${lines(`per continuare la stessa conversazione, fino alle ${s.until}`)}</div>${readout([['Visto', s.seen], ['Durata', '11 min 40 s, dalle 17:29']])}` };
+					return { tag: ['warn', s.tag], body: readout([[s.id === 'scollegato' ? 'Visto' : 'Dalle', s.seen], ['Intanto', 'se è acceso, registra nella sua memoria'], ['Al ritorno', 'resta in pausa']]) };
+				},
+				c1: (s) => {
+					if (s.mode === 'paused' || s.mode === 'unpaired') return VARIANTS.c(s);
+					const where = s.place ? [['Dove', s.place]] : [];
+					const battery = [['Batteria', `${s.lastBatt}% all’ultimo contatto`]];
+					if (s.mode === 'cut')
+						return { tag: ['warn', 'Scollegato'], body: `<div class="countdown">${runDown(s.left)}${lines(`per continuare la stessa conversazione, fino alle ${s.until}`)}</div>${readout([['Visto', s.seen], ...where, ...battery])}` };
+					return { tag: ['warn', s.tag], body: readout([[s.id === 'scollegato' ? 'Visto' : 'Dalle', s.seen], ...where, ...battery, ['Intanto', 'se è acceso, registra nella sua memoria'], ['Al ritorno', 'resta in pausa']]) };
+				},
+				d: (s) => giornata(s, false),
+				g: (s) => giornata(s, true),
+				e: (s) => {
+					if (s.mode !== 'paused') return VARIANTS.c(s);
+					const [at, title, when] = s.next ?? ['18:00', 'Revisione settimanale', 'fra 18 minuti'];
+					return {
+						tag: ['line', 'In pausa'],
+						body: `<div class="lcd-time still num">${at}</div><p class="lcd-line ink">${title}, ${when}.</p>${lines(`Alle ${at} il ciondolo vibra per ricordarti di registrare.`, vibrates(s))}${meter()}`
+					};
+				},
+				f: (s) => {
+					const clock = (h) => `<div class="lcd-time still num">${h}</div>`;
+					if (s.mode === 'paused') {
+						const [at, line] = s.ends ?? ['23:30', 'Fin qui arriva la batteria, al consumo dell’ultima ora. In pausa consuma quasi come quando registra.'];
+						return { tag: ['line', 'In pausa'], body: clock(at) + lines(line, vibrates(s)) + meter() };
+					}
+					if (s.mode === 'unpaired') return { tag: ['warn', 'Nessun ciondolo'], body: clock('--:--') + lines('Collega il ciondolo dalle impostazioni.') + meter() };
+					const at = s.lastBatt === 81 ? '23:10' : '23:30';
+					const seen = `${s.mode === 'cut' || s.id === 'scollegato' ? 'Visto alle' : 'Dalle'} ${s.seen}, con il ${s.lastBatt}%: se è acceso, la batteria arriva fin qui.`;
+					const then = s.mode === 'cut' ? `Se torna entro le ${s.until} continua la stessa conversazione.` : `${MEMORY} ${BACK_PAUSED}`;
+					return { tag: ['warn', s.mode === 'cut' ? 'Scollegato' : s.tag], body: clock(at) + lines(seen) + `<p class="lcd-line ink">${then}</p>` + meter() };
+				}
+			};
+
+			const TAPE = [4, 5, 6, 14, 15, 16, 17, 37];
+			const day = (s, v) => {
+				const empty = s.empty;
+				const emptyText = v === 'x' ? 'La prima conversazione è quella che stai registrando. Compare qui quando la chiudi: tocca due volte il ciondolo, o premi Pausa.' : 'Ancora nessuna conversazione oggi. Comincia quando tocchi due volte il ciondolo o premi Riprendi.';
+				// In D the display already holds the total and the tape: the day keeps only the list.
+				const tape = `<div class="tape">${Array.from({ length: 48 }, (_, i) => `<i class="${!empty && TAPE.includes(i) ? 'rec' : ''}"></i>`).join('')}</div>
+					<div class="tape-axis"><span>8</span><span>11</span><span>14</span><span>17</span><span>20</span></div>`;
+				return `<section class="day">
+					<h2>Oggi${v === 'd' || v === 'g' ? '' : `<span>${empty ? 'ancora niente' : '1 h 36 min in 3 conversazioni'}</span>`}</h2>
+					${v === 'd' || v === 'g' ? '' : tape}
+					${empty ? `<p class="empty">${emptyText}</p>` : `<ul class="day-rows">${[['17:21', '4 min 47 s'], ['11:30', '48 min'], ['09:04', '43 min']].map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join('')}</ul>`}
+				</section>`;
+			};
+
+			// G: the line under the greyed key says what the key will do when the pendant is back.
+			const awayHint = (s) =>
+				s.mode === 'cut' ? 'Se il ciondolo torna subito, continua la stessa conversazione.'
+				: s.mode === 'unpaired' ? 'Collega il ciondolo dalle impostazioni.'
+				: s.id === 'scollegato' ? 'Al ritorno resta in pausa. Intanto, se è acceso, registra nella sua memoria.'
+				: 'Al ritorno resta in pausa.';
+
+			const frag = (s, v) => {
+				const d = VARIANTS[v](s);
+				const here = s.mode === 'paused';
+				// Away the key shows, greyed, what happens on return: Pausa if the conversation continues.
+				const resume = here || s.mode !== 'cut';
+				const key = `<div class="k-well"><button class="k-btn${resume ? ' rec' : ''}${here ? '' : ' dis'}">${resume ? '<span class="recdot"></span>Riprendi' : `${PAUSE}Pausa`}</button></div>`;
+				// G: the idle warning is an event, not a condition: it arrives only as the notification,
+				// which iOS shows as a banner also with the app open (Notifier.swift, willPresent).
+				const asBanner = v === 'g' && s.notice === 'idle';
+				const n = s.notice && !asBanner && NOTICES[s.notice];
+				return `<article>
+					<div class="cap"><b>${s.name}</b><span>${s.note}</span></div>
+					<div class="frag">
+						${asBanner ? BANNER : ''}
+						<section class="lcd">
+							<div class="lcd-top"><span class="tag ${d.tag[0]}">${d.tag[1]}</span>${here ? batt(s.batt ?? 84) : ''}</div>
+							${d.body}
+							<div class="lcd-foot"><span>server.example.com</span><span>in linea</span></div>
+						</section>
+						${key}
+						${here ? '<p class="hint">Oppure tocca due volte il ciondolo per registrare.</p>' : v === 'g' ? `<p class="hint">${awayHint(s)}</p>` : ''}
+						${n ? `<aside class="notice"><span class="ring"></span><div><b>${n[0]}</b><p>${n[1]}</p></div><div class="acts">${n[2].map((a) => `<span class="btn">${a}</span>`).join('')}</div></aside>` : ''}
+						${day(s, v)}
+					</div>
+				</article>`;
+			};
+
+			const stage = document.querySelector('[data-stage]');
+			const draw = () => (stage.innerHTML = STATES.map((s) => frag(s, document.body.dataset.v)).join(''));
+			const advance = () => {
+				document.querySelectorAll('[data-up]').forEach((el) => (el.innerHTML = units(+el.dataset.up + tick)));
+				document.querySelectorAll('[data-down]').forEach((el) => (el.innerHTML = units(Math.max(0, +el.dataset.down - tick))));
+			};
+			setInterval(() => {
+				tick += 1;
+				advance();
+			}, 1000);
+
+			// Variant bar, keys, hash and theme, as in the mockup template.
+			const KEY = `concept:${location.pathname}`;
+			const root = document.documentElement;
+			const load = () => {
+				try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+			};
+			const save = (state) => {
+				try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+			};
+			document.querySelector('[data-buttons]').innerHTML = Object.keys(DESC).map((v) => `<button data-v="${v}">${v.toUpperCase()} ${DESC[v].split(':')[0]}</button>`).join(' ');
+			const pick = (v) => {
+				if (!DESC[v]) return;
+				document.body.dataset.v = v;
+				document.querySelectorAll('.switch [data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+				document.querySelector('[data-desc]').textContent = DESC[v];
+				history.replaceState(null, '', `${location.search}#${v}`);
+				draw();
+				advance();
+			};
+			const setTheme = (t) => {
+				root.dataset.theme = t;
+				save({ ...load(), theme: t });
+			};
+			document.querySelector('.switch').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-v]');
+				if (b) pick(b.dataset.v);
+			});
+			document.querySelector('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select, [contenteditable]')) return;
+				const k = e.key.toLowerCase();
+				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (k === 'p') document.body.dataset.chrome = document.body.dataset.chrome === 'off' ? 'on' : 'off';
+				else if (/^\d$/.test(k)) pick(`${document.body.dataset.v.replace(/\d+$/, '')}${k}`);
+				else pick(k);
+			});
+			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'x');
+		</script>
+	</body>
+</html>

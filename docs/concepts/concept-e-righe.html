@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept E - Righe di oggi</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet" />
+		<!--
+			Concept E: come la home (scheda Adesso) mostra le conversazioni di oggi sotto il tasto.
+			Tasti: x a b c d e per la variante, t tema, p nasconde la barra. Ogni variante mostra tre
+			giornate affiancate: 3, 8 e 15 conversazioni. Gli schermi scorrono.
+
+			Il problema. Oggi la home mostra le ultime 5 conversazioni chiuse (NowView.swift:399,
+			`closed.prefix(5)`), in righe che non si toccano. Dalla sesta in poi spariscono senza
+			segno: l'intestazione dice "in 8 conversazioni" e sotto ce ne sono 5. La lista completa,
+			con il dettaglio di ognuna, sta nella scheda Oggi. Ogni pausa chiude una conversazione,
+			quindi una giornata da 10-15 è normale.
+
+			Il display è quello scelto in concept-d-pausa.html (variante G): in pausa mostra il
+			registrato di oggi e il nastro della giornata, e la sezione Oggi sotto tiene solo la lista.
+			Fuori dalla lista tutto è uguale fra le varianti.
+
+			X  oggi: le ultime 5, righe semplici che non si toccano, il resto sparisce.
+			A  Tre e tutte: le ultime 3, toccabili, e una riga "Tutte e 8" che apre la scheda Oggi.
+			B  Come Oggi: le stesse righe della scheda Oggi (fino a che ora, stato), le ultime 3 e
+			   "Tutte e 8". La home e Oggi parlano la stessa lingua.
+			C  Solo l'ultima: la home mostra la conversazione appena chiusa, la cosa che si controlla
+			   dopo una pausa, e una riga "Le altre 7 di oggi".
+			D  Senza tetto: tutte, una riga ciascuna. Il prezzo si vede a 15: la home diventa Oggi.
+			E  Tessere: tutte, ma tre per riga in tessere piccole; 15 stanno in cinque righe.
+
+			Mappatura sul codice di oggi (fattibilità, non piano). Le righe toccabili riusano la
+			NavigationLink e la destinazione di TodayView; "Tutte" mette `model.tab = .today`.
+			La riga di B è ConversationRow di TodayView, oggi privata. Le tessere di E sono nuove.
+
+			Dati: le conversazioni delle 09:04, 11:30 e 17:21 vengono dai mock precedenti; le altre
+			(giornate da 8 e da 15) sono plausibili, con una interrotta. Ora finta: 17:42, in pausa.
+			Solo desktop: ogni giornata è uno schermo da 390 per 844.
+
+			Scelta (27/11/2026): A, applicata nell'app con la lettura del display G.
+		-->
+		<style>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			h1, h2, h3, p, ul { margin: 0; padding: 0; }
+			ul { list-style: none; }
+			button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; text-align: inherit; }
+			[hidden] { display: none !important; }
+			body { min-height: 100vh; background: #dcdee3; color: #23252a; font: 13px/1.45 system-ui, -apple-system, sans-serif; }
+			:root[data-theme='dark'] body { background: #1a1b1e; color: #d5d7dc; }
+
+			/* Concept chrome. Not part of the design. */
+			.switch { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; background: #111214; color: #b4b7bd; font: 12px/1.4 ui-monospace, Menlo, monospace; }
+			.switch button { padding: 5px 9px; border-radius: 6px; background: #26282c; color: #eeeff1; }
+			.switch button[aria-pressed='true'] { background: #eeeff1; color: #111214; }
+			.switch p { margin: 0 0 0 8px; flex: 1 1 240px; min-width: 0; }
+			body[data-chrome='off'] .switch { display: none; }
+			.stage { display: grid; grid-template-columns: repeat(auto-fill, 410px); gap: 40px 32px; justify-content: center; padding: 32px 24px 64px; }
+			.cap { margin-bottom: 10px; }
+			.cap b { display: block; font-weight: 600; font-size: 14px; }
+			.cap span { color: #50545c; }
+			:root[data-theme='dark'] .cap span { color: #a4a8b0; }
+
+			/* The phone: 390x844 screen in a 10 bezel. Tokens from concept-b-app.html, Grafite e rosso. */
+			.phone { width: 410px; height: 864px; padding: 10px; border-radius: 65px; background: #08080a; box-shadow: 0 0 0 1px #34363b, 0 24px 48px rgb(0 0 0 / 0.22); }
+			.screen { position: relative; width: 390px; height: 844px; border-radius: 55px; overflow: hidden; background: var(--bg); color: var(--ink); font: 400 17px/24px var(--font); -webkit-font-smoothing: antialiased; isolation: isolate;
+				--font: 'Archivo', sans-serif;
+				--bg: #e4e5e2; --cell: #f1f1ef; --ink: #15171b; --ink2: #5b6068; --ink3: #a5a9b0; --line: #dfe0dc; --off: #d2d3cf; --bezel: #cfd0cc;
+				--led: #e5402f; --warn: #9a5600; --key: #2b2e34;
+				--lcd: #2b2e34; --lcd-ink: #f1f2f4; --lcd-ink2: #a9aeb7; --lcd-dim: #3d4149; --lcd-line: #464a53;
+				--pill: rgb(21 23 27 / 0.08); --glass: rgb(241 241 239 / 0.66); --glass-rim: rgb(255 255 255 / 0.7); --glass-top: #fff; --glass-shadow: rgb(21 23 27 / 0.12); }
+			:root[data-theme='dark'] .screen {
+				--bg: #141518; --cell: #1d1f23; --ink: #ecedef; --ink2: #9a9ea6; --ink3: #555961; --line: #2a2c31; --off: #2a2c30; --bezel: #2c2f34;
+				--led: #ff5a47; --warn: #f0a840; --key: #3a3e46;
+				--lcd: #23262b; --lcd-ink: #eceef1; --lcd-ink2: #9ba0a9; --lcd-dim: #34383f; --lcd-line: #3a3e45;
+				--pill: rgb(255 255 255 / 0.1); --glass: rgb(34 36 40 / 0.62); --glass-rim: rgb(255 255 255 / 0.1); --glass-top: rgb(255 255 255 / 0.16); --glass-shadow: rgb(0 0 0 / 0.5); }
+			.island { position: absolute; z-index: 60; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 19px; background: #000; }
+			.statusbar { position: absolute; z-index: 35; top: 0; left: 0; right: 0; height: 54px; padding-top: 7px; display: flex; justify-content: space-between; align-items: center; font: 600 17px/1 -apple-system, system-ui, sans-serif; }
+			.statusbar > span { width: 132px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+			.sb-fade { position: absolute; z-index: 30; top: 0; left: 0; right: 0; height: 64px; background: linear-gradient(var(--bg) 54px, transparent); pointer-events: none; }
+			.sb-fade.bottom { z-index: 15; top: auto; bottom: 0; height: 120px; background: linear-gradient(transparent, var(--bg) 88px); }
+			.homebar { position: absolute; z-index: 70; bottom: 8px; left: 50%; width: 138px; height: 5px; margin-left: -69px; border-radius: 3px; background: var(--ink); }
+			.sch { position: absolute; inset: 0; overflow-y: auto; padding: 66px 16px 128px; scrollbar-width: none; }
+			.sch::-webkit-scrollbar { display: none; }
+			.glass { background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%); box-shadow: inset 0 0 0 1px var(--glass-rim), inset 0 1px 0 var(--glass-top), 0 10px 28px var(--glass-shadow); }
+			.dock { position: absolute; z-index: 20; left: 21px; right: 21px; bottom: 21px; display: flex; }
+			.tabbar { flex: 1; height: 64px; padding: 4px; border-radius: 32px; display: flex; }
+			.tabbar span { flex: 1; border-radius: 28px; display: grid; justify-items: center; align-content: center; gap: 3px; font: 600 11px/13px var(--font); color: var(--ink2); }
+			.tabbar span[aria-current='true'] { background: var(--pill); color: var(--ink); }
+			.tabbar svg { width: 24px; height: 24px; }
+
+			/* The display, variant G of concept D. */
+			.lcd { margin: 6px 6px 0; border-radius: 28px; background: var(--lcd); color: var(--lcd-ink); padding: 20px 20px 16px;
+				background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 38%), linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.08));
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.12), 0 0 0 6px var(--bezel), 0 0 0 6.75px rgb(0 0 0 / 0.08); }
+			.lcd-top { display: flex; align-items: center; gap: 8px; height: 28px; }
+			.tag { height: 28px; padding: 0 10px; border-radius: 8px; display: inline-flex; align-items: center; font: 600 15px/20px var(--font); color: var(--lcd-ink); box-shadow: inset 0 0 0 1.5px var(--lcd-ink); }
+			.lcd-batt { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 500 15px/20px var(--font); color: var(--lcd-ink2); font-variant-numeric: tabular-nums; }
+			.lcd-time { margin-top: 28px; font: 600 72px/72px var(--font); font-stretch: 112%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--lcd-ink2); }
+			.lcd-time i { font: 500 28px/28px var(--font); font-style: normal; font-stretch: 100%; letter-spacing: 0; margin: 0 8px 0 3px; }
+			.lcd-time i:last-child { margin-right: 0; }
+			.lcd-line { margin-top: 6px; font: 400 15px/20px var(--font); color: var(--lcd-ink2); }
+			.bars { margin-top: 20px; display: flex; gap: 3px; height: 16px; }
+			.bars i { flex: 1; border-radius: 1px; background: var(--lcd-dim); }
+			.bars i.lit { background: var(--lcd-ink2); }
+			.scale { display: flex; justify-content: space-between; margin-top: 6px; font: 500 11px/14px var(--font); color: var(--lcd-ink2); }
+			.lcd-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--lcd-line); display: flex; justify-content: space-between; font-size: 15px; line-height: 20px; }
+			.lcd-foot span:last-child { color: var(--lcd-ink2); }
+			.k-well { margin-top: 18px; padding: 6px; border-radius: 34px; background: var(--bezel); }
+			.k-btn { width: 100%; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 17px/24px var(--font); color: #fff; background: var(--led); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.25); }
+			.k-btn .recdot { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+			.hint { margin-top: 10px; text-align: center; font-size: 13px; line-height: 18px; color: var(--ink2); }
+
+			/* The day under the key. Everything from here down is what the variants change. */
+			.day { margin: 28px 0 0; }
+			.day h2 { margin: 0 8px 10px; display: flex; justify-content: space-between; align-items: baseline; font: 600 22px/28px var(--font); letter-spacing: -0.01em; }
+			.day h2 span { font: 400 15px/20px var(--font); letter-spacing: 0; color: var(--ink2); }
+			.cells { padding: 0 16px; border-radius: 20px; background: var(--cell); }
+			.chev { flex: none; width: 8px; height: 14px; color: var(--ink3); }
+			.row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; font-variant-numeric: tabular-nums; }
+			.row + .row { border-top: 1px solid var(--line); }
+			.row .lab { flex: 1; }
+			.row .val { color: var(--ink2); }
+			.row.more .lab { color: var(--ink); }
+			.row.more .val { color: var(--ink2); }
+			/* The Oggi tab's row: start, duration and end, status, chevron. */
+			.conv { display: grid; grid-template-columns: 56px 1fr auto 8px; align-items: center; column-gap: 12px; width: 100%; min-height: 60px; font-variant-numeric: tabular-nums; }
+			.conv + .conv, .conv + .row, .row + .conv { border-top: 1px solid var(--line); }
+			.conv time { font: 600 17px/24px var(--font); }
+			.conv small { display: block; font: 400 13px/18px var(--font); color: var(--ink2); }
+			.st { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; line-height: 20px; color: var(--ink2); white-space: nowrap; }
+			.st svg { width: 14px; height: 14px; }
+			.lead { margin: 0 8px 8px; font: 500 13px/18px var(--font); color: var(--ink2); }
+			/* E: tiles, three to a row. Radius 14: free cells, not nested in another surface. */
+			.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+			.tile { padding: 10px 12px; border-radius: 14px; background: var(--cell); font-variant-numeric: tabular-nums; }
+			.tile b { display: flex; align-items: center; justify-content: space-between; font: 600 17px/24px var(--font); }
+			.tile b svg { width: 13px; height: 13px; color: var(--ink2); }
+			.tile span { font: 400 13px/18px var(--font); color: var(--ink2); }
+		</style>
+	</head>
+	<body data-v="x">
+		<div class="switch">
+			<span data-buttons></span>
+			<p data-desc></p>
+			<button data-theme-toggle>t tema</button>
+		</div>
+		<main class="stage" data-stage></main>
+
+		<script>
+			const DESC = {
+				x: 'oggi: le ultime 5, non si toccano, il resto sparisce senza segno',
+				a: 'Tre e tutte: le ultime 3 toccabili, poi una riga che apre la scheda Oggi',
+				b: 'Come Oggi: le righe della scheda Oggi (fino a che ora, stato), le ultime 3 e Tutte',
+				c: 'Solo l’ultima: la conversazione appena chiusa, poi una riga per le altre',
+				d: 'Senza tetto: tutte, una riga ciascuna; a 15 la home diventa la scheda Oggi',
+				e: 'Tessere: tutte, tre per riga in tessere piccole'
+			};
+
+			// Conversations, newest first: start, end, seconds, status (s sent, c cut).
+			const ALL = [
+				['17:21', '17:26', 287, 's'], ['16:40', '16:52', 724, 's'], ['15:58', '16:01', 190, 's'], ['15:12', '15:34', 1331, 'c'],
+				['14:30', '14:39', 552, 's'], ['13:05', '13:46', 2461, 's'], ['12:40', '12:42', 125, 's'], ['11:30', '12:18', 2892, 's'],
+				['11:02', '11:08', 368, 's'], ['10:15', '10:33', 1093, 's'], ['09:48', '09:53', 330, 's'], ['09:04', '09:47', 2586, 's'],
+				['08:52', '08:53', 72, 's'], ['08:40', '08:47', 427, 's'], ['08:21', '08:24', 183, 's']
+			];
+			const DAYS = [
+				{ name: '3 conversazioni', note: 'Una giornata leggera', pick: ['17:21', '11:30', '09:04'] },
+				{ name: '8 conversazioni', note: 'Una giornata normale, una interrotta', pick: ['17:21', '16:40', '15:12', '13:05', '11:30', '10:15', '09:04', '08:40'] },
+				{ name: '15 conversazioni', note: 'Una giornata piena di pause', pick: ALL.map((c) => c[0]) }
+			];
+
+			const two = (n) => String(n).padStart(2, '0');
+			const words = (t) => (t >= 3600 ? `${Math.floor(t / 3600)} h ${Math.floor((t % 3600) / 60)} min` : t >= 600 ? `${Math.round(t / 60)} min` : `${Math.floor(t / 60)} min ${two(t % 60)} s`);
+			const hm = (t) => `${Math.floor(t / 3600)}<i>h</i>${two(Math.floor((t % 3600) / 60))}<i>m</i>`;
+			const S = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+			const CHEV = `<svg class="chev" viewBox="0 0 8 14" ${S}><path d="M1.5 1.5 7 7l-5.5 5.5"/></svg>`;
+			const CHECK = `<svg viewBox="0 0 24 24" ${S} stroke-width="2.6"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+			const CUT = `<svg viewBox="0 0 24 24" ${S}><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M8.6 7.6 20 18M8.6 16.4 20 6"/></svg>`;
+			const status = (c) => (c[3] === 'c' ? `<span class="st">${CUT}Interrotta</span>` : `<span class="st">${CHECK}Inviata</span>`);
+
+			// The lists. `convs` is the day's conversations, newest first.
+			const plainRow = (c, tap) => `<div class="row"><span class="lab">${c[0]}</span><span class="val">${words(c[2])}</span>${tap ? CHEV : ''}</div>`;
+			const richRow = (c) => `<div class="conv"><time>${c[0]}</time><span>${words(c[2])}<small>fino alle ${c[1]}</small></span>${status(c)}${CHEV}</div>`;
+			const more = (label, n) => `<div class="row more"><span class="lab">${label}</span><span class="val">${n}</span>${CHEV}</div>`;
+			const LISTS = {
+				x: (convs) => `<div class="cells">${convs.slice(0, 5).map((c) => plainRow(c, false)).join('')}</div>`,
+				a: (convs) => `<div class="cells">${convs.slice(0, 3).map((c) => plainRow(c, true)).join('')}${convs.length > 3 ? more(`Tutte e ${convs.length}`, '') : ''}</div>`,
+				b: (convs) => `<div class="cells">${convs.slice(0, 3).map(richRow).join('')}${convs.length > 3 ? more(`Tutte e ${convs.length}`, '') : ''}</div>`,
+				c: (convs) => `<p class="lead">Ultima</p><div class="cells">${richRow(convs[0])}${convs.length > 1 ? more(convs.length === 2 ? 'L’altra di oggi' : `Le altre ${convs.length - 1} di oggi`, '') : ''}</div>`,
+				d: (convs) => `<div class="cells">${convs.map((c) => plainRow(c, true)).join('')}</div>`,
+				e: (convs) => `<div class="tiles">${convs.map((c) => `<div class="tile"><b>${c[0]}${c[3] === 'c' ? CUT : ''}</b><span>${words(c[2])}</span></div>`).join('')}</div>`
+			};
+
+			// The day's tape on the display: 48 quarter hours from 8 to 20.
+			const quarter = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return (h - 8) * 4 + Math.floor(m / 15); };
+			const bars = (convs) => {
+				const on = new Set();
+				convs.forEach((c) => { for (let q = quarter(c[0]); q <= quarter(c[1]); q++) on.add(q); });
+				return `<div class="bars">${Array.from({ length: 48 }, (_, i) => `<i class="${on.has(i) ? 'lit' : ''}"></i>`).join('')}</div><div class="scale"><span>8</span><span>11</span><span>14</span><span>17</span><span>20</span></div>`;
+			};
+
+			const ICONS = {
+				now: `<svg viewBox="0 0 24 24" ${S}><path d="M4 10.5v3M8 7v10M12 4v16M16 8v8M20 10.5v3"/></svg>`,
+				today: `<svg viewBox="0 0 24 24" ${S}><path d="M9.5 6H20M9.5 12H20M9.5 18H20"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></svg>`,
+				settings: `<svg viewBox="0 0 24 24" ${S}><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h9M19 18h1"/><circle cx="15" cy="6" r="2.5"/><circle cx="9" cy="12" r="2.5"/><circle cx="16" cy="18" r="2.5"/></svg>`
+			};
+			const BATT = '<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.75" y="0.75" width="20.5" height="10.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="3" width="13.4" height="6" rx="1.5" fill="currentColor"/><path d="M23.5 4.2v3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+			const screen = (day, v) => {
+				const convs = ALL.filter((c) => day.pick.includes(c[0]));
+				const total = convs.reduce((s, c) => s + c[2], 0);
+				return `<article>
+					<div class="cap"><b>${day.name}</b><span>${day.note}</span></div>
+					<div class="phone"><div class="screen">
+						<div class="island"></div><div class="statusbar"><span>17:42</span><span></span></div><div class="homebar"></div>
+						<div class="sb-fade"></div><div class="sb-fade bottom"></div>
+						<div class="sch">
+							<section class="lcd">
+								<div class="lcd-top"><span class="tag">In pausa</span><span class="lcd-batt">84%${BATT}</span></div>
+								<div class="lcd-time">${hm(total)}</div>
+								<p class="lcd-line">Registrato oggi, in ${convs.length} conversazioni.</p>
+								${bars(convs)}
+								<div class="lcd-foot"><span>server.example.com</span><span>in linea</span></div>
+							</section>
+							<div class="k-well"><span class="k-btn"><span class="recdot"></span>Riprendi</span></div>
+							<p class="hint">Oppure tocca due volte il ciondolo per registrare.</p>
+							<section class="day"><h2>Oggi</h2>${LISTS[v](convs)}</section>
+						</div>
+						<div class="dock"><nav class="tabbar glass"><span aria-current="true">${ICONS.now}Adesso</span><span>${ICONS.today}Oggi</span><span>${ICONS.settings}Impostazioni</span></nav></div>
+					</div></div>
+				</article>`;
+			};
+
+			const stage = document.querySelector('[data-stage]');
+			const draw = () => (stage.innerHTML = DAYS.map((d) => screen(d, document.body.dataset.v)).join(''));
+
+			// Variant bar, keys, hash and theme, as in the mockup template.
+			const KEY = `concept:${location.pathname}`;
+			const root = document.documentElement;
+			const load = () => {
+				try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+			};
+			const save = (state) => {
+				try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+			};
+			document.querySelector('[data-buttons]').innerHTML = Object.keys(DESC).map((v) => `<button data-v="${v}">${v.toUpperCase()} ${DESC[v].split(':')[0]}</button>`).join(' ');
+			const pick = (v) => {
+				if (!DESC[v]) return;
+				document.body.dataset.v = v;
+				document.querySelectorAll('.switch [data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+				document.querySelector('[data-desc]').textContent = DESC[v];
+				history.replaceState(null, '', `${location.search}#${v}`);
+				draw();
+			};
+			const setTheme = (t) => {
+				root.dataset.theme = t;
+				save({ ...load(), theme: t });
+			};
+			document.querySelector('.switch').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-v]');
+				if (b) pick(b.dataset.v);
+			});
+			document.querySelector('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select, [contenteditable]')) return;
+				const k = e.key.toLowerCase();
+				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (k === 'p') document.body.dataset.chrome = document.body.dataset.chrome === 'off' ? 'on' : 'off';
+				else pick(k);
+			});
+			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'x');
+		</script>
+	</body>
+</html>
