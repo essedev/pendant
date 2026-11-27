@@ -1,41 +1,39 @@
 # Roadmap
 
-## Stato corrente
+## Current status
 
-Dal 26/11/2026 l'audio del ciondolo arriva a `audio_stream` di Nexus con l'app iOS nostra
-(M5 e M6); l'app Omi resta solo per il firmware, col ciondolo dimenticato. La trascrizione la
-fa Nexus. Architettura in `ARCHITECTURE.md #L'app`. L'app vera (M7) è sul telefono dal
-27/11: manca la prova completa sul ciondolo. Il background per ore resta da misurare
-nell'uso (`ARCHITECTURE.md #Verifiche sul ciondolo`).
+Since 26/11/2026 the pendant's audio reaches Nexus's `audio_stream` through our own iOS app
+(M5 and M6); the Omi app stays only for the firmware, with the pendant forgotten. Nexus does
+the transcription. Architecture in `ARCHITECTURE.md #The app`. The real app (M7) has been on
+the phone since 27/11: the full test on the pendant is still missing. Background running for
+hours is still to be measured in use (`ARCHITECTURE.md #Pendant checks`).
 
-## Prossime milestone
+## Next milestones
 
-- [ ] M7 L'app vera: fatta il 27/11 dal mock completo (`docs/concepts/concept-b-app.html`):
-  primo avvio, Adesso, Oggi, Impostazioni con server configurabile e prova della connessione,
-  LED che segue la registrazione, segnalibri, comandi di sistema e attività in tempo reale,
-  iOS 26. Verificata nel simulatore su ogni scena (`make screens`). In uso sul telefono dal
-  27/11, con le prime correzioni nate dall'uso (attività in tempo reale, avviso ripetuto e muto
-  in carica, margini). Resta da spuntare sul ciondolo: spia, segnalibro al tocco, controlli,
-  attività in tempo reale, partenza in pausa e avviso del ciondolo acceso senza registrare.
-- [ ] M8 Stato verso il server: eventi del ciondolo e segnale periodico, avviso su Telegram se
-  l'app tace o il ciondolo resta scollegato. Aggiunta lato Nexus.
-- [ ] M9 Offline dalla memoria: lettura alla connessione, invio al server con l'ora vera,
-  avanzamento solo dopo la conferma. Richiede l'aggiunta lato Nexus.
-- [ ] M10 Note a tocchi: apertura e chiusura, controllo della voce, invio al server come nota.
+- [ ] M7 The real app: done on 27/11 from the full mockup (`docs/concepts/concept-b-app.html`):
+  first launch, Adesso, Oggi, Impostazioni with a configurable server and a connection test,
+  LED that follows the recording, bookmarks, system controls and Live Activity, iOS 26.
+  Verified in the simulator on every scene (`make screens`). In use on the phone since 27/11,
+  with the first fixes that came from use (Live Activity, repeated idle warning and silenced
+  while charging, margins). Still to tick off on the pendant: LED, bookmark on tap, controls,
+  Live Activity, starting paused and the idle warning.
+- [ ] M8 Status to the server: pendant events and a periodic heartbeat, a Telegram alert if
+  the app goes silent or the pendant stays disconnected. Addition on the Nexus side.
+- [ ] M9 Offline audio from storage: read on connection, sent to the server with the real
+  time, advanced only after confirmation. Requires the addition on the Nexus side.
+- [ ] M10 Notes by taps: opening and closing, voice check, sent to the server as a note.
 
-Dopo M10 due settimane d'uso, poi la scelta: tenere Omi (e l'account Apple a 99 $) o passare al
-reSpeaker Clip riscrivendo solo il collegamento.
+After M10, two weeks of use, then the choice: keep Omi (and the $99 Apple account) or switch to
+the reSpeaker Clip, rewriting only the connection.
 
-## Domande aperte
+## Open questions
 
-- Pausa che vale anche da scollegato: arriva col firmware 3.0.24 (muto salvato), pubblicato il
-  9/11 ma al 0% il 26/11. Sul 3.0.21 forse si ottiene col guadagno del microfono a 0, da
-  misurare in M5.
-- Accensioni accidentali in tasca: quante sono si misura nell'uso. Lo spegnimento dall'app
-  arriva col 3.0.24: allora l'avviso del ciondolo acceso senza registrare diventa uno
-  spegnimento.
-- PR vibrazione [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912):
-  aperta senza revisione, in conflitto con `main` dal 26/11. Con l'app nostra la vibrazione la
-  comandiamo noi: si decide se chiuderla o tenerla per chi usa l'app Omi.
-- Segmentazione con LLM e filtro sulla mia voce: solo se l'uso mostra pause dimenticate
-  frequenti.
+- Pause that holds even when disconnected: comes with firmware 3.0.24 (saved mute), released
+  on 9/11 but at 0% on 26/11. On 3.0.21 it might be achieved with the microphone gain at 0,
+  to be measured in M5.
+- Accidental power-ons in a pocket: how many there are is measured in use. Power-off from the
+  app comes with 3.0.24: then the idle warning becomes a power-off.
+- Vibration PR [BasedHardware/omi#23912](https://github.com/BasedHardware/omi/pull/23912):
+  open without review, in conflict with `main` since 26/11. With our own app we control the
+  vibration: decide whether to close it or keep it for those who use the Omi app.
+- LLM segmentation and a filter on my voice: only if use shows frequent forgotten pauses.

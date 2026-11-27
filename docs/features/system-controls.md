@@ -1,70 +1,71 @@
-# Comandi di sistema: tasto Azione, Centro di Controllo, blocco schermo
+# System controls: Action button, Control Center, Lock Screen
 
-**Stato: fatta** (27/11/2026, M7): intent in `app/Shared/PendantIntents.swift`, controlli e
-attività in tempo reale nell'estensione `app/PendantWidgets/`. Firmata e installata; il
-comportamento sull'iPhone resta da provare (sezione Da provare).
+**Status: done** (27/11/2026, M7): intents in `app/Shared/PendantIntents.swift`, controls and
+Live Activity in the `app/PendantWidgets/` extension. Signed and installed; the behaviour on
+the iPhone is still to be tested (section To test on the iPhone).
 
-## Perché
+## Why
 
-L'app si apre per controllare, non per registrare: il comando principale è il doppio tocco sul
-ciondolo. Dal telefono la pausa deve arrivare senza aprire l'app e senza guardare lo schermo.
-In più il ciondolo ha solo due gesti (tocco e doppio tocco, `ARCHITECTURE.md #Pulsante`): un
-terzo comando, "segna questo momento", può arrivare solo dal telefono.
+The app is opened to check, not to record: the main command is the double tap on the pendant.
+From the phone, pause has to work without opening the app and without looking at the screen.
+Also, the pendant has only two gestures (tap and double tap, `ARCHITECTURE.md #Button`): a
+third command, "mark this moment", can only come from the phone.
 
-## Cosa
+## What
 
-Due controlli dell'app, che si mettono dove si vuole:
+Two app controls, placed wherever you like:
 
-| Controllo | Tipo | Effetto | Conferma |
+| Control | Kind | Effect | Feedback |
 |---|---|---|---|
-| Pausa e ripresa | Interruttore | Come il doppio tocco: chiude o apre la conversazione | Il ciondolo vibra (breve in pausa, media alla ripresa) e iOS mostra lo stato nella Dynamic Island |
-| Segna questo momento | Pulsante | Un segnalibro nella conversazione in corso, con l'ora | Vibrazione breve del ciondolo |
+| Pausa e ripresa | Toggle | Same as the double tap: closes or opens the conversation | The pendant vibrates (short on pause, medium on resume) and iOS shows the state in the Dynamic Island |
+| Segna questo momento | Button | A bookmark in the current conversation, with the time | Short vibration of the pendant |
 
-- **Tasto Azione** (iPhone 15 Pro e successivi): Impostazioni > Tasto Azione > Controlli >
-  Pendant. Si attiva tenendolo premuto, quindi non parte in tasca. Uno dei due controlli,
-  quello che scegli; per default "Segna questo momento", perché la pausa c'è già col doppio
-  tocco.
-- **Centro di Controllo e blocco schermo**: tutti e due.
-- **Attività in tempo reale** sul blocco schermo e nella Dynamic Island. Ogni stato mostra
-  solo quello che gli serve: mentre registra il tempo che scorre, Pausa e Segna; in pausa l'ora
-  in cui è iniziata ("dalle 11:42") e solo Riprendi, perché il segnalibro vuole una
-  registrazione; col ciondolo lontano l'ora dell'ultimo contatto, senza tasti. Il tempo che
-  scorre compare solo mentre registra: una pausa contata come `23:00` si legge come un orario.
-  Con "Sempre visibile" resta anche in pausa e da scollegato. iOS la chiude dopo circa 8 ore;
-  se iOS rifiuta di aprirla con l'app in background, l'app riprova quando torna in primo piano.
-  L'attività sopravvive all'app: al rilancio l'app riprende quella aperta e chiude le altre,
-  invece di aggiungerne una.
+- **Action button** (iPhone 15 Pro and later): Settings > Action Button > Controls >
+  Pendant. It fires on a long press, so it does not go off in a pocket. One of the two
+  controls, the one you choose; "Segna questo momento" by default, because pause is already
+  on the double tap.
+- **Control Center and Lock Screen**: both.
+- **Live Activity** on the Lock Screen and in the Dynamic Island. Each state shows only what it
+  needs: while recording, the elapsed time, Pausa and Segna; when paused, the time it started
+  ("dalle 11:42") and only Riprendi, because a bookmark needs a recording; with the pendant
+  out of range, the time of the last contact, no buttons. The elapsed time appears only while
+  recording: a pause counted as `23:00` reads like a clock time. With "Sempre visibile" it
+  also stays while paused and when disconnected. iOS ends it after about 8 hours; if iOS
+  refuses to start it with the app in the background, the app retries when it returns to the
+  foreground. The activity outlives the app: on relaunch the app picks up the open one and
+  ends the others, instead of adding a new one.
 
-Nell'app stanno in Impostazioni, Fuori dall'app: in cima l'attività in tempo reale in piccolo,
-con le stesse viste dell'estensione (`app/Shared/ActivityViews.swift`) e i suoi due
-interruttori; sotto una riga per posto, con i passaggi per metterci i controlli. Se le attività
-sono spente nelle impostazioni di iOS la pagina lo dice e apre le impostazioni.
+In the app they sit in Impostazioni, Fuori dall'app: at the top a small Live Activity, with
+the same views as the extension (`app/Shared/ActivityViews.swift`) and its two toggles; below,
+one row per place, with the steps to add the controls there. If Live Activities are turned off
+in the iOS settings, the page says so and opens the settings.
 
-## Come
+## How
 
-| Pezzo | Scelta | Fonte |
+| Piece | Choice | Source |
 |---|---|---|
-| Controlli | Estensione WidgetKit con `ControlWidgetToggle` (pausa, stato da `SetValueIntent`) e `ControlWidgetButton` (segnalibro). Testo per il tasto Azione che inizia con "Hold to", in italiano "Tieni premuto per" | [Creating controls](https://developer.apple.com/documentation/widgetkit/creating-controls-to-perform-actions-across-the-system), [WWDC24 10157](https://developer.apple.com/videos/play/wwdc2024/10157/) |
-| Dove gira l'intent | Di default nel processo dell'estensione, che non ha il Bluetooth né il WebSocket. Gli intent adottano `LiveActivityIntent`, così il sistema li esegue nel processo dell'app senza aprirla; il file dell'intent sta in entrambi i target | [Adding interactivity](https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities), [LiveActivityIntent](https://developer.apple.com/documentation/appintents/liveactivityintent) |
-| Stato condiviso | App Group fra app ed estensione per lo stato da mostrare nel controllo (registra o in pausa) | [Configuring app groups](https://developer.apple.com/documentation/xcode/configuring-app-groups) |
-| Attività in tempo reale | ActivityKit con aggiornamenti locali, senza push. Il tempo con `Text(timerInterval:)`, che avanza da solo senza aggiornamenti: iOS limita quelli frequenti | [Forum 758469](https://developer.apple.com/forums/thread/758469) |
-| Segnalibro | Un frame di testo sul WebSocket della conversazione: `{"type":"Mark","at":"<ISO 8601>"}`. `audio_stream` oggi ignora i messaggi di testo che non sono `CloseStream`, quindi si può mandare subito; il server lo userà quando lo saprà leggere | prova sul server |
+| Controls | WidgetKit extension with `ControlWidgetToggle` (pause, state from `SetValueIntent`) and `ControlWidgetButton` (bookmark). Action button text starting with "Hold to", in Italian "Tieni premuto per" | [Creating controls](https://developer.apple.com/documentation/widgetkit/creating-controls-to-perform-actions-across-the-system), [WWDC24 10157](https://developer.apple.com/videos/play/wwdc2024/10157/) |
+| Where the intent runs | By default in the extension's process, which has neither Bluetooth nor the WebSocket. The intents adopt `LiveActivityIntent`, so the system runs them in the app's process without opening it; the intent file is in both targets | [Adding interactivity](https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities), [LiveActivityIntent](https://developer.apple.com/documentation/appintents/liveactivityintent) |
+| Shared state | App Group between app and extension for the state the control shows (recording or paused) | [Configuring app groups](https://developer.apple.com/documentation/xcode/configuring-app-groups) |
+| Live Activity | ActivityKit with local updates, no push. The time with `Text(timerInterval:)`, which advances on its own without updates: iOS throttles frequent ones | [Forum 758469](https://developer.apple.com/forums/thread/758469) |
+| Bookmark | A text frame on the conversation's WebSocket: `{"type":"Mark","at":"<ISO 8601>"}`. `audio_stream` currently ignores text messages other than `CloseStream`, so it can be sent right away; the server will use it once it can read it | test on the server |
 
-Scartato `AudioRecordingIntent`: serve alle app che registrano col microfono del telefono, chiede
-un'attività in tempo reale per tutta la registrazione e di partire dall'app in primo piano
+`AudioRecordingIntent` was rejected: it is meant for apps that record with the phone's
+microphone, it requires a Live Activity for the whole recording and must start from the app in
+the foreground
 ([AudioRecordingIntent](https://developer.apple.com/documentation/appintents/audiorecordingintent),
-[forum 815725](https://developer.apple.com/forums/thread/815725)). Qui registra il ciondolo e
-l'app è già attiva in background per il Bluetooth.
+[forum 815725](https://developer.apple.com/forums/thread/815725)). Here the pendant records and
+the app is already active in the background for Bluetooth.
 
-## Da provare sull'iPhone
+## To test on the iPhone
 
-- **App Group con l'account gratuito: verificato il 27/11/2026.** Xcode firma app ed estensione
-  col Personal Team e il gruppo `group.dev.esse.pendant` è negli entitlement di tutte e due.
-  Resta da vedere sull'iPhone che il controllo legga lo stato.
-- **`perform` che non parte.** Più sviluppatori segnalano controlli e attività in tempo reale il
-  cui intent non viene eseguito su iOS 18, risolto adottando `LiveActivityIntent` e mettendo
-  l'intent in entrambi i target ([forum 789371](https://developer.apple.com/forums/thread/789371),
-  [forum 760342](https://developer.apple.com/forums/thread/760342)). Va provato con l'app attiva
-  in background e con l'app chiusa da iOS.
+- **App Group with the free account: verified on 27/11/2026.** Xcode signs app and extension
+  with the Personal Team and the group `group.dev.esse.pendant` is in the entitlements of both.
+  Still to see on the iPhone that the control reads the state.
+- **`perform` that does not run.** Several developers report controls and Live Activities whose
+  intent is not executed on iOS 18, solved by adopting `LiveActivityIntent` and putting the
+  intent in both targets ([forum 789371](https://developer.apple.com/forums/thread/789371),
+  [forum 760342](https://developer.apple.com/forums/thread/760342)). To be tested with the app
+  active in the background and with the app terminated by iOS.
 
-Fonti consultate il 26/11/2026.
+Sources consulted on 26/11/2026.

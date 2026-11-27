@@ -1,70 +1,72 @@
-# pendant - Istruzioni per Claude
+# pendant - Instructions for Claude
 
-## Cos'è
+Public repository: code, comments, docs and commits in English; README.md is mirrored in
+README.it.md in the same commit. The app's UI is in Italian (`docs/CONVENTIONS.md #Language`).
 
-Il ciondolo Omi collegato a Nexus. Un'app iOS nostra in Swift (`app/`) riceve l'audio via
-Bluetooth e lo manda a `audio_stream` di Nexus; l'app Omi resta solo per gli aggiornamenti del
-firmware. Il ciondolo fai-da-te su ESP32-S3 è
-superato e vive in `docs/archive/`. Progetto personale, trunk-based su main.
+## What it is
 
-## Dove sta cosa
+An iOS app in Swift (`app/`) that takes the audio of the Omi CV1 pendant over Bluetooth and
+streams it to a configurable server, today Nexus's `audio_stream`. The Omi app is kept only for
+firmware updates. The earlier DIY pendant on ESP32-S3 is superseded and lives in
+`docs/archive/`. Personal project, trunk-based on `main`.
 
-- `docs/ARCHITECTURE.md`: flusso, protocollo Bluetooth del firmware, componenti dell'app,
-  custodia dell'audio, configurazione, contratto con Nexus, verifiche sul ciondolo, rischi.
-- `docs/DECISIONS.md`: scelte fatte e perché. `docs/ROADMAP.md`: milestone e domande aperte.
-- `docs/CONVENTIONS.md`: regole di codice e di prosa.
-- `docs/features/`: una feature per file (comandi di sistema). `docs/concepts/`: i mock HTML
-  dell'interfaccia; `docs/concepts/inspo/` è ispirazione scaricata, non versionata.
-- `app/`: l'app iOS. `project.yml` (XcodeGen), `Pendant/` il target dell'app, `PendantKit/`
-  il pacchetto con la logica, `PendantWidgets/` l'estensione (controlli e attività in tempo
-  reale), `Shared/` il codice di entrambi (tema, intent, viste dell'attività), `Icon/` gli SVG
-  dell'icona (`make icon`).
-- `prototype/omi_stt_probe.py`: server WebSocket di prova che registra quello che manda l'app
-  Omi.
-- `docs/archive/`: il ciondolo fai-da-te. Si legge, non si aggiorna.
-- Clone di Omi: `~/Development/Projects/omi`, remote `origin` (BasedHardware) e `fork`
-  (`essedev/omi`). Una PR = un worktree accanto al clone. Flutter 3.44.5 in
-  `~/Development/tools/flutter-3.44.5`.
+## Where things are
 
-## Comandi
+- `docs/ARCHITECTURE.md`: flow, the firmware's Bluetooth protocol, app components, audio
+  custody, configuration, server contract, pendant checks, risks.
+- `docs/DECISIONS.md`: choices made and why (superseded ones in `docs/decisions-archive.md`).
+  `docs/ROADMAP.md`: milestones and open questions.
+- `docs/CONVENTIONS.md`: code and prose rules, language, glossary.
+- `docs/features/`: one feature per file (system controls). `docs/concepts/`: the HTML mockups
+  of the UI; `docs/concepts/inspo/` is downloaded inspiration, not versioned.
+- `app/`: the iOS app. `project.yml` (XcodeGen), `Pendant/` the app target, `PendantKit/` the
+  logic package, `PendantWidgets/` the extension (controls and Live Activity), `Shared/` the
+  code of both (theme, intents, Live Activity views), `Icon/` the icon's SVG sources
+  (`make icon`).
+- `prototype/omi_stt_probe.py`: a test WebSocket server that records what the Omi app sends.
+- `docs/archive/`: the DIY pendant. Read, never updated.
+- A clone of the Omi repository next to this one is the reference for the firmware and the
+  Omi iOS app (`git clone https://github.com/BasedHardware/omi`).
 
-- App, da `app/`: `make run` (genera il progetto, compila, installa e avvia sull'iPhone
-  collegato), `make test`, `make check` prima di ogni commit che tocca l'app, `make help` per
-  il resto. Primo setup: `brew install xcodegen`, Apple ID in Xcode, `DEVELOPMENT_TEAM` in
-  `app/Local.xcconfig` (il Team ID è l'OU del certificato "Apple Development" nel portachiavi),
-  poi `make credentials SERVER_WS=<url> TOKEN_FILE=<file col token di audio_stream>` (oppure si scrivono nel
-  primo avvio). `make logs` scarica il log dell'app in `app/.logs/`.
-- Simulatore, da `app/`: `make sim SCENE=<scena>` avvia l'app in una scena demo (elenco in
-  `Pendant/Demo.swift`, argomento `-demo`), `make screens` fotografa tutte le scene in chiaro e
-  scuro in `app/.screens/`. Per guardare una UI si confronta col mock `concept-b-app.html`.
-- Prototipo: `PROBE_TOKEN=<token> uv run prototype/omi_stt_probe.py` (ascolta su
-  127.0.0.1:8765, scrive WAV ed `events.jsonl` in `prototype/recordings/`).
-- Esposizione per l'iPhone: `cloudflared tunnel --url http://localhost:8765`, poi nell'app
-  `wss://<nome>.trycloudflare.com/stream?token=<token>`. Il tunnel lo autorizza Simone.
-- Firmware distribuito per il CV1: `curl -s "https://api.omi.me/v2/firmware/stable?device_model=Omi%20CV%201"`.
+## Commands
 
-## Gotcha
+- App, from `app/`: `make run` (generates the project, builds, installs and launches on the
+  connected iPhone), `make test`, `make check` before every commit that touches the app,
+  `make help` for the rest. First setup: `brew install xcodegen`, an Apple ID in Xcode,
+  `DEVELOPMENT_TEAM` in `app/Local.xcconfig` (the Team ID is the OU of the "Apple Development"
+  certificate in the keychain), then `make credentials SERVER_WS=<url> TOKEN_FILE=<file with
+  the token>` (or enter them at first launch). `make logs` downloads the app's log to
+  `app/.logs/`.
+- Simulator, from `app/`: `make sim SCENE=<scene>` launches the app in a demo scene (list in
+  `Pendant/Demo.swift`, argument `-demo`), `make screens` shoots every scene in light and dark
+  to `app/.screens/`. To review a UI, compare it with the mockup `concept-b-app.html`.
+- Prototype: `PROBE_TOKEN=<token> uv run prototype/omi_stt_probe.py` (listens on
+  127.0.0.1:8765, writes WAV and `events.jsonl` to `prototype/recordings/`).
+- Exposing it to the iPhone: `cloudflared tunnel --url http://localhost:8765`, then in the app
+  `wss://<name>.trycloudflare.com/stream?token=<token>`. Opening a tunnel needs the
+  maintainer's approval.
+- Firmware shipped for the CV1: `curl -s "https://api.omi.me/v2/firmware/stable?device_model=Omi%20CV%201"`.
 
-- **Il protocollo si legge al tag del firmware in uso**, non su `main`:
-  `git -C ~/Development/Projects/omi show Omi_CV1_v3.0.21:omi/firmware/omi/src/<file>`. `main`
-  ha funzioni (muto, spegnimento, `LIVE_MARK`) che il ciondolo non ha. `sdks/device/PROTOCOL.md`
-  è indietro rispetto al codice.
-- **Il riferimento per il Bluetooth su iOS è Swift**: `app/ios/Runner/Ble/OmiBleManager.swift`
-  nel clone Omi, non il Dart.
-- **iOS condivide il ciondolo fra le app**: con l'app Omi collegata, anche lei riceve audio e
-  gesti e manda a Nexus una seconda registrazione. Va tenuta col ciondolo dimenticato.
-- **Nessun valore di comportamento nel codice dell'app**: va nello schema della configurazione
-  (`ARCHITECTURE.md #Configurazione`).
-- **L'iPhone vero serve per il ciondolo**: il simulatore non ha Bluetooth, le schermate si
-  provano con le scene demo. L'app firmata col Personal Team
-  scade dopo 7 giorni.
-- L'app Omi accetta solo URL `wss://`. Tailscale con il nome MagicDNS non ha funzionato
-  dall'iPhone: usare il tunnel Cloudflare.
-- `prototype/recordings/` contiene voci vere: è in `.gitignore` e non va mai committata.
-- Il repo Omi ha regole di contribuzione proprie (`AGENTS.md`, template della PR,
-  `make preflight`, `scripts/pr-preflight`): leggerle prima di toccarlo. `make preflight` va
-  lanciato con `OMI_PR_BODY_FILE=<bozza>` o fallisce su `ui-evidence`. Push e PR col solo
-  account `essedev` (`GH_TOKEN=$(gh auth token --user essedev)`) ed email `hello@esse.dev`,
-  mai pubblicare senza il via di Simone.
-- Il codice dell'app Omi cambia ogni giorno: prima di affermare come si comporta, aggiornare il
-  clone (`git -C ~/Development/Projects/omi fetch origin main --tags`).
+## Gotchas
+
+- **Read the protocol at the tag of the firmware in use**, not on `main`:
+  `git -C <omi clone> show Omi_CV1_v3.0.21:omi/firmware/omi/src/<file>`. `main` has features
+  (mute, power off, `LIVE_MARK`) the pendant does not have. `sdks/device/PROTOCOL.md` lags
+  behind the code.
+- **The reference for Bluetooth on iOS is Swift**: `app/ios/Runner/Ble/OmiBleManager.swift` in
+  the Omi clone, not the Dart.
+- **iOS shares the pendant between apps**: with the Omi app connected, it also gets audio and
+  gestures and sends the server a second recording. Keep it with the pendant forgotten.
+- **No behaviour values in the app's code**: they go into the configuration schema
+  (`ARCHITECTURE.md #Configuration`).
+- **The real iPhone is needed for the pendant**: the simulator has no Bluetooth; screens are
+  tested with the demo scenes. An app signed with a free Personal Team expires after 7 days.
+- The Omi app accepts only `wss://` URLs. Tailscale with the MagicDNS name did not work from
+  the iPhone: use the Cloudflare tunnel.
+- `prototype/recordings/` holds real voices: it is in `.gitignore` and must never be committed.
+- The Omi repository has its own contribution rules (`AGENTS.md`, PR template,
+  `make preflight`, `scripts/pr-preflight`): read them before touching it. `make preflight`
+  needs `OMI_PR_BODY_FILE=<draft>` or it fails on `ui-evidence`. Never open a PR there without
+  the maintainer's go-ahead.
+- The Omi app's code changes daily: before stating how it behaves, update the clone
+  (`git -C <omi clone> fetch origin main --tags`).
