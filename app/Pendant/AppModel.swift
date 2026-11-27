@@ -104,6 +104,7 @@ final class AppModel {
   /// The connection whose ring was last cleared, so a connection clears it once.
   private var clearedRingFor: Date?
   private var published: SharedState?
+  private var lastPowerLog = Date.distantPast
 
   private static let configKey = "pendant.configuration"
   private static let onboardedKey = "pendant.onboarded"
@@ -480,9 +481,29 @@ final class AppModel {
     Task { [weak self] in
       while !Task.isCancelled {
         self?.publish()
+        self?.logPower()
         try? await Task.sleep(for: .seconds(1))
       }
     }
+  }
+
+  /// Records both batteries and the state every `powerLogInterval`, so a day of use measures
+  /// the pendant's drain while recording, in pause and away. Gaps in the times are the app
+  /// suspended by iOS.
+  private func logPower() {
+    let now = Date()
+    guard now.timeIntervalSince(lastPowerLog) >= config.powerLogInterval else { return }
+    lastPowerLog = now
+    UIDevice.current.isBatteryMonitoringEnabled = true
+    let phone = UIDevice.current.batteryLevel
+    let plugged = [.charging, .full].contains(UIDevice.current.batteryState)
+    let s = snapshot
+    let pendant = s.battery.map { "\($0)%" } ?? "?"
+    log.record(
+      "power",
+      "pendant \(pendant)\(s.charging ? " charging" : ""), phone "
+        + (phone < 0 ? "?" : "\(Int((phone * 100).rounded()))%") + (plugged ? " plugged" : "")
+        + ", \(s.mode)")
   }
 
   /// What the Live Activity shows now, also drawn in small in "Fuori dall'app".

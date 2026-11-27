@@ -61,6 +61,9 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var audioRestartGap: Int
   /// Seconds between two audio statistics entries in the log.
   public var audioStatsInterval: Double
+  /// Seconds between two records of the pendant's and the phone's battery in the log, to
+  /// measure the drain while recording and in pause.
+  public var powerLogInterval: Double
   /// Seconds between two reads of battery and storage status.
   public var statusPollInterval: Double
   /// Log entries kept in memory; the file keeps everything.
@@ -139,6 +142,7 @@ public struct Configuration: Codable, Equatable, Sendable {
   public init() {
     audioRestartGap = 4096
     audioStatsInterval = 30
+    powerLogInterval = 600
     statusPollInterval = 60
     logScreenEntries = 300
     language = "it"
@@ -210,6 +214,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     }
     audioRestartGap = number(.audioRestartGap, d.audioRestartGap, 1...32768)
     audioStatsInterval = number(.audioStatsInterval, d.audioStatsInterval, 1...3600)
+    powerLogInterval = number(.powerLogInterval, d.powerLogInterval, 60...3600)
     statusPollInterval = number(.statusPollInterval, d.statusPollInterval, 5...3600)
     logScreenEntries = number(.logScreenEntries, d.logScreenEntries, 10...5000)
     let lang: String = value(.language, d.language)
@@ -263,6 +268,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     var c = encoder.container(keyedBy: CodingKeys.self)
     try c.encode(audioRestartGap, forKey: .audioRestartGap)
     try c.encode(audioStatsInterval, forKey: .audioStatsInterval)
+    try c.encode(powerLogInterval, forKey: .powerLogInterval)
     try c.encode(statusPollInterval, forKey: .statusPollInterval)
     try c.encode(logScreenEntries, forKey: .logScreenEntries)
     try c.encode(language, forKey: .language)
@@ -299,7 +305,8 @@ public struct Configuration: Codable, Equatable, Sendable {
   }
 
   private enum CodingKeys: String, CodingKey {
-    case audioRestartGap, audioStatsInterval, statusPollInterval, logScreenEntries, language
+    case audioRestartGap, audioStatsInterval, powerLogInterval, statusPollInterval,
+      logScreenEntries, language
     case gestures, vibrationConfirm, pauseVibration, resumeVibration, ledPolicy, ledBrightness
     case offlinePolicy, pingInterval, reconnectMaxDelay, spoolSeconds, notifyDisconnect
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
