@@ -4,6 +4,8 @@
 BUNDLE_ID := dev.esse.pendant
 DERIVED := .derived
 APP := $(DERIVED)/Build/Products/Debug-iphoneos/Pendant.app
+# Build number: the commits on the branch, so each install carries its own and points to a commit.
+BUILD_NUMBER := $(shell git rev-list --count HEAD 2>/dev/null || echo 1)
 SOURCES := Pendant Shared PendantWidgets PendantKit/Sources PendantKit/Tests PendantKit/Package.swift
 DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/null | \
 	python3 -I -c "import json,sys; d=json.load(sys.stdin)['result']['devices']; \
@@ -27,7 +29,7 @@ build: project ## Compila e firma per l'iPhone collegato
 	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(DEVICE)' \
 		-derivedDataPath $(DERIVED) -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
-		-quiet build
+		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
 
 install: build ## Installa sull'iPhone
 	xcrun devicectl device install app --device $(DEVICE) $(APP)
@@ -78,7 +80,7 @@ SCENES ?= $(shell sed -n 's/^  case [a-zA-Z]* = "\(.*\)"/\1/p; s/^  case \([a-z]
 sim: project ## Compila per il simulatore e lo avvia in una scena demo: SCENE=home.rec THEME=casio.orange
 	@test -n "$(SIM_ID)" || (echo "Nessun simulatore $(SIMULATOR)" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(SIM_ID)' \
-		-derivedDataPath $(DERIVED)/sim -quiet build
+		-derivedDataPath $(DERIVED)/sim CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
 	xcrun simctl boot $(SIM_ID) 2>/dev/null || true
 	xcrun simctl bootstatus $(SIM_ID) -b >/dev/null
 	xcrun simctl install $(SIM_ID) $(SIM_APP)
