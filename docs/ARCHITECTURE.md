@@ -219,6 +219,26 @@ which on iOS replaced the Flutter plugin.
 5. On disconnection it closes the session without `CloseStream`: Nexus keeps it `interrupted`
    for 120 s and resumes it if the pendant comes back.
 
+### First launch
+
+Six steps (welcome, Bluetooth, pendant, server, notifications, done) when the keychain lacks
+the saved pendant or the server; the pendant step alone after forgetting the pendant. The
+screens, their states and texts are in `docs/concepts/concept-g-onboarding.html`.
+
+- **Pendant**: the scan lists what it finds and connects to the pendant the user picks. After
+  `searchPatience` (30 s) with nothing found it shows the three likely causes. A connection
+  that does not get the pendant ready within `linkPatience` (20 s) shows "Can't connect" with
+  three causes of its own; the pending connection stays underneath, so a pendant that answers
+  moves the screen on to "Connected" by itself. "Try again" cancels and reopens the
+  connection to that pendant, "Search again" lets it go and scans again.
+- **Server**: "Test the connection" opens the WebSocket with the token (DECISIONS 2026-11-27,
+  "The connection test does not close conversations") and counts it unreachable after
+  `probeTimeout` (10 s). The outcome is a notice card, as on the Server page and the home
+  (DECISIONS 2026-11-27, "One notice card for every state message"); "Continue" comes only
+  after a successful test.
+- **Notifications**: only while iOS has not asked yet. The preview is the disconnection
+  warning as the app sends it, built by the same function from the configuration.
+
 ### Audio custody
 
 Each copy is deleted only when the next one is confirmed. No exceptions for convenience.

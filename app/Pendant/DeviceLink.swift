@@ -49,6 +49,9 @@ final class DeviceLink: NSObject {
   private(set) var candidates: [Candidate] = []
   /// When the current scan started.
   private(set) var scanStartedAt: Date?
+  /// Since when the link has been trying to get a pendant ready: set when a connection starts,
+  /// kept through its retries, cleared once the pendant is ready or the attempt is given up.
+  private(set) var linkingSince: Date?
   /// Whether audio notifications are on.
   private(set) var ready = false
   /// Whether a pendant is saved: the link reconnects to it by itself.
@@ -129,6 +132,7 @@ final class DeviceLink: NSObject {
     UserDefaults.standard.removeObject(forKey: Self.savedPeripheralKey)
     if let peripheral, let central { central.cancelPeripheralConnection(peripheral) }
     peripheral = nil
+    linkingSince = nil
     log.record("forget")
     resetSession()
     setReady(false)
@@ -142,6 +146,16 @@ final class DeviceLink: NSObject {
     candidates = []
     found = [:]
     reconnect()
+  }
+
+  /// Cancels the pending connection to the pendant and opens it again, after the user checked
+  /// it: a connection stuck halfway starts over.
+  func retryConnection() {
+    guard let central, central.state == .poweredOn, let peripheral else { return }
+    log.record("retryConnection", peripheral.identifier.uuidString)
+    central.cancelPeripheralConnection(peripheral)
+    linkingSince = nil
+    connect(peripheral)
   }
 
   /// Asks the ring for its pointers.
@@ -238,6 +252,7 @@ final class DeviceLink: NSObject {
     target.delegate = self
     UserDefaults.standard.set(target.identifier.uuidString, forKey: Self.savedPeripheralKey)
     phase = .connecting
+    if linkingSince == nil { linkingSince = Date() }
     // A pending connect never times out on iOS, also in the background: the pendant is caught
     // as soon as it comes back in range or is switched on.
     central?.connect(target)
@@ -267,6 +282,7 @@ final class DeviceLink: NSObject {
   private func setReady(_ value: Bool) {
     guard value != ready else { return }
     ready = value
+    if value { linkingSince = nil }
     onReadyChanged?(value)
   }
 
@@ -460,6 +476,8 @@ extension DeviceLink: CBCentralManagerDelegate {
       case .unknown, .resetting: phase = .starting
       default: phase = .bluetoothOff
       }
+      // Without Bluetooth iOS drops the pending connection; a new one starts when it is back.
+      if central.state != .poweredOn { linkingSince = nil }
     }
   }
 

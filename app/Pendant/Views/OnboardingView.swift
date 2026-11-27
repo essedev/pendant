@@ -308,7 +308,8 @@ private struct NotificationPreview: View {
   }
 }
 
-/// Searching, found, connecting, connected, or not found after 30 seconds.
+/// Searching, found, connecting, connected; not found after `searchPatience`, or stuck connecting
+/// after `linkPatience`.
 private struct SearchStep: View {
   @Environment(AppModel.self) private var model
 
@@ -317,15 +318,26 @@ private struct SearchStep: View {
       let state = SearchState.of(model, now: context.date)
       VStack(alignment: .leading, spacing: 0) {
         Heading(title: state.title, text: state.text(model.config))
-        if state == .none {
+        if state == .none || state == .stuck {
           VStack(alignment: .leading, spacing: 0) {
-            cause(1, "It’s off", "Give it a short tap: the LED lights up.")
-            cause(
-              2, "It’s connected to the Omi app",
-              "Open the Omi app and tap Forget Device: otherwise the pendant stays with it.")
-            cause(
-              3, "It’s flat or far away",
-              "Charge it for a few minutes and keep it next to the phone.")
+            if state == .stuck {
+              cause(
+                1, "It’s off or moved away",
+                "Keep it on and next to the phone: as soon as it answers, the connection completes by itself."
+              )
+              cause(
+                2, "The connection got stuck",
+                "Switch it off by holding it for 3 seconds, then turn it on with a short tap.")
+              cause(3, "It’s flat", "Charge it for a few minutes, then try again.")
+            } else {
+              cause(1, "It’s off", "Give it a short tap: the LED lights up.")
+              cause(
+                2, "It’s connected to the Omi app",
+                "Open the Omi app and tap Forget Device: otherwise the pendant stays with it.")
+              cause(
+                3, "It’s flat or far away",
+                "Charge it for a few minutes and keep it next to the phone.")
+            }
           }
           .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
           .onboardingSurface()
@@ -397,19 +409,29 @@ private struct SearchStep: View {
 /// Where the search stands.
 private enum SearchState: Equatable {
   case scanning, found, linking, linked, none
+  /// Connecting for longer than `linkPatience`: the connection stays pending underneath, and the
+  /// state turns to linked by itself if the pendant answers.
+  case stuck
 
   @MainActor static func of(_ model: AppModel, now: Date) -> SearchState {
     if let demo = model.demo {
       switch demo.search {
       case .scanning: return .scanning
       case .found: return .found
+      case .linking: return .linking
+      case .stuck: return .stuck
       case .linked: return .linked
       case .none: return .none
       }
     }
     let link = model.link
     if link.ready { return .linked }
-    if link.phase == .connecting || link.phase == .connected { return .linking }
+    if link.phase == .connecting || link.phase == .connected {
+      if let since = link.linkingSince, now.timeIntervalSince(since) > model.config.linkPatience {
+        return .stuck
+      }
+      return .linking
+    }
     if !link.candidates.isEmpty { return .found }
     if let started = link.scanStartedAt,
       now.timeIntervalSince(started) > model.config.searchPatience
@@ -426,6 +448,7 @@ private enum SearchState: Equatable {
     case .linking: "Connecting to the pendant"
     case .linked: "Connected"
     case .none: "Can’t find the pendant"
+    case .stuck: "Can’t connect"
     }
   }
 
@@ -437,6 +460,8 @@ private enum SearchState: Equatable {
     case .linked: "The pendant is ready. It stays connected even with the app closed."
     case .none:
       "I looked for \(Int(config.searchPatience)) seconds. It’s usually one of these three things."
+    case .stuck:
+      "The pendant hasn’t answered for \(Int(config.linkPatience)) seconds. I keep trying on my own; meanwhile check these things."
     }
   }
 }
@@ -455,6 +480,10 @@ private struct SearchActions: View {
           TextButton(title: "Open the Omi app") {
             if let url = URL(string: "omi://") { UIApplication.shared.open(url) }
           }
+        } else if state == .stuck {
+          MainButton(title: "Try again") { model.link.retryConnection() }
+          // Back to scanning: the pendant picked is let go, as when it is forgotten.
+          TextButton(title: "Search again") { model.link.forget() }
         } else {
           MainButton(title: "Continue", disabled: state != .linked) {
             // After forgetting the pendant the server is already set: pairing is all there is.

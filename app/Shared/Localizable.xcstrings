@@ -550,6 +550,16 @@
         }
       }
     },
+    "Can’t connect" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non riesco a collegarmi"
+          }
+        }
+      }
+    },
     "Can’t find the pendant" : {
       "localizations" : {
         "it" : {
@@ -586,6 +596,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettilo in carica qualche minuto e tienilo accanto al telefono."
+          }
+        }
+      }
+    },
+    "Charge it for a few minutes, then try again." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettilo in carica qualche minuto, poi riprova."
           }
         }
       }
@@ -1396,6 +1416,16 @@
         }
       }
     },
+    "It’s flat" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È scarico"
+          }
+        }
+      }
+    },
     "It’s flat or far away" : {
       "localizations" : {
         "it" : {
@@ -1412,6 +1442,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "È spento"
+          }
+        }
+      }
+    },
+    "It’s off or moved away" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si è spento o allontanato"
           }
         }
       }
@@ -1442,6 +1482,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tienilo acceso e vicino al telefono. Di solito bastano pochi secondi."
+          }
+        }
+      }
+    },
+    "Keep it on and next to the phone: as soon as it answers, the connection completes by itself." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienilo acceso e accanto al telefono: appena risponde il collegamento si chiude da solo."
           }
         }
       }
@@ -3142,6 +3192,16 @@
         }
       }
     },
+    "Switch it off by holding it for 3 seconds, then turn it on with a short tap." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spegnilo tenendolo premuto 3 secondi, poi riaccendilo con un tocco breve."
+          }
+        }
+      }
+    },
     "Tap Bluetooth." : {
       "localizations" : {
         "it" : {
@@ -3408,6 +3468,16 @@
         }
       }
     },
+    "The connection got stuck" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il collegamento si è bloccato"
+          }
+        }
+      }
+    },
     "The conversation, with its marked moments" : {
       "localizations" : {
         "it" : {
@@ -3490,6 +3560,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il ciondolo è acceso da %@ senza registrare"
+          }
+        }
+      }
+    },
+    "The pendant hasn’t answered for %lld seconds. I keep trying on my own; meanwhile check these things." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The pendant hasn’t answered for %lld second. I keep trying on my own; meanwhile check these things."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The pendant hasn’t answered for %lld seconds. I keep trying on my own; meanwhile check these things."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Il ciondolo non risponde da %lld secondo. Continuo a provare da solo; intanto controlla queste cose."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Il ciondolo non risponde da %lld secondi. Continuo a provare da solo; intanto controlla queste cose."
+                }
+              }
+            }
           }
         }
       }
@@ -3972,6 +4082,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trascrizioni sul telefono"
+          }
+        }
+      }
+    },
+    "Try again" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
           }
         }
       }

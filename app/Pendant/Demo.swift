@@ -49,6 +49,8 @@ enum DemoScene: String, CaseIterable {
   case obDenied = "ob.denied"
   case obSearch = "ob.search"
   case obFound = "ob.found"
+  case obLinking = "ob.linking"
+  case obStuck = "ob.stuck"
   case obLinked = "ob.linked"
   case obNone = "ob.none"
   case obServer = "ob.server"
@@ -122,7 +124,7 @@ enum DemoScene: String, CaseIterable {
     case .obWelcome: .welcome
     case .obBluetooth: .bluetooth
     case .obDenied: .denied
-    case .obSearch, .obFound, .obLinked, .obNone: .search
+    case .obSearch, .obFound, .obLinking, .obStuck, .obLinked, .obNone: .search
     case .obServer, .obServerTesting, .obServerFail: .server
     case .obNotifications: .notifications
     case .obDone: .done
@@ -134,6 +136,8 @@ enum DemoScene: String, CaseIterable {
   var search: SearchStateDemo {
     switch self {
     case .obFound: .found
+    case .obLinking: .linking
+    case .obStuck: .stuck
     case .obLinked: .linked
     case .obNone: .none
     default: .scanning
@@ -141,7 +145,7 @@ enum DemoScene: String, CaseIterable {
   }
 
   /// The search states, mirrored for scenes.
-  enum SearchStateDemo { case scanning, found, linked, none }
+  enum SearchStateDemo { case scanning, found, linking, stuck, linked, none }
 
   var config: Configuration { .defaults }
 
