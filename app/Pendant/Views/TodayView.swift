@@ -69,7 +69,6 @@ struct TodayView: View {
         ConversationView(conversation: c)
       }
     }
-    .toolbar(.hidden, for: .navigationBar)
     .gesture(
       DragGesture(minimumDistance: 40).onEnded { drag in
         guard abs(drag.translation.width) > abs(drag.translation.height) else { return }
