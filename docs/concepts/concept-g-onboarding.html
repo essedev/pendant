@@ -10,6 +10,12 @@
 		<!--
 			Concept G: il primo avvio dell'app com'è oggi, per decidere cosa cambiare.
 
+			GIRO 4 (27/11/2026): l'esito della prova di connessione è la stessa card degli avvisi di
+			Adesso (NoticeCard): fondo delle celle, titolo in inchiostro, testo grigio, l'icona dice il
+			tipo (anello ambra per un problema, spunta per Collegato, anello che pulsa mentre prova, al
+			posto delle tacche che scorrono). Prima era testo libero sul fondo col titolo ambra, uno
+			stile che compariva solo qui e nella pagina Server.
+
 			GIRO 3 (27/11/2026): il ciondolo della ricerca è disegnato come quello vero e come l'icona
 			(app/Icon/pendant-light.svg): faccia grigia, anello chiaro grigio-azzurro, spia al centro.
 			Prima era il disegno del codice, disco scuro con la spia sopra il centro.
@@ -207,15 +213,20 @@
 			.field span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; }
 			.field span.ph { color: var(--placeholder); }
 			.field span.dots { letter-spacing: 1px; }
-			.result { margin: 20px 8px 0; }
-			.result.probing { display: grid; gap: 10px; }
-			.result.probing b { font: 600 15px/20px var(--font); }
-			.result.out { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; }
-			.result.out svg { width: 14px; height: 14px; margin-top: 3px; color: var(--ink); }
-			.result .ring { width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; box-shadow: inset 0 0 0 2.5px var(--warn); }
-			.result.out b { display: block; font: 600 15px/20px var(--font); }
-			.result.out.warn b { color: var(--warn); }
-			.result.out p { margin-top: 2px; font-size: 15px; line-height: 20px; color: var(--ink2); }
+			/* Giro 4: one notice card for every state message, the same as the notices on Adesso
+			   (NoticeCard): cell fill, ink title, grey text, the icon says the kind. A surface, so it
+			   reaches the app's 16 margin. */
+			.result { margin: 20px -8px 0; padding: 14px 16px; border-radius: 20px; background: var(--cell);
+				display: grid; grid-template-columns: 12px 1fr; column-gap: 12px; }
+			.result .ic { width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; }
+			.result .ic.warn { box-shadow: inset 0 0 0 2.5px var(--warn); }
+			.result .ic.busy { box-shadow: inset 0 0 0 2.5px var(--ink2); animation: busy 1.2s ease-in-out infinite; }
+			.result .ic.ok { display: grid; place-items: center; }
+			.result .ic.ok svg { width: 13px; height: 13px; color: var(--ink); }
+			@keyframes busy { 50% { box-shadow: inset 0 0 0 6px var(--ink2); } }
+			@media (prefers-reduced-motion: reduce) { .result .ic.busy { animation: none; } }
+			.result b { display: block; font: 600 15px/20px var(--font); color: var(--ink); }
+			.result p { margin-top: 4px; font-size: 15px; line-height: 20px; color: var(--ink2); }
 
 			/* NotificationPreview. */
 			.notif { margin-top: 28px; padding: 14px; border-radius: 24px; background: var(--cell); display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: start; }
@@ -242,7 +253,7 @@
 			<button data-zoom="0.5"><kbd>3</kbd> 50%</button>
 		</div>
 		<header class="intro">
-			<h1>Giro 3: il primo avvio, col ciondolo vero nella ricerca</h1>
+			<h1>Giro 4: il primo avvio, esiti della prova come gli avvisi di Adesso</h1>
 			<p>
 				Ogni schermata del primo avvio come la disegna il codice adesso, per la revisione: nessuna variante, nessun miglioramento.
 				Sotto ogni telefono, il nome del passo e cosa lo fa comparire. Dove il codice e il mock vecchio non coincidono, qui c’è il codice.
@@ -364,10 +375,11 @@
 					<div class="field"><label>Token</label>${filled ? `<span class="dots">${'•'.repeat(16)}</span>` : '<span class="ph">Incolla il token</span>'}</div>
 				</div>`;
 				body += '<p class="foot">Il token finisce nel portachiavi di iOS. Indirizzo e token si cambiano poi dalle impostazioni.</p>';
-				if (st === 'testing') body += `<div class="result probing"><b>Provo a collegarmi a ${HOST}</b>${scan(true)}</div>`;
+				const notice = (kind, t, x) => `<div class="result"><span class="ic ${kind}">${kind === 'ok' ? ICON.check : ''}</span><div><b>${t}</b>${x ? `<p>${x}</p>` : ''}</div></div>`;
+				if (st === 'testing') body += notice('busy', `Provo a collegarmi a ${HOST}`, 'Di solito bastano pochi secondi.');
 				if (OUTCOME[st]) {
 					const [t, x] = OUTCOME[st];
-					body += `<div class="result out${st === 'ok' ? '' : ' warn'}">${st === 'ok' ? ICON.check : '<span class="ring"></span>'}<div><b>${t}</b><p>${x}</p></div></div>`;
+					body += notice(st === 'ok' ? 'ok' : 'warn', t, x);
 				}
 				const acts = st === 'ok' ? main('Continua') : main(st === 'testing' ? 'Provo la connessione' : 'Prova la connessione', !filled || st === 'testing');
 				return { step: 'server', body, acts };
