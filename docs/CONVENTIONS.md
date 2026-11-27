@@ -36,7 +36,7 @@ also a label of the Italian UI stays as it is when the docs name that label.
 | coda senza rete | offline queue | `FrameSpool` in the code |
 | audio offline | offline audio | recorded by the pendant without the phone |
 | avviso del ciondolo acceso a vuoto | idle warning | the pendant on and connected, not recording |
-| attività in tempo reale | Live Activity | |
+| attività in tempo reale | Live Activity | <!-- prose-allow --> |
 | tasto Azione, Centro di Controllo | Action button, Control Center | |
 | Adesso, Oggi, Impostazioni, Fuori dall'app | stay as they are | UI labels: the tabs and a settings page |
 | giro (di mock) | round | a round of feedback on a mockup |

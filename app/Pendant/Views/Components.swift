@@ -580,7 +580,7 @@ enum Clock {
     date.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits))
   }
 
-  /// `giovedì 26 novembre`.
+  /// The day in words, as the Italian UI writes it: `giovedì 26 novembre` (prose-allow).
   static func longDay(_ date: Date) -> String {
     date.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "it_IT")))
   }

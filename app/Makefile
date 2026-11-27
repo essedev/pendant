@@ -15,60 +15,60 @@ DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/
 .DEFAULT_GOAL := help
 .PHONY: help project build install run test lint format check credentials logs devices clean sim screens icon
 
-help: ## Elenca i comandi
+help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
 
-project: Local.xcconfig ## Genera Pendant.xcodeproj da project.yml
+project: Local.xcconfig ## Generate Pendant.xcodeproj from project.yml
 	xcodegen generate -q
 
 Local.xcconfig:
 	cp Local.xcconfig.example Local.xcconfig
-	@echo "Imposta DEVELOPMENT_TEAM in app/Local.xcconfig e rilancia." && exit 1
+	@echo "Set DEVELOPMENT_TEAM in app/Local.xcconfig and run again." && exit 1
 
-build: project ## Compila e firma per l'iPhone collegato
-	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
+build: project ## Build and sign for the connected iPhone
+	@test -n "$(DEVICE)" || (echo "No iPhone connected" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(DEVICE)' \
 		-derivedDataPath $(DERIVED) -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
 		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
 
-install: build ## Installa sull'iPhone
+install: build ## Install on the iPhone
 	xcrun devicectl device install app --device $(DEVICE) $(APP)
 
-run: install ## Installa e avvia sull'iPhone
+run: install ## Install and launch on the iPhone
 	xcrun devicectl device process launch --device $(DEVICE) $(BUNDLE_ID)
 
-test: ## Test del pacchetto PendantKit, senza iPhone
+test: ## Test the PendantKit package, no iPhone needed
 	cd PendantKit && swift test
 
-lint: ## Controlla la formattazione
+lint: ## Check the formatting
 	swift format lint --strict -r $(SOURCES)
 
-format: ## Formatta il codice Swift
+format: ## Format the Swift code
 	swift format -i -r $(SOURCES)
 
-check: lint test build ## Giro completo: formattazione, test, build per l'iPhone
+check: lint test build ## Full round: formatting, tests, build for the iPhone
 
 SERVER_WS ?=
 
-credentials: ## Porta URL e token del server nel portachiavi dell'app: SERVER_WS=<url> TOKEN_FILE=<file col token>
-	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
-	@test -n "$(SERVER_WS)" || (echo "Serve SERVER_WS=wss://<server>/api/audio-stream/ws" && exit 1)
-	@test -f "$(TOKEN_FILE)" || (echo "Serve TOKEN_FILE=<file col token>" && exit 1)
+credentials: ## Put the server URL and token in the app's keychain: SERVER_WS=<url> TOKEN_FILE=<token file>
+	@test -n "$(DEVICE)" || (echo "No iPhone connected" && exit 1)
+	@test -n "$(SERVER_WS)" || (echo "Needs SERVER_WS=wss://<server>/api/audio-stream/ws" && exit 1)
+	@test -f "$(TOKEN_FILE)" || (echo "Needs TOKEN_FILE=<token file>" && exit 1)
 	@tmp=$$(mktemp -d) && trap 'rm -rf "$$tmp"' EXIT && \
 		python3 -I -c "import json,sys; print(json.dumps({'url': sys.argv[1], 'token': open(sys.argv[2]).read().strip()}))" \
 			"$(SERVER_WS)" "$(TOKEN_FILE)" > "$$tmp/bootstrap.json" && \
 		xcrun devicectl device copy to --device $(DEVICE) --domain-type appDataContainer \
 			--domain-identifier $(BUNDLE_ID) --source "$$tmp/bootstrap.json" \
 			--destination Documents/bootstrap.json >/dev/null && \
-		echo "Credenziali copiate: l'app le sposta nel portachiavi al prossimo avvio."
+		echo "Credentials copied: the app moves them to the keychain at its next launch."
 
-logs: ## Copia dall'iPhone il log e i file della verifica in app/.logs
-	@test -n "$(DEVICE)" || (echo "Nessun iPhone collegato" && exit 1)
+logs: ## Copy the app's log and probe files from the iPhone to app/.logs
+	@test -n "$(DEVICE)" || (echo "No iPhone connected" && exit 1)
 	mkdir -p .logs
 	xcrun devicectl device copy from --device $(DEVICE) --domain-type appDataContainer \
 		--domain-identifier $(BUNDLE_ID) --source Documents --destination .logs
 
-devices: ## Elenca i dispositivi visti da Xcode
+devices: ## List the devices Xcode sees
 	xcrun devicectl list devices
 
 SIMULATOR ?= iPhone 18 Pro
@@ -78,8 +78,8 @@ SIM_ID = $(shell xcrun simctl list devices available -j | python3 -I -c "import 
 SIM_APP := $(DERIVED)/sim/Build/Products/Debug-iphonesimulator/Pendant.app
 SCENES ?= $(shell sed -n 's/^  case [a-zA-Z]* = "\(.*\)"/\1/p; s/^  case \([a-z]*\)$$/\1/p' Pendant/Demo.swift)
 
-sim: project ## Compila per il simulatore e lo avvia in una scena demo: SCENE=home.rec THEME=casio.orange
-	@test -n "$(SIM_ID)" || (echo "Nessun simulatore $(SIMULATOR)" && exit 1)
+sim: project ## Build for the simulator and launch a demo scene: SCENE=home.rec THEME=casio.orange
+	@test -n "$(SIM_ID)" || (echo "No simulator $(SIMULATOR)" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(SIM_ID)' \
 		-derivedDataPath $(DERIVED)/sim CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
 	xcrun simctl boot $(SIM_ID) 2>/dev/null || true
@@ -88,7 +88,7 @@ sim: project ## Compila per il simulatore e lo avvia in una scena demo: SCENE=ho
 	xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $(or $(SCENE),home.rec) \
 		$(if $(THEME),-theme $(THEME))
 
-screens: sim ## Schermate di tutte le scene demo in app/.screens, chiaro e scuro
+screens: sim ## Screenshots of every demo scene in app/.screens, light and dark
 	mkdir -p .screens
 	xcrun simctl status_bar $(SIM_ID) override --time 17:42 --batteryState charged --batteryLevel 100
 	@for mode in light dark; do \
@@ -100,14 +100,14 @@ screens: sim ## Schermate di tutte le scene demo in app/.screens, chiaro e scuro
 		done; \
 	done
 	xcrun simctl ui $(SIM_ID) appearance light
-	@echo "Schermate in app/.screens"
+	@echo "Screenshots in app/.screens"
 
 ICONSET := Pendant/Resources/Assets.xcassets/AppIcon.appiconset
 
-icon: ## Rigenera le PNG dell'icona dagli SVG in Icon/ (serve rsvg-convert, brew install librsvg)
+icon: ## Regenerate the icon PNGs from the SVGs in Icon/ (needs rsvg-convert, brew install librsvg)
 	rsvg-convert -w 1024 -h 1024 --background-color '#d6d7d3' Icon/pendant-light.svg -o $(ICONSET)/icon-light.png
 	rsvg-convert -w 1024 -h 1024 --background-color '#0e0f12' Icon/pendant-dark.svg -o $(ICONSET)/icon-dark.png
 	rsvg-convert -w 1024 -h 1024 Icon/pendant-tinted.svg -o $(ICONSET)/icon-tinted.png
 
-clean: ## Toglie build e progetto generato
+clean: ## Remove the build and the generated project
 	rm -rf $(DERIVED) Pendant.xcodeproj
