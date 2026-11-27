@@ -10,6 +10,11 @@
 		<!--
 			Concept G: il primo avvio dell'app com'è oggi, per decidere cosa cambiare.
 
+			GIRO 6 (27/11/2026): nuova schermata "Non riesco a collegarmi" dopo 20 secondi di
+			collegamento senza risposta. Oggi il collegamento non scade mai e la schermata "Mi collego
+			al ciondolo" può restare lì per sempre. Le tre attese del primo avvio (server 10 s,
+			ricerca 30 s, collegamento 20 s) passano nello schema della configurazione.
+
 			GIRO 5 (27/11/2026): nell'anteprima della notifica (passo 5) c'è l'icona vera dell'app al
 			posto del quadrato scuro con l'onda, e il testo è quello che l'app manda oggi: il vecchio
 			"Riprende da sola quando torna vicino" non è più vero, ogni collegamento parte in pausa.
@@ -257,7 +262,7 @@
 			<button data-zoom="0.5"><kbd>3</kbd> 50%</button>
 		</div>
 		<header class="intro">
-			<h1>Giro 5: il primo avvio, icona vera nell'anteprima della notifica</h1>
+			<h1>Giro 6: il primo avvio, con il collegamento che non resta appeso</h1>
 			<p>
 				Ogni schermata del primo avvio come la disegna il codice adesso, per la revisione: nessuna variante, nessun miglioramento.
 				Sotto ogni telefono, il nome del passo e cosa lo fa comparire. Dove il codice e il mock vecchio non coincidono, qui c’è il codice.
@@ -349,13 +354,18 @@
 				found: ['Trovato', 'C’è un ciondolo qui vicino. Se è il tuo, collegalo.'],
 				linking: ['Mi collego al ciondolo', 'Leggo versione e batteria e gli scrivo l’ora.'],
 				linked: ['Collegato', 'Il ciondolo è pronto. Resta collegato anche con l’app chiusa.'],
-				none: ['Non trovo il ciondolo', 'Ho cercato per 30 secondi. Di solito è una di queste tre cose.']
+				none: ['Non trovo il ciondolo', 'Ho cercato per 30 secondi. Di solito è una di queste tre cose.'],
+				stuck: ['Non riesco a collegarmi', 'Il ciondolo non risponde da 20 secondi. Continuo a provare da solo; intanto controlla queste cose.']
 			};
 			const search = (st) => {
 				const [t, x] = SEARCH[st];
 				let body = heading(t, x);
-				if (st === 'none') {
-					const causes = [
+				if (st === 'none' || st === 'stuck') {
+					const causes = st === 'stuck' ? [
+						['Si è spento o allontanato', 'Tienilo acceso e accanto al telefono: appena risponde il collegamento si chiude da solo.'],
+						['Il collegamento si è bloccato', 'Spegnilo tenendolo premuto 3 secondi, poi riaccendilo con un tocco breve.'],
+						['È scarico', 'Mettilo in carica qualche minuto, poi riprova.']
+					] : [
 						['È spento', 'Dagli un tocco breve: la spia si accende.'],
 						['È collegato all’app Omi', 'Apri l’app Omi e fai Dimentica dispositivo: altrimenti il ciondolo resta con lei.'],
 						['È scarico o lontano', 'Mettilo in carica qualche minuto e tienilo accanto al telefono.']
@@ -371,7 +381,7 @@
 					}[st];
 					if (dev) body += `<div class="cell dev surf">${dev}</div>`;
 				}
-				const acts = st === 'none' ? main('Cerca di nuovo') + text('Apri l’app Omi') : main('Continua', st !== 'linked');
+				const acts = st === 'none' ? main('Cerca di nuovo') + text('Apri l’app Omi') : st === 'stuck' ? main('Riprova') + text('Cerca di nuovo') : main('Continua', st !== 'linked');
 				return { step: 'search', body, acts };
 			};
 
@@ -452,6 +462,7 @@
 					[search('scanning'), 'Ricerca, cerca', 'Permesso concesso: parte la scansione. Continua resta spento finché il ciondolo non è collegato.'],
 					[search('found'), 'Ricerca, trovato', 'La scansione ha un candidato: il primo trovato, col segnale dall’RSSI (forte sopra -60, medio sopra -75, poi debole).'],
 					[search('linking'), 'Ricerca, collegamento', 'Dopo Collega, mentre il collegamento è in corso o aperto ma non ancora pronto.'],
+					[search('stuck'), 'Ricerca, collegamento fermo (nuovo, giro 6)', '20 secondi in Collegamento senza che il ciondolo sia pronto. Il collegamento resta in attesa sotto: se il ciondolo risponde si passa da solo a Collegato. Riprova chiude e riapre il collegamento, Cerca di nuovo torna alla scansione.'],
 					[search('linked'), 'Ricerca, collegato', 'Ciondolo pronto: Continua si accende. Dopo Dimentica ciondolo, dove il server c’è già, Continua chiude il primo avvio qui.'],
 					[search('none'), 'Ricerca, non trovato', '30 secondi di scansione senza candidati. Cerca di nuovo riparte da capo; con un candidato si torna a Trovato.']
 				] },
