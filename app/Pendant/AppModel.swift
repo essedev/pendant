@@ -104,7 +104,8 @@ final class AppModel {
   /// The connection whose ring was last cleared, so a connection clears it once.
   private var clearedRingFor: Date?
   private var published: SharedState?
-  private var lastPowerLog = Date.distantPast
+  // From launch: a record at once would come before the pendant reports its battery.
+  private var lastPowerLog = Date()
 
   private static let configKey = "pendant.configuration"
   private static let onboardedKey = "pendant.onboarded"
