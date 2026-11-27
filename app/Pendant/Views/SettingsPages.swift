@@ -98,22 +98,23 @@ struct PendantPage: View {
             Row("Dimentica il ciondolo")
           }
           .buttonStyle(.plain)
+          // On iOS 26 the dialog is a popover anchored to the view that carries it.
+          .confirmationDialog(
+            "Dimenticare \(model.config.pendantName)?", isPresented: $confirmForget,
+            titleVisibility: .visible
+          ) {
+            Button("Dimentica il ciondolo") { model.forgetPendant() }
+            Button("Annulla", role: .cancel) {}
+          } message: {
+            Text(
+              "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
+            )
+          }
         }
       }
       .padding(.bottom, 32)
     }
     .page("Ciondolo")
-    .confirmationDialog(
-      "Dimenticare \(model.config.pendantName)?", isPresented: $confirmForget,
-      titleVisibility: .visible
-    ) {
-      Button("Dimentica il ciondolo") { model.forgetPendant() }
-      Button("Annulla", role: .cancel) {}
-    } message: {
-      Text(
-        "L’app smette di cercarlo e di registrare. Per usarlo di nuovo lo ricolleghi dalla ricerca, in pochi secondi."
-      )
-    }
   }
 }
 
@@ -737,6 +738,15 @@ struct AdvancedPage: View {
             ) {
               confirmRing = true
             }
+            .confirmationDialog(
+              "Leggere la memoria del ciondolo?", isPresented: $confirmRing,
+              titleVisibility: .visible
+            ) {
+              Button("Leggi la memoria") { model.link.readRing() }
+              Button("Annulla", role: .cancel) {}
+            } message: {
+              Text("L’audio letto finisce in un file accanto al log e non resta più nel ciondolo.")
+            }
           }
         }
         CellGroup(header: "App", footer: signatureFooter) {
@@ -750,31 +760,23 @@ struct AdvancedPage: View {
             Row("Riporta ai valori iniziali")
           }
           .buttonStyle(.plain)
+          .confirmationDialog(
+            "Riportare le impostazioni ai valori iniziali?", isPresented: $confirmReset,
+            titleVisibility: .visible
+          ) {
+            Button("Riporta ai valori iniziali") { model.resetSettings() }
+            Button("Annulla", role: .cancel) {}
+          } message: {
+            Text(
+              "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
+            )
+          }
         }
       }
       .padding(.top, 8)
       .padding(.bottom, 32)
     }
     .page("Avanzate")
-    .confirmationDialog(
-      "Riportare le impostazioni ai valori iniziali?", isPresented: $confirmReset,
-      titleVisibility: .visible
-    ) {
-      Button("Riporta ai valori iniziali") { model.resetSettings() }
-      Button("Annulla", role: .cancel) {}
-    } message: {
-      Text(
-        "Gesti, notifiche e valori avanzati tornano come al primo avvio. Indirizzo e token del server restano."
-      )
-    }
-    .confirmationDialog(
-      "Leggere la memoria del ciondolo?", isPresented: $confirmRing, titleVisibility: .visible
-    ) {
-      Button("Leggi la memoria") { model.link.readRing() }
-      Button("Annulla", role: .cancel) {}
-    } message: {
-      Text("L’audio letto finisce in un file accanto al log e non resta più nel ciondolo.")
-    }
   }
 
   private var queueUsed: String {
