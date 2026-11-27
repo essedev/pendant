@@ -13,7 +13,8 @@ DEVICE ?= $(shell xcrun devicectl list devices --json-output /dev/stdout 2>/dev/
 	and x['connectionProperties'].get('pairingState')=='paired' and x['connectionProperties'].get('tunnelState')!='unavailable'),''))" 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help project build install run test lint format check credentials logs devices clean sim screens icon
+.PHONY: help project build install run test lint format check strings credentials logs devices clean \
+	sim screens icon
 
 help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -30,6 +31,7 @@ build: project ## Build and sign for the connected iPhone
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(DEVICE)' \
 		-derivedDataPath $(DERIVED) -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
 		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
+	python3 ../scripts/catalogs.py sync $(DERIVED)
 
 install: build ## Install on the iPhone
 	xcrun devicectl device install app --device $(DEVICE) $(APP)
@@ -48,6 +50,14 @@ format: ## Format the Swift code
 	swift format -i -r $(SOURCES)
 
 check: lint test build ## Full round: formatting, tests, build for the iPhone
+
+# Xcode updates the String Catalogs after every build; here `build` and `sim` do it, and this
+# target does it without an iPhone.
+strings: project ## Build without signing, bring the catalogs in step with the code, check the Italian
+	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'generic/platform=iOS' \
+		-derivedDataPath $(DERIVED) -quiet build CODE_SIGNING_ALLOWED=NO
+	python3 ../scripts/catalogs.py sync $(DERIVED)
+	python3 ../scripts/catalogs.py check
 
 SERVER_WS ?=
 
@@ -83,6 +93,7 @@ sim: project ## Build for the simulator and launch a demo scene: SCENE=home.rec 
 	@test -n "$(SIM_ID)" || (echo "No simulator $(SIMULATOR)" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(SIM_ID)' \
 		-derivedDataPath $(DERIVED)/sim CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) -quiet build
+	python3 ../scripts/catalogs.py sync $(DERIVED)/sim
 	xcrun simctl boot $(SIM_ID) 2>/dev/null || true
 	xcrun simctl bootstatus $(SIM_ID) -b >/dev/null
 	xcrun simctl install $(SIM_ID) $(SIM_APP)

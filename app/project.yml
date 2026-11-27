@@ -4,6 +4,8 @@ options:
   deploymentTarget:
     iOS: "26.0"
   createIntermediateGroups: true
+  # English is the source language; Italian is a translation in the String Catalogs.
+  developmentLanguage: en
 configFiles:
   Debug: Local.xcconfig
   Release: Local.xcconfig
@@ -18,6 +20,9 @@ settings:
     SWIFT_VERSION: "6.0"
     CODE_SIGN_STYLE: Automatic
     TARGETED_DEVICE_FAMILY: "1"
+    # The compiler lists the localizable strings, so the catalogs follow the code.
+    SWIFT_EMIT_LOC_STRINGS: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
 targets:
   Pendant:
     type: application
@@ -38,7 +43,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         # iPhone only, portrait; the iPad key only quiets the multitasking check of Xcode 26.
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
-        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Serve per ricevere l’audio dal ciondolo."
+        # The Italian is in Pendant/Resources/InfoPlist.xcstrings.
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Needed to receive the audio from the pendant."
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
     info:
       path: Pendant/Info.plist
