@@ -324,7 +324,9 @@ struct ServerPage: View {
           }
         }
         CellGroup {
-          Row("Protocollo", value: "audio_stream 1")
+          Row(
+            "Protocollo",
+            value: model.serverInfo.protocolVersion.map { "audio_stream \($0)" } ?? "di base")
           PickerRow(
             label: "Lingua del parlato", title: "Lingua del parlato",
             choices: including(Choices.language, model.config.language) { $0.uppercased() },
@@ -418,13 +420,13 @@ struct ProbeResult: View {
 
   private func text(_ o: ServerProbeOutcome) -> String {
     switch o {
-    case .ok: "Il server ha accettato il token e parla audio_stream 1."
+    case .ok: "Il server ha accettato il token."
     case .unreachable:
       "Controlla che l’indirizzo sia scritto giusto e che il telefono sia in rete. Se il server è spento, riprova quando è acceso."
     case .tokenRejected:
       "L’indirizzo è giusto, il token no. Incollalo di nuovo: deve essere quello creato per l’audio, intero."
     case .protocolMismatch:
-      "Ha risposto, ma non con audio_stream 1. Controlla l’indirizzo, oppure aggiorna il server o l’app."
+      "Ha risposto, ma non come un server di questo protocollo. Controlla l’indirizzo, oppure aggiorna il server o l’app."
     }
   }
 }

@@ -209,6 +209,11 @@ struct StatusLabel: View {
 struct ConversationView: View {
   let conversation: Conversation
   @Environment(AppModel.self) private var model
+  @Environment(\.dismiss) private var dismiss
+  @State private var askingDelete = false
+  @State private var deleting = false
+  /// What went wrong with a deletion, shown in an alert.
+  @State private var deleteProblem: String?
 
   var body: some View {
     let c = conversation
@@ -260,7 +265,9 @@ struct ConversationView: View {
           header: "Momenti segnati",
           footer: c.bookmarks.isEmpty
             ? nil
-            : "Segnati mentre registravi. Restano su questo telefono: il server li riceve ma per ora non li usa."
+            : model.serverInfo.supports(.mark)
+              ? "Segnati mentre registravi. Il server li riceve con la conversazione."
+              : "Segnati mentre registravi. Restano su questo telefono: il server non li usa."
         ) {
           if c.bookmarks.isEmpty {
             Text(
@@ -286,11 +293,68 @@ struct ConversationView: View {
             warn: queued || c.status == .queued)
           Row("Server", value: s.serverHost)
         }
+        if !live {
+          CellGroup {
+            Button {
+              askingDelete = true
+            } label: {
+              Row(deleting ? "Elimino…" : "Elimina conversazione", disabled: deleting)
+            }
+            .buttonStyle(.plain)
+            .disabled(deleting)
+          }
+        }
       }
       .padding(.bottom, 32)
     }
+    // Ink, not red: red means only recording (DECISIONS, interface).
+    .confirmationDialog(
+      "Eliminare la conversazione delle \(Clock.time(c.start))?", isPresented: $askingDelete,
+      titleVisibility: .visible
+    ) {
+      if model.canDeleteOnServer(c) {
+        Button("Elimina anche dal server") { delete(c, onServer: true) }
+      }
+      Button("Togli solo da questo telefono") { delete(c, onServer: false) }
+      Button("Annulla", role: .cancel) {}
+    } message: {
+      Text(deleteMessage(c))
+    }
+    .alert(
+      "Eliminazione", isPresented: Binding(get: { deleteProblem != nil }, set: { _ in })
+    ) {
+      Button("Ho capito") {
+        deleteProblem = nil
+        if !model.conversations.conversations.contains(where: { $0.id == c.id }) { dismiss() }
+      }
+    } message: {
+      Text(deleteProblem ?? "")
+    }
     .page("Conversazione")
     .onAppear { model.refreshTranscripts() }
+  }
+
+  private func delete(_ c: Conversation, onServer: Bool) {
+    deleting = true
+    Task {
+      let problem = await model.deleteConversation(c, onServer: onServer)
+      deleting = false
+      if let problem { deleteProblem = problem } else { dismiss() }
+    }
+  }
+
+  /// What each choice does, or why only the phone is offered.
+  private func deleteMessage(_ c: Conversation) -> String {
+    if model.canDeleteOnServer(c) {
+      return
+        "Dal server spariscono audio e trascrizione. Togliendola solo da questo telefono, sul server resta tutto."
+    }
+    if let op = c.submission, model.serverInfo.supports(.delete), !op.reachable(now: Date()) {
+      return
+        "È passato il tempo entro cui il server la lascia eliminare da qui: la tolgo da questo telefono, sul server resta. Dal server si elimina lì."
+    }
+    return
+      "Il server non permette di eliminarla da qui: la tolgo da questo telefono, sul server resta. Dal server si elimina lì."
   }
 
   private func markCount(_ n: Int) -> String {

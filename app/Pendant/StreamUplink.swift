@@ -38,7 +38,9 @@ final class StreamUplink: NSObject {
   /// Called when a conversation closed and nothing is left to send.
   var onDrained: (() -> Void)?
   /// Called with the submission the server announced for the stream that opened.
-  var onSubmission: ((_ id: String, _ url: String?) -> Void)?
+  var onSubmission: ((_ id: String, _ url: String?, _ expiresAt: Date?) -> Void)?
+  /// Called with what the server said about itself when the stream opened.
+  var onHello: ((ServerInfo) -> Void)?
   /// Seconds of audio sent in this app run.
   private(set) var sentSeconds: Double = 0
   /// Frames waiting to be sent.
@@ -177,9 +179,18 @@ final class StreamUplink: NSObject {
           self.connectionFailed(failure, httpStatus: status)
           return
         }
-        if let text, case .submission(let id, let url)? = ServerMessage.parse(text) {
+        switch text.flatMap(ServerMessage.parse) {
+        case .hello(let info):
+          self.log.record(
+            "hello",
+            "protocol \(info.protocolVersion.map(String.init) ?? "?"), "
+              + info.features.sorted().joined(separator: " "))
+          self.onHello?(info)
+        case .submission(let id, let url, let expiresAt):
           self.log.record("submission", id)
-          self.onSubmission?(id, url)
+          self.onSubmission?(id, url, expiresAt)
+        case nil:
+          break
         }
         self.receive(on: watched)
       }

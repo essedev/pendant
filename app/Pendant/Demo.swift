@@ -149,6 +149,11 @@ enum DemoScene: String, CaseIterable {
 
   var probeOutcome: ServerProbeOutcome { .ok }
 
+  /// A server that introduces itself with the additions the app knows.
+  var serverInfo: ServerInfo {
+    ServerInfo(protocolVersion: 1, features: ["submission", "delete"], resumeGrace: 120)
+  }
+
   var snapshot: AppModel.Snapshot {
     let n = now
     var s = AppModel.Snapshot(

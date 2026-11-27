@@ -1,15 +1,16 @@
 import Foundation
 import PendantKit
 
-/// Reads the server's submissions of the closed conversations until their transcript arrives
-/// (DECISIONS "Transcript back from the server").
+/// Talks to the server about the submissions of the closed conversations: reads them until
+/// their transcript arrives, and deletes them on request (DECISIONS "Transcript back from the
+/// server", "Deleting a conversation").
 ///
 /// The schedule is `SubmissionSchedule` (PendantKit, tested): here the loop sleeps until the
 /// earliest read is due, reads with the stream's token, and stores what comes back. It is
 /// poked when an submission is announced, a conversation closes or the app comes back to the
 /// foreground; with nothing to wait for, it stops until the next poke.
 @MainActor
-final class TranscriptFetcher {
+final class SubmissionClient {
   private let capture: CaptureCoordinator
   private let log: ProbeLog
   private let session = URLSession(configuration: .ephemeral)
@@ -96,5 +97,38 @@ final class TranscriptFetcher {
       log.record("submissionFailed", "\(op.id), \(error.localizedDescription)")
     }
     capture.setSubmission(updated, of: conversation.id)
+  }
+
+  /// How a deletion on the server went.
+  enum Deletion: Equatable {
+    /// Gone from the server.
+    case deleted
+    /// The server does not know it, or it is past the token's reach: it may still be there.
+    case notFound
+    /// No answer, or an error: nothing changed, it can be tried again.
+    case failed(String)
+  }
+
+  /// Deletes the submission of a conversation on the server.
+  func delete(_ conversation: Conversation) async -> Deletion {
+    guard let op = conversation.submission, let credentials = Credentials.load(),
+      let base = credentials.httpBase, let url = op.readURL(base: base)
+    else { return .failed("Nessun server impostato.") }
+    var request = credentials.get(url, timeout: Self.timeout)
+    request.httpMethod = "DELETE"
+    do {
+      let (_, response) = try await session.data(for: request)
+      let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+      log.record("submissionDelete", "\(op.id), HTTP \(status)")
+      switch status {
+      case 200, 204: return .deleted
+      case 404: return .notFound
+      case 401, 403: return .failed("Il server ha rifiutato il token.")
+      default: return .failed("Il server ha risposto con un errore (\(status)).")
+      }
+    } catch {
+      log.record("submissionDelete", "\(op.id), \(error.localizedDescription)")
+      return .failed("Il server non risponde.")
+    }
   }
 }

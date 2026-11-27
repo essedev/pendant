@@ -28,13 +28,23 @@ public struct Submission: Codable, Equatable, Sendable {
   public var nextCheck: Date?
   /// The app stopped asking: the submission stayed open past the give-up time.
   public var gaveUp: Bool
+  /// Until when the stream's token may read and delete it, as the server declares; nil when
+  /// it does not say.
+  public var expiresAt: Date?
 
-  /// An submission just announced.
-  public init(id: String, url: String?) {
+  /// A submission just announced.
+  public init(id: String, url: String?, expiresAt: Date? = nil) {
     self.id = id
     self.url = url
+    self.expiresAt = expiresAt
     checks = 0
     gaveUp = false
+  }
+
+  /// Whether the token may still act on it at `now`: until the declared expiry, always when
+  /// the server declares none.
+  public func reachable(now: Date) -> Bool {
+    expiresAt.map { $0 > now } ?? true
   }
 
   /// Nothing more will change.
@@ -133,23 +143,81 @@ public struct Transcript: Codable, Equatable, Sendable {
 
 /// The messages the server sends on the WebSocket.
 public enum ServerMessage: Equatable, Sendable {
+  /// How the server introduces itself when the stream opens.
+  case hello(ServerInfo)
   /// The submission of this conversation.
-  case submission(id: String, url: String?)
+  case submission(id: String, url: String?, expiresAt: Date?)
 
   /// The message in a text frame, nil for a type the app does not know: the protocol lets the
   /// server add messages without breaking older apps.
   public static func parse(_ text: String) -> ServerMessage? {
     guard let data = text.data(using: .utf8),
-      let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-      object["type"] as? String == "Submission",
-      let id = object["id"] as? String, !id.isEmpty
+      let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     else { return nil }
-    let url = (object["url"] as? String).flatMap { $0.isEmpty ? nil : $0 }
-    return .submission(id: id, url: url)
+    switch object["type"] as? String {
+    case "Hello":
+      guard let version = object["protocol"] as? Int else { return nil }
+      let features = (object["features"] as? [String]) ?? []
+      let grace = (object["resume_grace"] as? NSNumber)?.doubleValue
+      return .hello(
+        ServerInfo(protocolVersion: version, features: Set(features), resumeGrace: grace))
+    case "Submission":
+      guard let id = object["id"] as? String, !id.isEmpty else { return nil }
+      let url = (object["url"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+      let expires = (object["expires_at"] as? String).flatMap(ISODate.parse)
+      return .submission(id: id, url: url, expiresAt: expires)
+    default:
+      return nil
+    }
   }
 }
 
-/// One read of an submission: the body of `GET` on its URL.
+/// What a server said about itself with `Hello`: the protocol version, the additions it
+/// supports and its rules. A server that says nothing speaks the base protocol, the one of the
+/// Omi app: audio and `CloseStream`, nothing more.
+public struct ServerInfo: Codable, Equatable, Sendable {
+  /// The additions to the base protocol.
+  public enum Feature: String, Sendable {
+    /// Announces a submission per conversation, read back with GET.
+    case submission
+    /// Deletes a submission with DELETE.
+    case delete
+    /// Uses the bookmarks of the conversation.
+    case mark
+  }
+
+  /// The version of the protocol, nil for the base one.
+  public var protocolVersion: Int?
+  /// The additions the server declares.
+  public var features: Set<String>
+  /// Seconds within which the server resumes an interrupted session, when it says.
+  public var resumeGrace: Double?
+
+  public init(protocolVersion: Int?, features: Set<String> = [], resumeGrace: Double? = nil) {
+    self.protocolVersion = protocolVersion
+    self.features = features
+    self.resumeGrace = resumeGrace
+  }
+
+  /// The base protocol: no `Hello` heard.
+  public static let base = ServerInfo(protocolVersion: nil)
+
+  /// Whether the server declares an addition.
+  public func supports(_ feature: Feature) -> Bool { features.contains(feature.rawValue) }
+}
+
+/// The ISO 8601 dates of the protocol, with or without fractions of a second.
+enum ISODate {
+  static func parse(_ text: String) -> Date? {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let date = f.date(from: text) { return date }
+    f.formatOptions = [.withInternetDateTime]
+    return f.date(from: text)
+  }
+}
+
+/// One read of a submission: the body of `GET` on its URL.
 public struct SubmissionReading: Decodable, Equatable, Sendable {
   public struct Result: Decodable, Equatable, Sendable {
     public var transcript: Transcript?
@@ -162,6 +230,16 @@ public struct SubmissionReading: Decodable, Equatable, Sendable {
   public var status: Submission.Status
   public var result: Result?
   public var error: Failure?
+  /// `expires_at` as the server wrote it.
+  public var expiresAtText: String?
+
+  /// Until when the token may read and delete it.
+  public var expiresAt: Date? { expiresAtText.flatMap(ISODate.parse) }
+
+  private enum CodingKeys: String, CodingKey {
+    case id, status, result, error
+    case expiresAtText = "expires_at"
+  }
 
   /// A reading from a response body, nil when it is not one.
   public static func decode(_ data: Data) -> SubmissionReading? {
@@ -169,7 +247,7 @@ public struct SubmissionReading: Decodable, Equatable, Sendable {
   }
 }
 
-/// When to read an submission: the first time a while after the conversation closes, then
+/// When to read a submission: the first time a while after the conversation closes, then
 /// doubling up to a ceiling, never sooner than the server's `Retry-After`, never past the
 /// give-up time. The three times are in the configuration.
 public enum SubmissionSchedule {
@@ -188,6 +266,7 @@ public enum SubmissionSchedule {
     op.checks += 1
     if reading.status == .done { op.transcript = reading.result?.transcript }
     if reading.status == .failed { op.error = reading.error?.message }
+    if let expires = reading.expiresAt { op.expiresAt = expires }
     op.nextCheck =
       op.isFinal
       ? nil : next(op, closedAt: closedAt, now: now, retryAfter: retryAfter, config: config)
