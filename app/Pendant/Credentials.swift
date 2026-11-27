@@ -23,6 +23,23 @@ struct Credentials: Codable, Equatable {
   /// The host shown in the app.
   var host: String { url.host() ?? url.absoluteString }
 
+  /// The server's HTTP base, `https://host[:port]`, for the reads beside the stream.
+  var httpBase: URL? {
+    var components = URLComponents()
+    components.scheme = url.scheme == "ws" ? "http" : "https"
+    components.host = url.host()
+    components.port = url.port
+    return components.url
+  }
+
+  /// A read of the server with the same token as the stream, in the header.
+  func get(_ url: URL, timeout: TimeInterval) -> URLRequest {
+    var request = URLRequest(url: url, timeoutInterval: timeout)
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+    return request
+  }
+
   /// The last four characters of the token, the only part the app shows.
   var tokenTail: String { String(token.suffix(4)) }
 

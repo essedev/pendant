@@ -95,6 +95,13 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var reconnectMaxDelay: Double
   /// Seconds of audio kept while the server is unreachable; older audio is dropped past it.
   public var spoolSeconds: Double
+  /// Seconds after a conversation closes before the first read of its transcript; the next
+  /// reads double the wait.
+  public var transcriptCheckFirst: Double
+  /// Longest wait between two reads of a transcript, in seconds.
+  public var transcriptCheckMax: Double
+  /// Seconds after a conversation closes past which the app stops asking for its transcript.
+  public var transcriptGiveUp: Double
   /// Notify when the pendant stays disconnected while recording.
   public var notifyDisconnect: Bool
   /// Seconds before that notification.
@@ -162,6 +169,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     pingInterval = 20
     reconnectMaxDelay = 30
     spoolSeconds = 1800
+    transcriptCheckFirst = 60
+    transcriptCheckMax = 900
+    transcriptGiveUp = 86400
     notifyDisconnect = true
     disconnectNotifyAfter = 120
     notifyUplink = true
@@ -244,6 +254,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     pingInterval = number(.pingInterval, d.pingInterval, 5...90)
     reconnectMaxDelay = number(.reconnectMaxDelay, d.reconnectMaxDelay, 1...300)
     spoolSeconds = number(.spoolSeconds, d.spoolSeconds, 60...14400)
+    transcriptCheckFirst = number(.transcriptCheckFirst, d.transcriptCheckFirst, 10...3600)
+    transcriptCheckMax = number(.transcriptCheckMax, d.transcriptCheckMax, 60...7200)
+    transcriptGiveUp = number(.transcriptGiveUp, d.transcriptGiveUp, 3600...604800)
     notifyDisconnect = value(.notifyDisconnect, d.notifyDisconnect)
     disconnectNotifyAfter = number(.disconnectNotifyAfter, d.disconnectNotifyAfter, 10...86400)
     notifyUplink = value(.notifyUplink, d.notifyUplink)
@@ -290,6 +303,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(pingInterval, forKey: .pingInterval)
     try c.encode(reconnectMaxDelay, forKey: .reconnectMaxDelay)
     try c.encode(spoolSeconds, forKey: .spoolSeconds)
+    try c.encode(transcriptCheckFirst, forKey: .transcriptCheckFirst)
+    try c.encode(transcriptCheckMax, forKey: .transcriptCheckMax)
+    try c.encode(transcriptGiveUp, forKey: .transcriptGiveUp)
     try c.encode(notifyDisconnect, forKey: .notifyDisconnect)
     try c.encode(disconnectNotifyAfter, forKey: .disconnectNotifyAfter)
     try c.encode(notifyUplink, forKey: .notifyUplink)
@@ -323,5 +339,6 @@ public struct Configuration: Codable, Equatable, Sendable {
       signatureDaysBefore, liveActivity,
       liveActivityPauseEnd, liveActivityAlways
     case resumeGrace, pendantName, appearance, displayStyle, accentStyle
+    case transcriptCheckFirst, transcriptCheckMax, transcriptGiveUp
   }
 }

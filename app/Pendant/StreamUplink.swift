@@ -37,6 +37,8 @@ final class StreamUplink: NSObject {
   private(set) var lastContact: Date?
   /// Called when a conversation closed and nothing is left to send.
   var onDrained: (() -> Void)?
+  /// Called with the operation the server announced for the stream that opened.
+  var onOperation: ((_ id: String, _ url: String?) -> Void)?
   /// Seconds of audio sent in this app run.
   private(set) var sentSeconds: Double = 0
   /// Frames waiting to be sent.
@@ -158,13 +160,28 @@ final class StreamUplink: NSObject {
   }
 
   private func receive(on watched: URLSessionWebSocketTask) {
-    // The server sends nothing: a receive completes only when the connection fails or closes.
+    // A receive completes with one message, or with an error when the connection fails or
+    // closes: after a message it listens again, so a later drop is still seen.
     watched.receive { [weak self] result in
-      guard case .failure(let error) = result else { return }
       let status = (watched.response as? HTTPURLResponse)?.statusCode
-      Task { @MainActor in
+      var failure: String?
+      var text: String?
+      switch result {
+      case .failure(let error): failure = error.localizedDescription
+      case .success(.string(let string)): text = string
+      case .success: break
+      }
+      Task { @MainActor [failure, text] in
         guard let self, self.task === watched else { return }
-        self.connectionFailed(error.localizedDescription, httpStatus: status)
+        if let failure {
+          self.connectionFailed(failure, httpStatus: status)
+          return
+        }
+        if let text, case .operation(let id, let url)? = ServerMessage.parse(text) {
+          self.log.record("operation", id)
+          self.onOperation?(id, url)
+        }
+        self.receive(on: watched)
       }
     }
   }

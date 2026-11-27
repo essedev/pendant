@@ -26,16 +26,22 @@ public struct Conversation: Codable, Equatable, Sendable, Identifiable {
   public var status: Status
   /// Moments marked during the conversation.
   public var bookmarks: [Date]
+  /// The server's operation for it, with the transcript once done; nil when the server
+  /// announced none (a server without operations, or a conversation from before them).
+  public var operation: ServerOperation?
 
   /// A conversation starting now.
   public init(
-    id: UUID = UUID(), start: Date, end: Date? = nil, status: Status = .live, bookmarks: [Date] = []
+    id: UUID = UUID(), start: Date, end: Date? = nil, status: Status = .live,
+    bookmarks: [Date] = [],
+    operation: ServerOperation? = nil
   ) {
     self.id = id
     self.start = start
     self.end = end
     self.status = status
     self.bookmarks = bookmarks
+    self.operation = operation
   }
 
   /// Seconds from start to end, or to `now` while live.
@@ -100,6 +106,37 @@ public struct ConversationLog: Codable, Equatable, Sendable {
   public mutating func setStatus(_ status: Conversation.Status, of id: UUID) {
     guard let i = conversations.firstIndex(where: { $0.id == id }) else { return }
     conversations[i].status = status
+  }
+
+  /// Records the operation the server announced when the stream opened: on the live
+  /// conversation, or, when a closed one is still being delivered, on the newest without one.
+  /// A resumed conversation gets the same id again and keeps what it has. Returns whether
+  /// anything changed.
+  @discardableResult
+  public mutating func attach(operationID id: String, url: String?) -> Bool {
+    if conversations.contains(where: { $0.operation?.id == id }) { return false }
+    guard
+      let i = conversations.firstIndex(where: { $0.status == .live })
+        ?? conversations.firstIndex(where: { $0.operation == nil })
+    else { return false }
+    conversations[i].operation = ServerOperation(id: id, url: url)
+    return true
+  }
+
+  /// The closed conversations whose operation is due for a read at `now`.
+  public func dueOperations(now: Date, config: Configuration) -> [Conversation] {
+    conversations.filter { c in
+      guard c.status != .live, let end = c.end, let op = c.operation, !op.isFinal else {
+        return false
+      }
+      return (op.nextCheck ?? OperationSchedule.first(closedAt: end, config: config)) <= now
+    }
+  }
+
+  /// Replaces the operation of a conversation after a read.
+  public mutating func setOperation(_ operation: ServerOperation, of id: UUID) {
+    guard let i = conversations.firstIndex(where: { $0.id == id }) else { return }
+    conversations[i].operation = operation
   }
 
   /// Drops conversations older than the retention.

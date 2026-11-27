@@ -27,6 +27,7 @@ enum DemoScene: String, CaseIterable {
   case conversationLive = "conv.live"
   case conversationSent = "conv.sent"
   case conversationCut = "conv.cut"
+  case conversationTranscribing = "conv.transcribing"
   case settings
   case pagePendant = "page.pendant"
   case pagePendantOff = "page.pendant.off"
@@ -64,7 +65,8 @@ enum DemoScene: String, CaseIterable {
 
   var tab: AppModel.Tab {
     switch self {
-    case .today, .yesterday, .emptyDay, .conversationLive, .conversationSent, .conversationCut:
+    case .today, .yesterday, .emptyDay, .conversationLive, .conversationSent, .conversationCut,
+      .conversationTranscribing:
       .today
     case .settings, .pagePendant, .pagePendantOff, .pageGestures, .pageOffline, .pageNotifications,
       .pageServer, .pageControls, .pageControlsGuide, .pageControlsPause,
@@ -98,6 +100,7 @@ enum DemoScene: String, CaseIterable {
     case .conversationLive: [Fixture.live]
     case .conversationSent: [Fixture.morning]
     case .conversationCut: [Fixture.cut]
+    case .conversationTranscribing: [Fixture.latest]
     default: []
     }
   }
@@ -228,6 +231,32 @@ enum DemoScene: String, CaseIterable {
     static let live = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
     static let morning = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
     static let cut = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
+    static let latest = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
+
+    /// The operation of a conversation whose transcript arrived.
+    static var transcribed: ServerOperation {
+      var op = ServerOperation(id: "demo-morning", url: nil)
+      op.status = .done
+      op.transcript = Transcript(
+        language: "it", duration: 2892,
+        segments: [
+          .init(speaker: "S1", text: "Allora, partiamo dal calendario delle consegne."),
+          .init(speaker: "S1", text: "La prima è fissata per il 12, giusto?"),
+          .init(
+            speaker: "S2", text: "Sì, il 12. Ma la parte dei test la sposterei alla settimana dopo."
+          ),
+          .init(speaker: "S1", text: "Va bene, allora la segno così e la riprendiamo lunedì."),
+        ])
+      return op
+    }
+
+    /// The operation of a conversation the server is still transcribing.
+    static var transcribing: ServerOperation {
+      var op = ServerOperation(id: "demo-latest", url: nil)
+      op.status = .running
+      op.checks = 1
+      return op
+    }
 
     static func liveConversation(_ now: Date) -> Conversation {
       Conversation(id: live, start: now.addingTimeInterval(-12))
@@ -238,12 +267,13 @@ enum DemoScene: String, CaseIterable {
     static func log(now: Date, busy: Bool = false) -> ConversationLog {
       func c(
         _ h: Int, _ m: Int, seconds: Int, id: UUID = UUID(), day: Int = 26,
-        status: Conversation.Status = .sent, marks: [(Int, Int)] = []
+        status: Conversation.Status = .sent, marks: [(Int, Int)] = [],
+        operation: ServerOperation? = nil
       ) -> Conversation {
         let start = DemoScene.at(h, m, day: day)
         return Conversation(
           id: id, start: start, end: start.addingTimeInterval(Double(seconds)), status: status,
-          bookmarks: marks.map { DemoScene.at($0.0, $0.1, day: day) })
+          bookmarks: marks.map { DemoScene.at($0.0, $0.1, day: day) }, operation: operation)
       }
       let extra =
         busy
@@ -255,8 +285,9 @@ enum DemoScene: String, CaseIterable {
         conversations: extra + [
           Conversation(
             id: live, start: DemoScene.at(17, 30), bookmarks: [DemoScene.at(17, 36)]),
-          c(17, 21, seconds: 287),
-          c(11, 30, seconds: 2892, id: morning, marks: [(11, 42), (12, 5)]),
+          c(17, 21, seconds: 287, id: latest, operation: transcribing),
+          c(
+            11, 30, seconds: 2892, id: morning, marks: [(11, 42), (12, 5)], operation: transcribed),
           c(9, 4, seconds: 2586),
           c(18, 40, seconds: 552, day: 25),
           c(15, 12, seconds: 1331, id: cut, day: 25, status: .interrupted),

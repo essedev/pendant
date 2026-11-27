@@ -13,6 +13,8 @@ final class CaptureCoordinator {
   private(set) var droppedFrames = 0
   /// The conversations seen by this phone, saved on disk.
   private(set) var conversations: ConversationLog
+  /// Called when an operation was announced or a conversation closed: a read may be due.
+  var onOperationsChanged: (() -> Void)?
   /// The input level in dBFS, measured only while `meterEnabled`.
   private(set) var level: Double = LevelMeter.floor
   /// Since when the recording is paused.
@@ -88,6 +90,7 @@ final class CaptureCoordinator {
     self.conversations = saved
     self.uplink = StreamUplink(config: config, log: log, notifier: notifier)
     uplink.onDrained = { [weak self] in self?.markQueuedAsSent() }
+    uplink.onOperation = { [weak self] id, url in self?.operationAnnounced(id, url: url) }
     link.onReadyChanged = { [weak self] ready in self?.deviceReadyChanged(ready) }
     link.onButton = { [weak self] event in self?.button(event) }
     link.onAudio = { [weak self] packet, maxPiece in self?.audio(packet, maxPiece: maxPiece) }
@@ -107,6 +110,18 @@ final class CaptureCoordinator {
   /// Marks this moment, from a system control.
   func bookmark() {
     apply(controller.bookmark(config: config))
+  }
+
+  /// Replaces the operation of a conversation after a read of the server.
+  func setOperation(_ operation: ServerOperation, of id: UUID) {
+    conversations.setOperation(operation, of: id)
+    save()
+  }
+
+  private func operationAnnounced(_ id: String, url: String?) {
+    guard conversations.attach(operationID: id, url: url) else { return }
+    save()
+    onOperationsChanged?()
   }
 
   /// Stops the warnings of a pendant on without recording until it connects again.
@@ -262,6 +277,7 @@ final class CaptureCoordinator {
         conversations.end(at: Date(), status: status)
         save()
         uplink.stop(graceful: graceful)
+        onOperationsChanged?()
       case .vibrate(let length):
         link.vibrate(length)
       case .persistPaused(let paused, let since):

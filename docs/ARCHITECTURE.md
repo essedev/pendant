@@ -273,6 +273,7 @@ range, an unknown one is ignored.
 | Storage | Offline audio policy: send, clear or keep; read size |
 | State | Heartbeat interval, low battery threshold, which local notifications |
 | Forwarding | Language, ping interval, reconnection time |
+| Transcripts | First read after the close (60 s), longest wait between reads (15 min, doubling up to it), give-up time (one day) |
 | Firmware | Supported versions and features to use on each |
 | Pendant | LED: follows recording (on while recording, off when paused, default), always on, always off; brightness. The firmware picks the colour, the app only the brightness (`led.c`); when disconnected the last saved value applies. The LED on is also the notice for whoever is in front of you |
 
@@ -295,6 +296,9 @@ The app talks to any server that implements this protocol; today it is Nexus's
 | Empty session | Under 2 s of audio it does not become a transcription |
 | Connection test | Opens and closes without `CloseStream`, and never while a conversation is open: opening resumes the interrupted session within the grace period, and `CloseStream` would close it |
 | Handshake errors | 401 or 403 token rejected, no response or 5xx server unreachable, anything else a different protocol |
+| Operation | After the upgrade the server may send `{"type":"Operation","id":...,"url":...}`: the long-running operation of this conversation. A resumed session sends the same id. Text messages of unknown type are ignored |
+| Reading the operation | `GET` on `url` (absolute, or a path on the server; without it `/api/operations/{id}`), same token in `Authorization: Bearer`. Body `{"id","status":"pending"\|"running"\|"done"\|"failed","result","error":{"message"}}`, optional `Retry-After`. 404 unknown or expired |
+| Transcript | `result.transcript`: `text`, `language`, `duration`, `segments` (`speaker`, `start`, `end`, `text`). `done` with no result: too short to transcribe |
 
 To add in Nexus, proposed, one at a time when the milestone needs them:
 
@@ -401,7 +405,7 @@ with the prototype `prototype/omi_stt_probe.py` on 28/10/2026, Omi app 1.0.577.
 
 ## Transcription
 
-The server does it, once the session is closed: the app sends only the audio.
+The server does it, once the session is closed: the app sends only the audio. When the server announces an operation for the conversation, the app reads it after the close, more and more rarely, and keeps the transcript with the conversation on the phone, for as long as the conversation stays (30 days); a server without operations works as before.
 
 ## Pendant checks
 

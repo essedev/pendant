@@ -68,6 +68,8 @@ final class AppModel {
   let log: ProbeLog
   let link: DeviceLink
   let capture: CaptureCoordinator
+  /// Reads the transcripts of the closed conversations from the server.
+  private let transcripts: TranscriptFetcher
   let notifier = Notifier()
   /// The demo scene, nil in normal use.
   let demo: DemoScene?
@@ -143,6 +145,7 @@ final class AppModel {
     let link = DeviceLink(log: log, config: config)
     self.link = link
     capture = CaptureCoordinator(link: link, config: config, log: log, notifier: notifier)
+    transcripts = TranscriptFetcher(capture: capture, log: log)
     if let demo {
       credentials = demo.credentials
       onboarding = demo.onboarding
@@ -176,6 +179,7 @@ final class AppModel {
     if onboarding == nil || DeviceLink.authorization != .notDetermined { link.start() }
     scheduleSignatureNotice()
     Task { await refreshNotificationStatus() }
+    transcripts.poke()
     startPublishing()
   }
 
@@ -395,13 +399,20 @@ final class AppModel {
       if kind == .pendantIdle { self?.capture.snoozeIdleWarning() }
     }
     notifier.onRecord = { [weak self] in self?.setPaused(false) }
+    capture.onOperationsChanged = { [weak self] in self?.transcripts.poke() }
     link.onBattery = { [weak self] level in self?.battery(level) }
     link.onRingInfo = { [weak self] info in self?.ringInfo(info) }
+  }
+
+  /// Reads the transcripts that are due, now: a conversation page opened.
+  func refreshTranscripts() {
+    if demo == nil { transcripts.poke() }
   }
 
   /// The app came to the foreground.
   func becameActive() {
     activities.retry()
+    if demo == nil { transcripts.poke() }
     Task { await refreshNotificationStatus() }
   }
 
