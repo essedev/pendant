@@ -103,7 +103,7 @@ struct HomeDisplay: View {
           Text(s.serverHost).foregroundStyle(Theme.displayInk).lineLimit(1)
           Spacer()
           Text(serverWords(s.serverState))
-            .foregroundStyle(s.serverState == .online ? Theme.displayInk2 : Theme.displayWarn)
+            .foregroundStyle(s.serverState == .online ? Theme.displayAccent : Theme.displayWarn)
         }
         .type(15, 20)
         .padding(.top, 12)

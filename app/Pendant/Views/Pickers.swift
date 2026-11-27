@@ -203,12 +203,6 @@ enum Choices {
     }
   }
 
-  static let appearance: [Choice<AppAppearance>] = [
-    Choice(value: .system, label: "Automatico", subtitle: "Come il telefono"),
-    Choice(value: .light, label: "Chiaro"),
-    Choice(value: .dark, label: "Scuro"),
-  ]
-
   static let led: [Choice<LedPolicy>] = [
     Choice(
       value: .followRecording, label: "Segue la registrazione",

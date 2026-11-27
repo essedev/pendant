@@ -38,6 +38,7 @@ enum DemoScene: String, CaseIterable {
   case pageAdvanced = "page.advanced"
   case pageInfo = "page.info"
   case pageLicenses = "page.licenses"
+  case pageTheme = "page.theme"
   case obWelcome = "ob.welcome"
   case obBluetooth = "ob.bluetooth"
   case obDenied = "ob.denied"
@@ -63,7 +64,7 @@ enum DemoScene: String, CaseIterable {
     case .today, .yesterday, .emptyDay, .conversationLive, .conversationSent, .conversationCut:
       .today
     case .settings, .pagePendant, .pagePendantOff, .pageGestures, .pageOffline, .pageNotifications,
-      .pageServer, .pageControls, .pageAdvanced, .pageInfo, .pageLicenses:
+      .pageServer, .pageControls, .pageAdvanced, .pageInfo, .pageLicenses, .pageTheme:
       .settings
     default: .now
     }
@@ -80,6 +81,7 @@ enum DemoScene: String, CaseIterable {
     case .pageAdvanced: [.advanced]
     case .pageInfo: [.info]
     case .pageLicenses: [.info, .licenses]
+    case .pageTheme: [.theme]
     default: []
     }
   }

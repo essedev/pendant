@@ -22,7 +22,7 @@ final class AppModel {
 
   /// Pages of Settings, pushed on its stack.
   enum Page: Hashable {
-    case pendant, gestures, offline, notifications, server, systemControls, advanced, info
+    case pendant, gestures, offline, notifications, server, systemControls, advanced, info, theme
     case licenses
   }
 
@@ -86,6 +86,8 @@ final class AppModel {
       guard config != oldValue else { return }
       saveConfig()
       capture.config = config
+      ThemeSelection.set(display: config.displayStyle, accent: config.accentStyle)
+      ControlCenter.shared.reloadAllControls()
       scheduleSignatureNotice()
     }
   }
@@ -113,12 +115,24 @@ final class AppModel {
       arguments.indices.contains(i + 1) ? DemoScene(rawValue: arguments[i + 1]) : nil
     }
     self.demo = demo
-    let config =
+    // `-theme display.accent` picks a theme for demo screenshots.
+    let themeArgument = arguments.firstIndex(of: "-theme").flatMap { i in
+      arguments.indices.contains(i + 1)
+        ? arguments[i + 1].split(separator: ".").map(String.init) : nil
+    }
+    var config =
       demo?.config
       ?? UserDefaults.standard.data(forKey: Self.configKey).flatMap {
         try? JSONDecoder().decode(Configuration.self, from: $0)
       } ?? .defaults
+    if demo != nil, let parts = themeArgument, parts.count == 2,
+      let display = DisplayStyle(rawValue: parts[0]), let accent = AccentStyle(rawValue: parts[1])
+    {
+      config.displayStyle = display
+      config.accentStyle = accent
+    }
     self.config = config
+    ThemeSelection.set(display: config.displayStyle, accent: config.accentStyle)
     let log = ProbeLog(screenLimit: config.logScreenEntries)
     self.log = log
     log.record(

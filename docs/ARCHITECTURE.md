@@ -314,6 +314,11 @@ Colori, presi dal mock (coppia Grafite e rosso con la seconda tinta):
 | Tratti registrati della giornata | `#7c818a` | `#6f757f` |
 | Avvisi | `#9a5600`, sul display `#f0a840` | `#f0a840` |
 
+I colori della tabella sono il tema di default, Grafite e rosso. Display e accento si scelgono
+in Impostazioni, Tema (DECISIONS 2026-11-27, "Temi"): il catalogo con le rese chiara e scura e
+il test di contrasto è in `PendantKit/ThemeCatalog.swift`, e il tema arriva all'attività in
+tempo reale dall'App Group. Rosso e ambra non cambiano.
+
 Il rosso dei fondi pieni sta sotto il bianco a 4,6:1 in tutti e due i temi; `#e5402f` del mock
 si fermava a 4,1:1. Il mock completo `docs/concepts/concept-b-app.html` è la specifica di testi,
 stati e misure: l'app lo riproduce con le viste in `app/Pendant/Views/`, e `make screens`

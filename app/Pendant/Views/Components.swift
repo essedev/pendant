@@ -47,14 +47,14 @@ struct Tag: View {
     }
     .type(15, 20, .semibold)
     .monospacedDigit()
-    .foregroundStyle(kind == .rec ? .white : kind == .warn ? Theme.displayWarn : Theme.displayInk)
+    .foregroundStyle(kind == .rec ? .white : kind == .warn ? Theme.displayWarn : Theme.displayPause)
     .padding(.horizontal, 10)
     .frame(height: 28)
     .background {
       let shape = RoundedRectangle(cornerRadius: 8, style: .continuous)
       switch kind {
       case .rec: shape.fill(Theme.red)
-      case .line: shape.strokeBorder(Theme.displayInk, lineWidth: 1.5)
+      case .line: shape.strokeBorder(Theme.displayPause, lineWidth: 1.5)
       case .warn: shape.strokeBorder(Theme.displayWarn, lineWidth: 1.5)
       }
     }
@@ -418,7 +418,7 @@ struct CapsuleButton: View {
     Button(action: action) {
       Text(title)
         .type(15, 20, .medium)
-        .foregroundStyle(disabled ? Theme.ink3 : Theme.ink)
+        .foregroundStyle(disabled ? Theme.ink3 : Theme.accent)
         .padding(.horizontal, 14)
         .frame(height: 36)
         .background(Capsule().fill(Theme.ink.opacity(0.08)))

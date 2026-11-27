@@ -56,10 +56,13 @@ struct BookmarkControl: ControlWidget {
 struct RecordingLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: RecordingAttributes.self) { context in
-      LockScreenActivity(state: context.state, server: context.attributes.server)
+      // The extension reads the theme the app published in the App Group.
+      ThemeSelection.loadShared()
+      return LockScreenActivity(state: context.state, server: context.attributes.server)
         .activityBackgroundTint(Theme.display)
         .activitySystemActionForegroundColor(Theme.displayInk)
     } dynamicIsland: { context in
+      ThemeSelection.loadShared()
       let s = context.state
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
@@ -167,7 +170,7 @@ private struct RecordingTag: View {
     }
     .font(Theme.font(15, .semibold))
     .foregroundStyle(
-      away != nil ? Theme.displayWarn : recording ? .white : Theme.displayInk
+      away != nil ? Theme.displayWarn : recording ? .white : Theme.displayPause
     )
     .padding(.horizontal, 10)
     .frame(height: 28)
@@ -177,7 +180,7 @@ private struct RecordingTag: View {
       } else if recording {
         RoundedRectangle(cornerRadius: 8).fill(Theme.red)
       } else {
-        RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.displayInk, lineWidth: 1.5)
+        RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.displayPause, lineWidth: 1.5)
       }
     }
   }

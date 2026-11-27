@@ -110,6 +110,10 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var resumeGrace: Double
   /// Light, dark, or as the phone.
   public var appearance: AppAppearance
+  /// The display surface of the theme.
+  public var displayStyle: DisplayStyle
+  /// The accent of the theme.
+  public var accentStyle: AccentStyle
   /// The pendant's name, only in this app.
   public var pendantName: String
 
@@ -149,6 +153,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     resumeGrace = 120
     pendantName = "Omi"
     appearance = .system
+    displayStyle = .graphite
+    accentStyle = .ink
   }
 
   /// The action mapped to a button event, nil when the event is not a gesture.
@@ -227,6 +233,10 @@ public struct Configuration: Codable, Equatable, Sendable {
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     pendantName = trimmed.isEmpty ? d.pendantName : String(trimmed.prefix(32))
     appearance = AppAppearance(rawValue: value(.appearance, d.appearance.rawValue)) ?? d.appearance
+    displayStyle =
+      DisplayStyle(rawValue: value(.displayStyle, d.displayStyle.rawValue)) ?? d.displayStyle
+    accentStyle =
+      AccentStyle(rawValue: value(.accentStyle, d.accentStyle.rawValue)) ?? d.accentStyle
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -262,6 +272,8 @@ public struct Configuration: Codable, Equatable, Sendable {
     try c.encode(resumeGrace, forKey: .resumeGrace)
     try c.encode(pendantName, forKey: .pendantName)
     try c.encode(appearance.rawValue, forKey: .appearance)
+    try c.encode(displayStyle.rawValue, forKey: .displayStyle)
+    try c.encode(accentStyle.rawValue, forKey: .accentStyle)
   }
 
   private enum CodingKeys: String, CodingKey {
@@ -271,6 +283,6 @@ public struct Configuration: Codable, Equatable, Sendable {
     case disconnectNotifyAfter, notifyUplink, uplinkNotifyAfter, notifyBattery, batteryThreshold
     case notifyIdle, idleNotifyAfter, notifySignature, signatureDaysBefore, liveActivity,
       liveActivityPauseEnd, liveActivityAlways
-    case resumeGrace, pendantName, appearance
+    case resumeGrace, pendantName, appearance, displayStyle, accentStyle
   }
 }

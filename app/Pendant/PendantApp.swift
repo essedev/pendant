@@ -35,7 +35,9 @@ struct RootView: View {
         NavigationStack(path: $model.settingsPath) { SettingsView() }
       }
     }
-    .tint(Theme.ink)
+    .tint(Theme.accent)
+    // The theme's colours resolve when views are built: a new identity rebuilds them all.
+    .id("\(model.config.displayStyle.rawValue).\(model.config.accentStyle.rawValue)")
     .preferredColorScheme(model.config.appearance.colorScheme)
     .fullScreenCover(
       isPresented: Binding(

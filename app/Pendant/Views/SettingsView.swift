@@ -34,9 +34,7 @@ struct SettingsView: View {
           link(.systemControls, "Comandi di sistema")
         }
         CellGroup {
-          PickerRow(
-            label: "Aspetto", title: "Aspetto dell’app", choices: Choices.appearance,
-            selection: $model.config.appearance)
+          link(.theme, "Tema", value: themeName(config))
         }
         CellGroup(footer: footer) {
           link(.advanced, "Avanzate")
@@ -50,6 +48,7 @@ struct SettingsView: View {
     .navigationDestination(for: AppModel.Page.self) { page in
       switch page {
       case .pendant: PendantPage()
+      case .theme: ThemePage()
       case .gestures: GesturesPage()
       case .offline: OfflinePage()
       case .notifications: NotificationsPage()
@@ -65,6 +64,10 @@ struct SettingsView: View {
   private func link(_ page: AppModel.Page, _ label: String, value: String? = nil) -> some View {
     NavigationLink(value: page) { Row(label, value: value, chevron: true) }
       .buttonStyle(.plain)
+  }
+
+  private func themeName(_ c: Configuration) -> String {
+    ThemePreset.matching(display: c.displayStyle, accent: c.accentStyle)?.name ?? "Personalizzato"
   }
 
   private func activeNotifications(_ c: Configuration) -> Int {

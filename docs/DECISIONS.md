@@ -293,3 +293,15 @@ variante C). Scartate la spia col livello (A), che da piccola diventa un puntino
 le barre della Dynamic Island (B), più leggibili ma comuni fra le app che registrano. Il
 limite accettato: sotto i 40 pt nel tema scuro il LED si vede poco. Le PNG nascono dagli SVG
 in `app/Icon/` con `make icon`; Icon Composer (file `.icon` a livelli) resta un passo dopo.
+
+## 2026-11-27 Temi: display e accento a scelta, rosso e ambra fissi
+
+L'app ha un selettore di temi (Impostazioni, Tema): dieci temi pronti, dai giri del mock
+(Grafite e rosso, Casio, G-Shock, Carta, Calcolatrice, Blu e arancio, Petrolio e menta, Bosco,
+Salvia, Notte e menta), più la combinazione libera di un display e un accento. Il display ha una
+resa chiara e una scura; l'accento colora interruttori, scheda attiva, tasti, tacche registrate,
+"In pausa" e "in linea". Restano fissi il rosso della registrazione e l'ambra degli avvisi, e
+fra gli accenti non ci sono rosso, giallo né ambra. Ogni combinazione è nel catalogo con un test
+di contrasto (4,5:1); sul display un accento che non regge torna all'inchiostro secondario.
+Scartati il colore libero col selettore di sistema (contrasto non garantito) e un rosso che
+cambia col tema (il segnale "registra" deve valere ovunque). Il default resta Grafite e rosso.

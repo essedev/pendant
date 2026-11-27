@@ -75,14 +75,15 @@ SIM_ID = $(shell xcrun simctl list devices available -j | python3 -I -c "import 
 SIM_APP := $(DERIVED)/sim/Build/Products/Debug-iphonesimulator/Pendant.app
 SCENES ?= $(shell sed -n 's/^  case [a-zA-Z]* = "\(.*\)"/\1/p; s/^  case \([a-z]*\)$$/\1/p' Pendant/Demo.swift)
 
-sim: project ## Compila per il simulatore e lo avvia in una scena demo: SCENE=home.rec
+sim: project ## Compila per il simulatore e lo avvia in una scena demo: SCENE=home.rec THEME=casio.orange
 	@test -n "$(SIM_ID)" || (echo "Nessun simulatore $(SIMULATOR)" && exit 1)
 	xcodebuild -project Pendant.xcodeproj -scheme Pendant -destination 'id=$(SIM_ID)' \
 		-derivedDataPath $(DERIVED)/sim -quiet build
 	xcrun simctl boot $(SIM_ID) 2>/dev/null || true
 	xcrun simctl bootstatus $(SIM_ID) -b >/dev/null
 	xcrun simctl install $(SIM_ID) $(SIM_APP)
-	xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $(or $(SCENE),home.rec)
+	xcrun simctl launch --terminate-running-process $(SIM_ID) $(BUNDLE_ID) -demo $(or $(SCENE),home.rec) \
+		$(if $(THEME),-theme $(THEME))
 
 screens: sim ## Schermate di tutte le scene demo in app/.screens, chiaro e scuro
 	mkdir -p .screens

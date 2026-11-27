@@ -1,10 +1,42 @@
+import PendantKit
 import SwiftUI
 import UIKit
 
-/// The Graphite and red palette and the Archivo type of the app (ARCHITECTURE, "Interfaccia").
+/// The theme the app draws with: a display and an accent from the catalogue (PendantKit,
+/// `ThemeCatalog`), set by the app from its settings and read by the widget extension from the
+/// App Group, where the app publishes it.
+enum ThemeSelection {
+  // Read by the colour providers below at resolution, on the main thread, in both processes.
+  nonisolated(unsafe) static var display: DisplayStyle = .graphite
+  nonisolated(unsafe) static var accent: AccentStyle = .ink
+
+  private static let key = "pendant.theme"
+
+  /// Sets the theme and publishes it for the widget extension.
+  static func set(display: DisplayStyle, accent: AccentStyle) {
+    self.display = display
+    self.accent = accent
+    UserDefaults(suiteName: SharedState.appGroup)?.set(
+      "\(display.rawValue).\(accent.rawValue)", forKey: key)
+  }
+
+  /// Reads the theme the app published, in the widget extension.
+  static func loadShared() {
+    guard let raw = UserDefaults(suiteName: SharedState.appGroup)?.string(forKey: key) else {
+      return
+    }
+    let parts = raw.split(separator: ".").map(String.init)
+    guard parts.count == 2 else { return }
+    display = DisplayStyle(rawValue: parts[0]) ?? .graphite
+    accent = AccentStyle(rawValue: parts[1]) ?? .ink
+  }
+}
+
+/// The palette and the Archivo type of the app (ARCHITECTURE, "Interfaccia").
 ///
 /// Shared by the app and the widget extension, so the Live Activity and the controls use the
-/// same tokens as the screens.
+/// same tokens as the screens. Display and accent tokens follow `ThemeSelection`; the rest is
+/// fixed: the red is the recording, the amber a warning, in every theme.
 enum Theme {
   /// A color that follows light and dark mode.
   private static func dynamic(_ light: UInt32, _ dark: UInt32) -> Color {
@@ -12,6 +44,15 @@ enum Theme {
       UIColor { traits in
         UIColor(hex: traits.userInterfaceStyle == .dark ? dark : light)
       })
+  }
+
+  /// A color computed from the theme at each resolution.
+  private static func themed(_ pick: @escaping @Sendable (_ dark: Bool) -> UInt32) -> Color {
+    Color(UIColor { traits in UIColor(hex: pick(traits.userInterfaceStyle == .dark)) })
+  }
+
+  private static func displayColors(_ dark: Bool) -> DisplayStyle.Colors {
+    ThemeSelection.display.colors(dark: dark)
   }
 
   /// Screen background.
@@ -26,34 +67,52 @@ enum Theme {
   static let ink2 = dynamic(0x6B7079, 0x9BA0A9)
   /// Chevrons and faint marks.
   static let ink3 = dynamic(0xA3A6AC, 0x5D626B)
-  /// Tint of toggles: never red.
-  static let toggleTint = dynamic(0x15171B, 0x7D8594)
+  /// What you touch: the active tab, capsule buttons. Ink when the accent is ink.
+  static let accent = themed { dark in
+    ThemeSelection.accent.color(dark: dark) ?? (dark ? 0xECEEF1 : 0x15171B)
+  }
+  /// Tint of toggles: the accent, never red.
+  static let toggleTint = themed { dark in
+    ThemeSelection.accent.color(dark: dark) ?? (dark ? 0x7D8594 : 0x15171B)
+  }
   /// The display surface.
-  static let display = dynamic(0x2B2E34, 0x23262B)
+  static let display = themed { displayColors($0).surface }
   /// Main ink on the display.
-  static let displayInk = dynamic(0xF1F2F4, 0xECEEF1)
+  static let displayInk = themed { displayColors($0).ink }
   /// Secondary ink on the display.
-  static let displayInk2 = dynamic(0xA9AEB7, 0x9BA0A9)
+  static let displayInk2 = themed { displayColors($0).ink2 }
+  /// The accent on the display ("in linea"), its secondary ink when the accent would not read.
+  static let displayAccent = themed { dark in
+    let c = displayColors(dark)
+    return ThemeSelection.accent.color(onDisplay: c) ?? c.ink2
+  }
+  /// The outline of "In pausa" on the display: the accent, or the display ink.
+  static let displayPause = themed { dark in
+    let c = displayColors(dark)
+    return ThemeSelection.accent.color(onDisplay: c) ?? c.ink
+  }
   /// Unlit ticks on the display.
-  static let tickOff = dynamic(0x3D4149, 0x34383F)
+  static let tickOff = themed { displayColors($0).dim }
   /// Rules inside the display.
-  static let displayRule = dynamic(0x464A53, 0x3A3E45)
+  static let displayRule = themed { displayColors($0).rule }
+  /// Warnings on the display.
+  static let displayWarn = themed { displayColors($0).warn }
   /// The aluminium frame around the display and the well around the key.
   static let frame = dynamic(0xCFD0CC, 0x2C2F34)
   /// The key while recording.
-  static let pauseKey = dynamic(0x2B2E34, 0x3A3E46)
+  static let pauseKey = themed { ThemeSelection.display.key(dark: $0) }
   /// Recording red, for filled backgrounds under white text: 4.5:1 in both modes.
   static let red = dynamic(0xD93A2B, 0xD93A2B)
   /// Recording red for lit marks on dark surfaces.
   static let redLit = Color(UIColor(hex: 0xFF5A47))
-  /// Ticks of recorded time.
-  static let recorded = dynamic(0x7C818A, 0x6F757F)
+  /// Ticks of recorded time: the accent, grey when the accent is ink.
+  static let recorded = themed { dark in
+    ThemeSelection.accent.color(dark: dark) ?? (dark ? 0x6F757F : 0x7C818A)
+  }
   /// Empty ticks of the day strip.
   static let tickEmpty = dynamic(0xD2D3CF, 0x2A2C30)
   /// Warnings on the background and in cells.
   static let warn = dynamic(0x9A5600, 0xF0A840)
-  /// Warnings on the display.
-  static let displayWarn = Color(UIColor(hex: 0xF0A840))
   /// A disabled main button.
   static let disabledFill = dynamic(0xD2D3CF, 0x2A2C30)
 
