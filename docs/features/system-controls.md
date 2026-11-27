@@ -25,11 +25,13 @@ Due controlli dell'app, che si mettono dove si vuole:
   quello che scegli; per default "Segna questo momento", perché la pausa c'è già col doppio
   tocco.
 - **Centro di Controllo e blocco schermo**: tutti e due.
-- **Attività in tempo reale** sul blocco schermo e nella Dynamic Island mentre registra: tempo
-  trascorso, stato del server, tasto pausa. Con "Sempre visibile" resta anche in pausa e col
-  ciondolo lontano (spia ambra, trattini, ora dell'ultimo contatto). iOS la chiude dopo circa
-  8 ore; se iOS rifiuta di aprirla con l'app in background, l'app riprova quando torna in primo
-  piano.
+- **Attività in tempo reale** sul blocco schermo e nella Dynamic Island. Ogni stato mostra
+  solo quello che gli serve: mentre registra il tempo che scorre, Pausa e Segna; in pausa l'ora
+  in cui è iniziata ("dalle 11:42") e solo Riprendi, perché il segnalibro vuole una
+  registrazione; col ciondolo lontano l'ora dell'ultimo contatto, senza tasti. Il tempo che
+  scorre compare solo mentre registra: una pausa contata come `23:00` si legge come un orario.
+  Con "Sempre visibile" resta anche in pausa e da scollegato. iOS la chiude dopo circa 8 ore;
+  se iOS rifiuta di aprirla con l'app in background, l'app riprova quando torna in primo piano.
 
 Nell'app stanno in Impostazioni, Fuori dall'app: in cima l'attività in tempo reale in piccolo,
 con le stesse viste dell'estensione (`app/Shared/ActivityViews.swift`) e i suoi due

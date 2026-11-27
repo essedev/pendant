@@ -566,26 +566,39 @@ private struct ShortcutGuide: View {
   }
 }
 
-/// The Live Activity in small: the lock screen and the compact Dynamic Island, recording, in
-/// the current theme. The same views as the activity, with the keys inert.
+/// The Live Activity in small, in the state it shows now: the compact and the expanded Dynamic
+/// Island, then the lock screen. The same views as the activity, with the keys inert.
 private struct ActivityPreview: View {
   @Environment(AppModel.self) private var model
 
   var body: some View {
-    // The real clock, not the demo one: the timer of the activity counts from the system time.
-    let state = RecordingAttributes.ContentState(
-      recording: true, since: Date().addingTimeInterval(-728), queuedSeconds: 0,
-      serverState: "in linea", serverWarning: false, battery: 84, away: nil)
-    VStack(spacing: 14) {
+    var state = model.activityContent
+    // The timer counts from the system clock: a demo scene's fixed clock is moved to now.
+    state.since = state.since.addingTimeInterval(Date().timeIntervalSince(model.now))
+    let server = model.credentials?.host ?? "server.esempio.it"
+    return VStack(spacing: 12) {
       HStack(spacing: 0) {
-        LevelBars(active: true)
+        IslandCompactLeading(state: state)
         Spacer()
-        ActivityTimer(state: state, size: 15)
+        IslandCompactTrailing(state: state)
       }
-      .padding(.horizontal, 16)
+      .padding(.horizontal, 18)
       .frame(width: 220, height: 36)
       .background(Capsule().fill(.black))
-      LockScreenActivity(state: state, server: model.credentials?.host ?? "server.esempio.it")
+      VStack(spacing: 6) {
+        HStack {
+          RecordingTag(state: state)
+          Spacer()
+          if let battery = state.battery { ActivityBattery(percent: battery) }
+        }
+        IslandExpandedBody(state: state, server: server)
+          .padding(.top, 6)
+      }
+      .padding(.horizontal, 20)
+      .padding(.vertical, 16)
+      .background(RoundedRectangle(cornerRadius: 40, style: .continuous).fill(.black))
+      .environment(\.colorScheme, .dark)
+      LockScreenActivity(state: state, server: server)
         .background(
           RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Theme.display))
     }

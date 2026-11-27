@@ -36,6 +36,8 @@ enum DemoScene: String, CaseIterable {
   case pageServer = "page.server"
   case pageControls = "page.controls"
   case pageControlsGuide = "page.controls.guide"
+  case pageControlsPause = "page.controls.pause"
+  case pageControlsOff = "page.controls.off"
   case pageAdvanced = "page.advanced"
   case pageInfo = "page.info"
   case pageLicenses = "page.licenses"
@@ -65,7 +67,8 @@ enum DemoScene: String, CaseIterable {
     case .today, .yesterday, .emptyDay, .conversationLive, .conversationSent, .conversationCut:
       .today
     case .settings, .pagePendant, .pagePendantOff, .pageGestures, .pageOffline, .pageNotifications,
-      .pageServer, .pageControls, .pageControlsGuide, .pageAdvanced, .pageInfo, .pageLicenses,
+      .pageServer, .pageControls, .pageControlsGuide, .pageControlsPause,
+      .pageControlsOff, .pageAdvanced, .pageInfo, .pageLicenses,
       .pageTheme:
       .settings
     default: .now
@@ -79,7 +82,8 @@ enum DemoScene: String, CaseIterable {
     case .pageOffline: [.offline]
     case .pageNotifications: [.notifications]
     case .pageServer: [.server]
-    case .pageControls, .pageControlsGuide: [.systemControls]
+    case .pageControls, .pageControlsGuide, .pageControlsPause, .pageControlsOff:
+      [.systemControls]
     case .pageAdvanced: [.advanced]
     case .pageInfo: [.info]
     case .pageLicenses: [.info, .licenses]
@@ -147,10 +151,10 @@ enum DemoScene: String, CaseIterable {
       mode: .recording, since: n.addingTimeInterval(-728), battery: 84,
       serverHost: "nexus.esse.dev", serverState: .online, level: -16.7, firmware: "3.0.21")
     switch self {
-    case .homePause:
+    case .homePause, .pageControlsPause:
       s.mode = .paused
       s.since = n.addingTimeInterval(-130)
-    case .homeOff:
+    case .homeOff, .pageControlsOff:
       s.mode = .disconnected
       s.since = n.addingTimeInterval(-182)
       s.battery = nil
@@ -208,7 +212,7 @@ enum DemoScene: String, CaseIterable {
 
   var device: AppModel.Device {
     let away: Set<DemoScene> = [
-      .homeOff, .homeCut, .homeBluetoothOff, .homeDenied, .pagePendantOff,
+      .homeOff, .homeCut, .homeBluetoothOff, .homeDenied, .pagePendantOff, .pageControlsOff,
     ]
     if away.contains(self) {
       return AppModel.Device(connected: false, lastSeen: Self.at(17, 39))

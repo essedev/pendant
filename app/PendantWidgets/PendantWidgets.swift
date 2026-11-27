@@ -64,51 +64,34 @@ struct RecordingLiveActivity: Widget {
     } dynamicIsland: { context in
       ThemeSelection.loadShared()
       let s = context.state
+      // The island is always black: its contents take the dark tones of the theme.
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          RecordingTag(recording: s.recording, away: s.away)
+          RecordingTag(state: s)
+            .dynamicIsland(verticalPlacement: .belowIfTooWide)
+            .padding(.leading, 4)
+            .environment(\.colorScheme, .dark)
         }
         DynamicIslandExpandedRegion(.trailing) {
           if let battery = s.battery {
-            Text("\(battery)%")
-              .font(Theme.font(15, .medium))
-              .foregroundStyle(Theme.displayInk2)
-          }
-        }
-        DynamicIslandExpandedRegion(.center) {
-          VStack(spacing: 2) {
-            ActivityTimer(state: s, size: 34)
-            Text("\(context.attributes.server), \(s.serverState)")
-              .font(Theme.font(13))
-              .foregroundStyle(s.serverWarning ? Theme.displayWarn : Theme.displayInk2)
+            ActivityBattery(percent: battery)
+              .dynamicIsland(verticalPlacement: .belowIfTooWide)
+              .padding(.trailing, 4)
+              .environment(\.colorScheme, .dark)
           }
         }
         DynamicIslandExpandedRegion(.bottom) {
-          if s.away != nil {
-            LastSeen(since: s.since)
-          } else {
-            HStack(spacing: 8) {
-              ActivityKey(recording: s.recording)
-              Button(intent: BookmarkIntent()) {
-                Label("Segna", systemImage: "bookmark.fill")
-                  .font(Theme.font(15, .semibold))
-                  .frame(maxWidth: .infinity, minHeight: 44)
-              }
-              .buttonStyle(.plain)
-              .foregroundStyle(.white)
-              .background(Capsule().fill(Theme.tickOff))
-            }
-          }
+          IslandExpandedBody(state: s, server: context.attributes.server)
+            .padding(.horizontal, 4)
+            .padding(.top, 6)
+            .environment(\.colorScheme, .dark)
         }
       } compactLeading: {
-        LevelBars(active: s.recording)
+        IslandCompactLeading(state: s).environment(\.colorScheme, .dark)
       } compactTrailing: {
-        ActivityTimer(state: s, size: 15)
-          .frame(maxWidth: 56)
+        IslandCompactTrailing(state: s).environment(\.colorScheme, .dark)
       } minimal: {
-        Circle()
-          .fill(s.recording ? Theme.redLit : Theme.displayInk2)
-          .frame(width: 10, height: 10)
+        IslandMinimal(state: s).environment(\.colorScheme, .dark)
       }
     }
   }

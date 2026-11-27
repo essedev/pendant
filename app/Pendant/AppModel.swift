@@ -485,16 +485,9 @@ final class AppModel {
     }
   }
 
-  private func publish() {
+  /// What the Live Activity shows now, also drawn in small in "Fuori dall'app".
+  var activityContent: RecordingAttributes.ContentState {
     let s = snapshot
-    let state = SharedState(
-      recording: s.mode == .recording, paused: capture.controller.paused,
-      pendantConnected: link.ready, since: s.since)
-    if state != published {
-      published = state
-      state.save()
-      ControlCenter.shared.reloadControls(ofKind: ControlKind.recording)
-    }
     let serverWords: String =
       switch s.serverState {
       case .online: "in linea"
@@ -511,11 +504,24 @@ final class AppModel {
       case .denied: "Senza Bluetooth"
       case .unpaired: "Nessun ciondolo"
       }
-    let content = RecordingAttributes.ContentState(
+    return RecordingAttributes.ContentState(
       recording: s.mode == .recording, since: s.since,
       queuedSeconds: s.serverState == .online ? 0 : Int(s.queuedSeconds),
       serverState: serverWords, serverWarning: s.serverState != .online, battery: s.battery,
       away: away)
+  }
+
+  private func publish() {
+    let s = snapshot
+    let state = SharedState(
+      recording: s.mode == .recording, paused: capture.controller.paused,
+      pendantConnected: link.ready, since: s.since)
+    if state != published {
+      published = state
+      state.save()
+      ControlCenter.shared.reloadControls(ofKind: ControlKind.recording)
+    }
+    let content = activityContent
     let always = config.liveActivityAlways
     let show = config.liveActivity && (always || s.mode == .recording || s.mode == .paused)
     activities.show(
