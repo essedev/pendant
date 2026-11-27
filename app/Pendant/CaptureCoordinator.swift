@@ -236,9 +236,9 @@ final class CaptureCoordinator {
         uplink.stop(graceful: graceful)
       case .vibrate(let length):
         link.vibrate(length)
-      case .persistPaused(let paused):
+      case .persistPaused(let paused, let since):
         UserDefaults.standard.set(paused, forKey: Self.pausedKey)
-        pausedSince = paused ? Date() : nil
+        pausedSince = paused ? since ?? Date() : nil
         UserDefaults.standard.set(pausedSince, forKey: Self.pausedSinceKey)
         log.record("capture", paused ? "paused" : "resumed")
         applyLed()

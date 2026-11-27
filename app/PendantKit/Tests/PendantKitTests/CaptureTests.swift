@@ -113,7 +113,8 @@ import Testing
     _ = capture.deviceConnectionChanged(false, at: t0, config: config)
     let late = t0.addingTimeInterval(config.resumeGrace + 1)
     #expect(
-      capture.deviceConnectionChanged(true, at: late, config: config) == [.persistPaused(true)])
+      capture.deviceConnectionChanged(true, at: late, config: config)
+        == [.persistPaused(true, since: t0)])
     #expect(!capture.recording)
   }
 

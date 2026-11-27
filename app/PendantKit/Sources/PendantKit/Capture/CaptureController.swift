@@ -20,8 +20,9 @@ public struct CaptureController: Equatable, Sendable {
     case closeStream(graceful: Bool)
     /// Vibrate the pendant.
     case vibrate(Vibration)
-    /// Save the pause flag.
-    case persistPaused(Bool)
+    /// Save the pause flag; `since` is when the pause began, when that is not now (a recording
+    /// cut by a disconnection is paused from the cut, not from the return of the pendant).
+    case persistPaused(Bool, since: Date? = nil)
     /// Mark this moment in the conversation in progress.
     case bookmark
   }
@@ -67,6 +68,7 @@ public struct CaptureController: Equatable, Sendable {
       return [.closeStream(graceful: false)]
     }
     let resumes = armed || resumesUntil(config: config).map { now <= $0 } == true
+    let cut = cutAt
     cutAt = nil
     armed = false
     if resumes {
@@ -75,7 +77,7 @@ public struct CaptureController: Equatable, Sendable {
     }
     guard !paused else { return [] }
     paused = true
-    return [.persistPaused(true)]
+    return [.persistPaused(true, since: cut)]
   }
 
   /// A button event arrived; the configuration maps it to an action.
