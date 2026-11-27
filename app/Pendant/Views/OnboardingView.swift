@@ -117,7 +117,7 @@ struct OnboardingView: View {
       .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.cell))
       .padding(.top, 28)
       Text(
-        "Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Comandi di sistema."
+        "Per la pausa dal tasto Azione e dal Centro di Controllo: Impostazioni, Fuori dall’app."
       )
       .type(13, 18)
       .foregroundStyle(Theme.ink2)

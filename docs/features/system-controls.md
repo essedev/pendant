@@ -31,6 +31,11 @@ Due controlli dell'app, che si mettono dove si vuole:
   8 ore; se iOS rifiuta di aprirla con l'app in background, l'app riprova quando torna in primo
   piano.
 
+Nell'app stanno in Impostazioni, Fuori dall'app: in cima l'attività in tempo reale in piccolo,
+con le stesse viste dell'estensione (`app/Shared/ActivityViews.swift`) e i suoi due
+interruttori; sotto una riga per posto, con i passaggi per metterci i controlli. Se le attività
+sono spente nelle impostazioni di iOS la pagina lo dice e apre le impostazioni.
+
 ## Come
 
 | Pezzo | Scelta | Fonte |

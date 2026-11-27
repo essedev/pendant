@@ -35,6 +35,7 @@ enum DemoScene: String, CaseIterable {
   case pageNotifications = "page.notifications"
   case pageServer = "page.server"
   case pageControls = "page.controls"
+  case pageControlsGuide = "page.controls.guide"
   case pageAdvanced = "page.advanced"
   case pageInfo = "page.info"
   case pageLicenses = "page.licenses"
@@ -64,7 +65,8 @@ enum DemoScene: String, CaseIterable {
     case .today, .yesterday, .emptyDay, .conversationLive, .conversationSent, .conversationCut:
       .today
     case .settings, .pagePendant, .pagePendantOff, .pageGestures, .pageOffline, .pageNotifications,
-      .pageServer, .pageControls, .pageAdvanced, .pageInfo, .pageLicenses, .pageTheme:
+      .pageServer, .pageControls, .pageControlsGuide, .pageAdvanced, .pageInfo, .pageLicenses,
+      .pageTheme:
       .settings
     default: .now
     }
@@ -77,7 +79,7 @@ enum DemoScene: String, CaseIterable {
     case .pageOffline: [.offline]
     case .pageNotifications: [.notifications]
     case .pageServer: [.server]
-    case .pageControls: [.systemControls]
+    case .pageControls, .pageControlsGuide: [.systemControls]
     case .pageAdvanced: [.advanced]
     case .pageInfo: [.info]
     case .pageLicenses: [.info, .licenses]

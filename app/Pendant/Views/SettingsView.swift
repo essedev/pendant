@@ -31,7 +31,7 @@ struct SettingsView: View {
         }
         CellGroup {
           link(.server, "Server", value: model.credentials?.host ?? "da impostare")
-          link(.systemControls, "Comandi di sistema")
+          link(.systemControls, "Fuori dall’app")
         }
         CellGroup {
           link(.theme, "Tema", value: themeName(config))

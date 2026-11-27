@@ -1,3 +1,4 @@
+import ActivityKit
 import PendantKit
 import SwiftUI
 
@@ -419,66 +420,179 @@ struct ProbeResult: View {
   }
 }
 
-/// Comandi di sistema: how to put the controls on the Action button and in Control Center.
+/// Fuori dall'app: the Live Activity, shown in small with its settings, then the places iOS
+/// lets the controls go, each with its steps (docs/features/system-controls.md).
 struct SystemControlsPage: View {
   @Environment(AppModel.self) private var model
+  @State private var guide: Shortcut?
 
   var body: some View {
     @Bindable var model = model
+    let config = model.config
+    let allowed = ActivityAuthorizationInfo().areActivitiesEnabled
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
         Text(
-          "Pausa e segnalibri senza aprire l’app. Dove stanno lo decide iOS: qui c’è come metterli."
+          "Pausa e segnalibri senza aprire l’app: dal blocco schermo, dalla Dynamic Island e dai tasti di iOS."
         )
         .type(15, 20)
         .foregroundStyle(Theme.ink2)
         .padding(.horizontal, 32)
         .padding(.top, 8)
-        CellGroup(
-          header: "Tasto Azione",
-          footer:
-            "Si attiva tenendolo premuto, quindi in tasca non parte. Il ciondolo vibra per conferma. Serve un iPhone 15 Pro o successivo."
-        ) {
-          ActionButtonIllustration()
-        }
-        CellGroup {
-          Steps([
-            "Apri Impostazioni, poi Tasto Azione.",
-            "Scorri di lato fino a Controlli.",
-            "Tocca Scegli un controllo e cerca Pendant: Segna questo momento, oppure Pausa e ripresa.",
-          ])
-        }
-        .padding(.top, -8)
-        CapsuleButton(title: "Apri Impostazioni") { model.openSystemSettings() }
-          .padding(.horizontal, 32)
-          .padding(.top, 12)
-        CellGroup(header: "Centro di Controllo e blocco schermo") {
-          Steps([
-            "Apri il Centro di Controllo e tieni premuto su uno spazio vuoto.",
-            "Tocca Aggiungi un controllo e cerca Pendant.",
-            "Aggiungi Pausa e ripresa e Segna questo momento. Sul blocco schermo sostituiscono torcia e fotocamera.",
-          ])
-        }
+        ActivityPreview()
+          .padding(.horizontal, 16)
+          .padding(.top, 20)
+          .opacity(config.liveActivity && allowed ? 1 : 0.4)
         CellGroup(
           header: "Attività in tempo reale",
-          footer: model.config.liveActivityAlways
-            ? "Resta sul blocco schermo anche in pausa e col ciondolo lontano. iOS la tiene al massimo 8 ore: poi ricompare quando apri l’app."
-            : "Compare quando parte una registrazione e si chiude dopo \(DurationFormat.words(model.config.liveActivityPauseEnd)) di pausa."
+          footer: !allowed
+            ? "Le attività in tempo reale di Pendant sono spente nelle impostazioni di iOS."
+            : config.liveActivityAlways
+              ? "Resta anche in pausa e col ciondolo lontano. iOS la tiene al massimo 8 ore: poi ricompare quando apri l’app. Con l’app aperta la Dynamic Island resta vuota."
+              : "Compare quando parte una registrazione e si chiude dopo \(DurationFormat.words(config.liveActivityPauseEnd)) di pausa. Con l’app aperta la Dynamic Island resta vuota."
         ) {
-          ToggleRow(
-            label: "Attività in tempo reale",
-            subtitle: "Tempo, server e tasto Pausa sul blocco schermo e nella Dynamic Island",
-            isOn: $model.config.liveActivity)
+          ToggleRow(label: "Mostra", isOn: $model.config.liveActivity)
           ToggleRow(
             label: "Sempre visibile", subtitle: "Anche in pausa e col ciondolo lontano",
             isOn: $model.config.liveActivityAlways
           )
-          .disabled(!model.config.liveActivity)
+          .disabled(!config.liveActivity)
+        }
+        if !allowed {
+          CapsuleButton(title: "Apri le impostazioni di iOS") { model.openSystemSettings() }
+            .padding(.horizontal, 32)
+            .padding(.top, 4)
+        }
+        CellGroup(
+          header: "Scorciatoie",
+          footer: "Dove stanno lo decide iOS: l’app non può metterle da sola."
+        ) {
+          ForEach(Shortcut.allCases) { shortcut in
+            Button {
+              guide = shortcut
+            } label: {
+              Row(shortcut.title, subtitle: shortcut.subtitle, chevron: true)
+            }
+            .buttonStyle(.plain)
+          }
         }
       }
       .padding(.bottom, 32)
     }
-    .page("Comandi di sistema")
+    .onAppear { if model.demo == .pageControlsGuide { guide = .actionButton } }
+    .sheet(item: $guide) { ShortcutGuide(shortcut: $0) }
+    .page("Fuori dall’app")
+  }
+}
+
+/// A place in iOS where the controls can go.
+private enum Shortcut: String, CaseIterable, Identifiable {
+  case actionButton, controlCenter, lockScreen
+
+  var id: String { rawValue }
+
+  var title: String {
+    switch self {
+    case .actionButton: "Tasto Azione"
+    case .controlCenter: "Centro di Controllo"
+    case .lockScreen: "Blocco schermo"
+    }
+  }
+
+  var subtitle: String {
+    switch self {
+    case .actionButton: "Tieni premuto per segnare il momento o mettere in pausa"
+    case .controlCenter: "Pausa e segnalibro a un gesto dall’alto"
+    case .lockScreen: "Al posto della torcia o della fotocamera"
+    }
+  }
+
+  var steps: [String] {
+    switch self {
+    case .actionButton:
+      [
+        "Apri Impostazioni, poi Tasto Azione.",
+        "Scorri di lato fino a Controlli.",
+        "Tocca Scegli un controllo e cerca Pendant: Segna questo momento, oppure Pausa e ripresa.",
+      ]
+    case .controlCenter:
+      [
+        "Scorri giù dall’angolo in alto a destra per aprire il Centro di Controllo.",
+        "Tieni premuto su uno spazio vuoto, poi tocca Aggiungi un controllo.",
+        "Cerca Pendant e aggiungi Pausa e ripresa e Segna questo momento.",
+      ]
+    case .lockScreen:
+      [
+        "Tieni premuto sul blocco schermo, poi tocca Personalizza.",
+        "Scegli Blocco schermo e togli la torcia o la fotocamera col meno.",
+        "Tocca il più al loro posto e cerca Pendant.",
+      ]
+    }
+  }
+
+  var note: String {
+    switch self {
+    case .actionButton:
+      "Si attiva tenendolo premuto, quindi in tasca non parte. Il ciondolo vibra per conferma. Serve un iPhone 15 Pro o successivo."
+    case .controlCenter:
+      "Pausa e ripresa mostra lo stato: acceso mentre registra."
+    case .lockScreen:
+      "Ci sta un controllo per lato. Funziona anche col telefono bloccato."
+    }
+  }
+}
+
+/// The steps of a shortcut, in a sheet.
+private struct ShortcutGuide: View {
+  let shortcut: Shortcut
+  @Environment(\.dismiss) private var dismiss
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      HStack {
+        Text(shortcut.title).type(22, 28, .semibold).foregroundStyle(Theme.ink)
+        Spacer()
+        Button("Fine") { dismiss() }
+          .type(17, 22, .semibold)
+          .foregroundStyle(Theme.accent)
+      }
+      .padding(.horizontal, 32)
+      .padding(.top, 24)
+      CellGroup(footer: shortcut.note) { Steps(shortcut.steps) }
+      Spacer(minLength: 0)
+    }
+    .background(Theme.background.ignoresSafeArea())
+    .presentationDetents([.medium])
+  }
+}
+
+/// The Live Activity in small: the lock screen and the compact Dynamic Island, recording, in
+/// the current theme. The same views as the activity, with the keys inert.
+private struct ActivityPreview: View {
+  @Environment(AppModel.self) private var model
+
+  var body: some View {
+    // The real clock, not the demo one: the timer of the activity counts from the system time.
+    let state = RecordingAttributes.ContentState(
+      recording: true, since: Date().addingTimeInterval(-728), queuedSeconds: 0,
+      serverState: "in linea", serverWarning: false, battery: 84, away: nil)
+    VStack(spacing: 14) {
+      HStack(spacing: 0) {
+        LevelBars(active: true)
+        Spacer()
+        ActivityTimer(state: state, size: 15)
+      }
+      .padding(.horizontal, 16)
+      .frame(width: 220, height: 36)
+      .background(Capsule().fill(.black))
+      LockScreenActivity(state: state, server: model.credentials?.host ?? "server.esempio.it")
+        .background(
+          RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Theme.display))
+    }
+    .frame(maxWidth: .infinity)
+    .allowsHitTesting(false)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("Anteprima dell’attività in tempo reale")
   }
 }
 
@@ -500,41 +614,6 @@ struct Steps: View {
       .padding(.horizontal, 16)
       .padding(.vertical, 12)
     }
-  }
-}
-
-/// The Action button page of iOS in small: a fixed drawing, not a real screen.
-private struct ActionButtonIllustration: View {
-  var body: some View {
-    ZStack(alignment: .leading) {
-      HStack(spacing: 0) {
-        Capsule().fill(Theme.ink).frame(width: 5, height: 34)
-        Text("Tasto Azione")
-          .type(13, 18, .medium)
-          .foregroundStyle(Theme.ink2)
-          .padding(.leading, 10)
-      }
-      .offset(x: -2, y: -34)
-      VStack(spacing: 8) {
-        Circle()
-          .fill(Theme.ink)
-          .frame(width: 40, height: 40)
-          .overlay(Image(systemName: "bookmark.fill").foregroundStyle(Theme.cell))
-        Text("Controlli").type(15, 20, .semibold).foregroundStyle(Theme.ink)
-        Text("Segna questo momento")
-          .type(13, 18, .medium)
-          .foregroundStyle(Theme.ink)
-          .padding(.horizontal, 12)
-          .frame(height: 26)
-          .background(Capsule().fill(Theme.ink.opacity(0.08)))
-      }
-      .frame(maxWidth: .infinity)
-    }
-    .frame(height: 150)
-    .padding(.horizontal, 16)
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(
-      "La pagina Tasto Azione delle Impostazioni, con il controllo Segna questo momento di Pendant")
   }
 }
 
