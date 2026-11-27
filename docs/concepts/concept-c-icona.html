@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Concept C - icona</title>
+		<!--
+			Concept C: l'icona dell'app Pendant.
+			Tasti: lettera per la variante, t tema (sfondo chiaro o scuro della schermata Home), p nasconde la barra.
+
+			Il problema: l'app non ha un'icona, iOS mostra quella bianca di default, anche nelle
+			notifiche e nelle Impostazioni. L'icona deve dire "registratore" nello stile dell'app
+			(grafite e rosso, ARCHITECTURE #Interfaccia) e leggersi a 29 pt come a 1024 px.
+
+			A  Spia: l'icona è il display della home, ridotto all'essenziale: la spia rossa REC e la
+			   fila di tacche del livello. Scommette sulla continuità con l'app aperta.
+			B  Tacche: cinque barre rosse, le stesse della Dynamic Island. Scommette sulla forma più
+			   semplice, quella che si legge meglio da piccola.
+			C  Ciondolo: l'oggetto visto dall'alto, un disco grafite con l'anello d'alluminio e il
+			   LED rosso. Scommette sul ciondolo, non sul suono. È disegnato, non è il render di Omi.
+
+			Per ogni variante: le quattro resa di iOS 26 (chiara, scura, tinta, trasparente), la
+			schermata Home a grandezza vera, una notifica e la riga delle Impostazioni.
+
+			Fattibilità: su iOS 26 l'icona si fa con Icon Composer, un file .icon a livelli (fondo e
+			primo piano in SVG). Il vetro, la luce sul bordo e le rese scura, tinta e trasparente le
+			genera il sistema dai livelli: qui sono approssimate in CSS, l'aspetto vero si vede solo
+			sull'iPhone. Il colore del fondo e il rosso sono i token dell'app.
+			Dati: testi veri dell'app; le altre icone della Home sono tessere neutre, non app vere.
+		-->
+		<style>
+			:root {
+				--bg: #e4e5e2;
+				--cell: #f1f1ef;
+				--ink: #15171b;
+				--ink2: #6b7079;
+				--wall-a: #c9cdd3;
+				--wall-b: #8e97a3;
+				--sans: 'Archivo', system-ui, -apple-system, sans-serif;
+				--mono: ui-monospace, 'SF Mono', Menlo, monospace;
+			}
+			:root[data-theme='dark'] {
+				--bg: #141518;
+				--cell: #1d1f23;
+				--ink: #eceef1;
+				--ink2: #9ba0a9;
+				--wall-a: #2a3038;
+				--wall-b: #0d0f12;
+			}
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			body { min-height: 100vh; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+			[hidden] { display: none !important; }
+
+			.switch { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; background: #111; color: #aaa; font: 12px/1.4 var(--mono); }
+			.switch button { font: inherit; border: 0; padding: 5px 9px; border-radius: 6px; background: #262626; color: #eee; cursor: pointer; }
+			.switch button[aria-pressed='true'] { background: #eee; color: #111; }
+			.switch p { margin: 0 0 0 8px; flex: 1 1 240px; min-width: 0; }
+			body[data-chrome='off'] .switch { display: none; }
+
+			.stage { padding: 32px 24px 64px; display: grid; gap: 40px; }
+			h2 { margin: 0 0 14px; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--ink2); }
+
+			/* The four renderings of iOS 26. */
+			.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; }
+			.mode { display: grid; justify-items: center; gap: 10px; padding: 24px 16px 18px; border-radius: 28px; background: var(--cell); }
+			.mode span { font-size: 13px; color: var(--ink2); }
+			.mode.on-wall { background: linear-gradient(160deg, #6f8fb3, #314a6b 60%, #1b2433); }
+			.mode.on-wall span { color: #e8edf3; }
+			.icon { width: 168px; aspect-ratio: 1; border-radius: 22.5%; overflow: hidden; position: relative; flex: none; }
+			.icon svg { display: block; width: 100%; height: 100%; }
+			/* The glass edge iOS 26 draws on every icon: a light line on the whole rim, brighter on top. */
+			.icon::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 1.5px 0 rgb(255 255 255 / 0.35), inset 0 0 0 1px rgb(255 255 255 / 0.14); }
+			.icon.clear { background: rgb(255 255 255 / 0.16); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); }
+
+			/* Home screen at real size: 60 pt icons on a 393 pt wide screen. */
+			.uses { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+			.phone { width: 393px; max-width: 100%; border-radius: 55px; padding: 64px 26px 40px; background: linear-gradient(170deg, var(--wall-a), var(--wall-b)); }
+			.grid { display: grid; grid-template-columns: repeat(4, 64px); justify-content: space-between; row-gap: 26px; }
+			.app { display: grid; justify-items: center; gap: 5px; font: 11px/13px -apple-system, system-ui, sans-serif; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 0.3); }
+			.app .icon { width: 64px; }
+			.tile { width: 64px; aspect-ratio: 1; border-radius: 22.5%; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3); }
+
+			.small { display: grid; gap: 16px; width: 393px; max-width: 100%; }
+			.banner { display: grid; grid-template-columns: 38px 1fr; gap: 12px; padding: 14px; border-radius: 24px; background: var(--cell); }
+			.banner .icon { width: 38px; }
+			.banner b { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; line-height: 20px; font-weight: 600; }
+			.banner b em { font-style: normal; font-weight: 400; font-size: 13px; color: var(--ink2); }
+			.banner p { margin: 2px 0 0; font-size: 15px; line-height: 20px; color: var(--ink2); }
+			.row { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 20px; background: var(--cell); font-size: 17px; }
+			.row .icon { width: 29px; }
+			.row em { margin-left: auto; font-style: normal; color: var(--ink2); }
+			.row + .row { margin-top: -10px; }
+			.spot { display: flex; gap: 18px; align-items: flex-end; padding: 16px; border-radius: 20px; background: var(--cell); }
+			.spot .icon { width: 40px; }
+			.spot div { display: grid; justify-items: center; gap: 4px; font-size: 11px; color: var(--ink2); }
+
+			@media (max-width: 440px) {
+				.stage { padding: 24px 16px 48px; }
+				.phone { padding: 56px 18px 32px; border-radius: 44px; }
+			}
+		</style>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..600&display=swap" rel="stylesheet" />
+	</head>
+	<body data-v="a">
+		<div class="switch">
+			<span data-buttons></span>
+			<p data-desc></p>
+			<button data-theme-toggle>t tema</button>
+		</div>
+
+		<main class="stage">
+			<section>
+				<h2>Le quattro rese di iOS 26: le sceglie chi usa il telefono, in Personalizza della Home</h2>
+				<div class="modes">
+					<div class="mode"><div class="icon" data-icon="light"></div><span>Chiara</span></div>
+					<div class="mode"><div class="icon" data-icon="dark"></div><span>Scura</span></div>
+					<div class="mode"><div class="icon" data-icon="tinted"></div><span>Tinta</span></div>
+					<div class="mode on-wall"><div class="icon clear" data-icon="clear"></div><span>Trasparente</span></div>
+				</div>
+			</section>
+
+			<section>
+				<h2>A grandezza vera: Home, notifica, Spotlight, Impostazioni</h2>
+				<div class="uses">
+					<div class="phone">
+						<div class="grid" data-home></div>
+					</div>
+					<div class="small">
+						<div class="banner">
+							<div class="icon" data-icon="auto"></div>
+							<div>
+								<b>Il ciondolo è acceso da 5 min senza registrare <em>adesso</em></b>
+								<p>Tienilo premuto 3 secondi per spegnerlo, o toccalo due volte per registrare.</p>
+							</div>
+						</div>
+						<div class="banner">
+							<div class="icon" data-icon="auto"></div>
+							<div>
+								<b>Il server non risponde da 2 min <em>17:17</em></b>
+								<p>L’audio aspetta sul telefono, fino a 30 min. Parte da solo quando nexus.esse.dev torna in linea.</p>
+							</div>
+						</div>
+						<div class="spot">
+							<div><div class="icon" data-icon="auto"></div>Pendant</div>
+							<div><div class="tile" style="width: 40px; background: #8a94a6"></div>Note</div>
+							<div><div class="tile" style="width: 40px; background: #b7a58c"></div>Meteo</div>
+						</div>
+						<div>
+							<div class="row"><div class="icon" data-icon="auto"></div>Pendant<em>›</em></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<script>
+			const DESC = {
+				a: 'Spia: il display della home in piccolo, spia REC e tacche del livello',
+				b: 'Tacche: cinque barre rosse come nella Dynamic Island, la forma più semplice',
+				c: 'Ciondolo: l’oggetto visto dall’alto, disco grafite con anello e LED rosso'
+			};
+
+			// Tokens of the app (ARCHITECTURE #Interfaccia).
+			const T = { display: '#2b2e34', displayDark: '#1a1c20', red: '#ff5a47', redDeep: '#d93a2b', tickOff: '#3d4149', alu: '#cfd0cc', aluDark: '#2c2f34', bgLight: '#e4e5e2' };
+
+			// Colours of one rendering: background, the lit mark, the unlit marks, the metal.
+			const palette = (mode) => {
+				if (mode === 'dark') return { bg: [T.displayDark, '#0e0f12'], lit: T.red, off: '#2e3238', metal: T.aluDark, disc: '#23262b', face: T.bgLight };
+				if (mode === 'tinted') return { bg: ['#1b1712', '#0f0d0a'], lit: '#f0b45a', off: 'rgb(240 180 90 / 0.28)', metal: 'rgb(240 180 90 / 0.4)', disc: '#211b13', face: '#f0b45a' };
+				if (mode === 'clear') return { bg: null, lit: 'rgb(255 255 255 / 0.95)', off: 'rgb(255 255 255 / 0.3)', metal: 'rgb(255 255 255 / 0.5)', disc: 'rgb(255 255 255 / 0.12)', face: '#fff' };
+				return { bg: ['#3a3e45', T.display], lit: T.red, off: T.tickOff, metal: T.alu, disc: T.display, face: T.bgLight };
+			};
+
+			const bgRect = (p, id, light) => {
+				if (!p.bg) return '';
+				const [a, b] = light && p.bgLight ? p.bgLight : p.bg;
+				return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="1024" height="1024" fill="url(#${id})"/>`;
+			};
+
+			let uid = 0;
+			const ICONS = {
+				// A: the REC dot top left, the level row along the bottom, as on the home display.
+				a: (mode) => {
+					const p = palette(mode);
+					const id = `g${uid++}`;
+					const ticks = Array.from({ length: 9 }, (_, i) => `<rect x="${178 + i * 76}" y="610" width="46" height="150" rx="10" fill="${i < 6 ? p.lit : p.off}"/>`).join('');
+					return `<svg viewBox="0 0 1024 1024">${bgRect(p, id)}<circle cx="262" cy="330" r="84" fill="${p.lit}"/>${ticks}</svg>`;
+				},
+				// B: five bars, centred, the heights of the compact Dynamic Island.
+				b: (mode) => {
+					const p = palette(mode);
+					const id = `g${uid++}`;
+					const hs = [230, 450, 600, 380, 230];
+					const bars = hs.map((h, i) => `<rect x="${262 + i * 110}" y="${512 - h / 2}" width="60" height="${h}" rx="30" fill="${p.lit}"/>`).join('');
+					return `<svg viewBox="0 0 1024 1024">${bgRect(p, id)}${bars}</svg>`;
+				},
+				// C: the pendant from above on a light ground: aluminium ring, graphite face, red LED.
+				c: (mode) => {
+					const p = palette(mode);
+					const id = `g${uid++}`;
+					const ground =
+						mode === 'light'
+							? `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#f1f1ef"/><stop offset="1" stop-color="#d6d7d3"/></linearGradient><radialGradient id="${id}f" cx="0.38" cy="0.32" r="0.8"><stop offset="0" stop-color="#454952"/><stop offset="1" stop-color="${T.display}"/></radialGradient></defs><rect width="1024" height="1024" fill="url(#${id})"/>`
+							: bgRect(p, id);
+					const face = mode === 'light' ? `url(#${id}f)` : p.disc;
+					return `<svg viewBox="0 0 1024 1024">${ground}<circle cx="512" cy="512" r="330" fill="${p.metal}"/><circle cx="512" cy="512" r="282" fill="${face}"/><circle cx="512" cy="330" r="34" fill="${p.lit}"/></svg>`;
+				}
+			};
+
+			const root = document.documentElement;
+			const body = document.body;
+			const KEY = `concept:${location.pathname}`;
+			const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
+			const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
+
+			const NEIGHBOURS = [['#8a94a6', 'Note'], ['#b7a58c', 'Meteo'], ['#7f9a8a', 'Mappe'], ['#a58f9f', 'Foto'], ['#9aa3ad', 'Orologio'], ['#c2b08a', 'Calendario'], ['#8c9bb0', 'File']];
+			const render = () => {
+				const v = body.dataset.v;
+				const auto = root.dataset.theme === 'dark' ? 'dark' : 'light';
+				document.querySelectorAll('[data-icon]').forEach((el) => {
+					const mode = el.dataset.icon === 'auto' ? auto : el.dataset.icon;
+					el.innerHTML = ICONS[v](mode);
+				});
+				const tiles = NEIGHBOURS.map(([c, n]) => `<div class="app"><div class="tile" style="background:${c}"></div>${n}</div>`);
+				tiles.splice(5, 0, `<div class="app"><div class="icon">${ICONS[v](auto)}</div>Pendant</div>`);
+				document.querySelector('[data-home]').innerHTML = tiles.join('');
+			};
+
+			document.querySelector('[data-buttons]').innerHTML = Object.keys(DESC).map((v) => `<button data-v="${v}">${v.toUpperCase()} ${DESC[v].split(':')[0]}</button>`).join(' ');
+			const pick = (v) => {
+				if (!DESC[v]) return;
+				body.dataset.v = v;
+				document.querySelectorAll('.switch [data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+				document.querySelector('[data-desc]').textContent = DESC[v];
+				history.replaceState(null, '', `${location.search}#${v}`);
+				render();
+			};
+			const setTheme = (t) => { root.dataset.theme = t; save({ ...load(), theme: t }); render(); };
+
+			document.querySelector('.switch').addEventListener('click', (e) => {
+				const b = e.target.closest('[data-v]');
+				if (b) pick(b.dataset.v);
+			});
+			document.querySelector('[data-theme-toggle]').addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+			addEventListener('keydown', (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select, [contenteditable]')) return;
+				const k = e.key.toLowerCase();
+				if (k === 't') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				else if (k === 'p') body.dataset.chrome = body.dataset.chrome === 'off' ? 'on' : 'off';
+				else pick(k);
+			});
+
+			root.dataset.theme = load().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			pick(DESC[location.hash.slice(1)] ? location.hash.slice(1) : 'a');
+		</script>
+	</body>
+</html>
